@@ -10,11 +10,14 @@ build — se edita `index.html` y se sube tal cual.
 
 ✅ Interfaz completa y probada (login, roles, CRUD de tickets, notificaciones in-app,
 dashboard, gestión de usuarios, PWA).
-✅ **Funciones de help desk añadidas:** cualquier rol puede crear tickets (el admin
-elige "reportado por" para registrar a nombre de un empleado — útil para reportes
-telefónicos); hilo de comentarios en cada ticket; opción de reabrir un ticket resuelto o
-cerrado si el problema persiste; indicador de "Vencido" según SLA por prioridad (alta 2d
-/ media 5d / baja 10d) con KPI en el Dashboard; exportación de tickets a CSV.
+✅ **Funciones de help desk añadidas:** cualquier rol puede crear tickets (Admin y
+Empleado eligen "reportado por" para registrar a nombre de un locatario — útil para
+reportes telefónicos); hilo de comentarios en cada ticket; opción de reabrir un ticket
+resuelto o cerrado si el problema persiste; indicador de "Vencido" según SLA por
+prioridad (alta 2d / media 5d / baja 10d) con KPI en el Dashboard; exportación de
+tickets a CSV.
+✅ **Tres roles:** Administrador, Empleado (staff interno) y Locatario (inquilino) — ver
+detalle en la sección 4.
 ✅ **Rebrand a ASIGNA aplicado** — header, splash, login, título de pestaña, `manifest.json`
 e ícono de la app (monograma "A") ya dicen ASIGNA en vez de "Oficinas Felices". Las
 categorías de incidencia y las locaciones D1–D4 (específicas de Oficinas Felices) se
@@ -69,7 +72,7 @@ service cloud.firestore {
     match /usuarios/{email} {
       allow read: if true;
       allow create, update: if tieneClaves(request.resource.data, ['email','name','password','role'])
-                   && request.resource.data.role in ['admin','empleado']
+                   && request.resource.data.role in ['admin','empleado','locatario']
                    && request.resource.data.email is string
                    && request.resource.data.name is string
                    && request.resource.data.password is string;
@@ -118,9 +121,17 @@ Correo:      admin@oficinasfelices.com
 Contraseña:  OficinasFelices2026
 ```
 
-Desde **Usuarios** el admin crea el resto de las cuentas (empleados por locación D1–D4,
-y otros administradores si hace falta). No hay auto-registro: el acceso siempre lo
-otorga la administración.
+Desde **Usuarios** el admin crea el resto de las cuentas. No hay auto-registro: el
+acceso siempre lo otorga la administración.
+
+### Roles
+
+- **Administrador** — control total: tickets, usuarios y Dashboard.
+- **Empleado** — staff interno que asiste a la administración; ve y gestiona todos los
+  tickets (cualquier locación), comenta, actualiza estatus, crea tickets a nombre de un
+  locatario. No puede gestionar usuarios, no puede eliminar tickets, no ve el Dashboard.
+- **Locatario** — inquilino que reporta incidencias de su oficina (D1–D4) y da
+  seguimiento a sus propios tickets.
 
 ## 5. Deploy en GitHub Pages
 
@@ -148,14 +159,16 @@ y abre `http://localhost:5183` — sirve la carpeta tal cual la vería GitHub Pa
 
 ## Resumen del flujo de negocio
 
-1. El empleado inicia sesión (cuenta creada por el admin, asociada a su locación D1–D4).
+1. El locatario inicia sesión (cuenta creada por administración, asociada a su locación D1–D4).
+   Administración y Empleado también pueden crear un ticket a nombre de un locatario (ej. reporte telefónico).
 2. Crea un ticket: categoría/subcategoría de incidencia + descripción (+ marcar urgente).
-3. Se generan notificaciones in-app: una para administración, una de confirmación para el empleado.
-4. Administración revisa, actualiza estatus (Nuevo → En revisión → En proceso → Resuelto → Cerrado),
-   asigna responsable y prioridad — cada cambio queda en el historial del ticket con fecha.
-5. Al marcar "Resuelto", se notifica al empleado.
-6. El empleado confirma recepción y califica su conformidad (1–5 estrellas + comentario) — esto cierra el ticket.
-7. El Dashboard (solo admin) muestra: tickets por categoría, por locación, distribución por estatus,
+3. Se generan notificaciones in-app: una para el equipo (Admin + Empleado), una de confirmación para el locatario.
+4. Administración o Empleado revisan, actualizan estatus (Nuevo → En revisión → En proceso → Resuelto → Cerrado),
+   asignan responsable y prioridad, y pueden comentar en el ticket — cada cambio queda en el historial con fecha.
+5. Al marcar "Resuelto", se notifica al locatario.
+6. El locatario confirma recepción y califica su conformidad (1–5 estrellas + comentario) — esto cierra el ticket,
+   o reabre el ticket si el problema persiste (también disponible desde un ticket ya cerrado).
+7. El Dashboard (solo Administrador) muestra: tickets por categoría, por locación, distribución por estatus,
    promedio de días de solución (general y por categoría), tendencia mensual y satisfacción promedio.
 
 ## Categorías de incidencia

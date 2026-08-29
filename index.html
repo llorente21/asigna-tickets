@@ -301,7 +301,8 @@ main.view.active{display:block;}
 .user-card .email{font-size:11.5px; color:var(--text3);}
 .role-tag{font-size:10px; font-weight:800; padding:3px 9px; border-radius:100px; text-transform:uppercase;}
 .role-admin{background:var(--dark); color:var(--accent);}
-.role-empleado{background:var(--surface2); color:var(--text2); border:1px solid var(--border);}
+.role-empleado{background:var(--purple-bg); color:var(--purple);}
+.role-locatario{background:var(--surface2); color:var(--text2); border:1px solid var(--border);}
 
 /* ---------- Profile ---------- */
 .profile-hero{display:flex; flex-direction:column; align-items:center; text-align:center; padding:18px 0 8px;}
@@ -485,7 +486,7 @@ main.view.active{display:block;}
     <div class="field" id="f-reportante-wrap" style="display:none;">
       <label>Reportado por</label>
       <select id="f-reportante" onchange="onReportanteChange()"></select>
-      <div class="field-hint">La administración puede registrar un ticket a nombre de cualquier empleado (ej. reportes por teléfono).</div>
+      <div class="field-hint">Administración y Empleados pueden registrar un ticket a nombre de cualquier locatario (ej. reportes por teléfono).</div>
     </div>
     <div class="readonly-box" id="form-user-box"></div>
     <div class="form-grid">
@@ -555,11 +556,13 @@ main.view.active{display:block;}
     <div class="field"><label>Contraseña</label><input id="u-password" type="text" placeholder="Contraseña de acceso"></div>
     <div class="field"><label>Rol</label>
       <select id="u-role" onchange="onRoleFieldChange()">
-        <option value="empleado">Empleado</option>
+        <option value="locatario">Locatario (inquilino)</option>
+        <option value="empleado">Empleado (staff interno)</option>
         <option value="admin">Administración</option>
       </select>
+      <div class="field-hint" id="u-role-hint"></div>
     </div>
-    <div id="u-empleado-fields">
+    <div id="u-locatario-fields">
       <div class="field"><label>Locación</label><select id="u-locacion"></select></div>
       <div class="field"><label>Empresa (arrendataria)</label><input id="u-empresa" placeholder="Nombre de la empresa"></div>
     </div>
@@ -632,6 +635,8 @@ const STATUS_FLOW = ['nuevo','en_revision','en_proceso','resuelto','cerrado'];
 const STATUS_LABELS = { nuevo:'Nuevo', en_revision:'En revisión', en_proceso:'En proceso', resuelto:'Resuelto', cerrado:'Cerrado' };
 const PRIORIDAD_LABELS = { baja:'Baja', media:'Media', alta:'Alta' };
 const SLA_DIAS = { baja:10, media:5, alta:2 }; // días esperados de solución según prioridad
+const ROLE_LABELS = { admin:'Administración', empleado:'Empleado', locatario:'Locatario' };
+const ROLE_TAG = { admin:'Admin', empleado:'Empleado', locatario:'Locatario' };
 const DEFAULT_USERS = [
   { email:'admin@oficinasfelices.com', password:'OficinasFelices2026', role:'admin', name:'Administración', locacion:'', empresa:'' }
 ];
@@ -731,6 +736,7 @@ function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)
 function fmtDateShort(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.toLocaleDateString('es-DO',{day:'2-digit',month:'short'}); }
 function diffDays(a,b){ const d1=new Date(a), d2=new Date(b); if(isNaN(d1)||isNaN(d2)) return 0; return Math.max(0, Math.round((d2-d1)/86400000)); }
 function isAdmin(){ return currentUser?.role === 'admin'; }
+function isStaff(){ return currentUser?.role === 'admin' || currentUser?.role === 'empleado'; } // Admin + Empleado gestionan tickets; Locatario solo reporta
 function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''); }
 
 function showToast(msg){
@@ -877,13 +883,13 @@ function buildStaticSelects(){
 }
 
 function buildReportanteOptions(){
-  const empleados = USERS_LIST.filter(u=>u.role==='empleado');
+  const locatarios = USERS_LIST.filter(u=>u.role==='locatario');
   const sel = document.getElementById('f-reportante');
-  if(!empleados.length){
-    sel.innerHTML = '<option value="">— No hay empleados registrados —</option>';
+  if(!locatarios.length){
+    sel.innerHTML = '<option value="">— No hay locatarios registrados —</option>';
     return;
   }
-  sel.innerHTML = empleados.map(u=>`<option value="${esc(u.email)}">${esc(u.name)} · ${u.locacion||'—'}</option>`).join('');
+  sel.innerHTML = locatarios.map(u=>`<option value="${esc(u.email)}">${esc(u.name)} · ${u.locacion||'—'}</option>`).join('');
 }
 
 function onCategoriaChange(){
@@ -905,7 +911,7 @@ function buildNav(){
     `<button class="nav-btn" id="nav-${id}" onclick="switchView('${id}')">${icon}<span>${label}</span></button>`
   ).join('');
   document.getElementById('fab-btn').style.display = 'flex';
-  document.getElementById('header-sub').textContent = admin ? 'Panel de administración' : 'Tickets';
+  document.getElementById('header-sub').textContent = admin ? 'Panel de administración' : (isStaff() ? 'Panel de soporte' : 'Tickets');
 }
 
 function switchView(name){
@@ -916,7 +922,7 @@ function switchView(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const navBtn = document.getElementById('nav-'+name); if(navBtn) navBtn.classList.add('active');
   document.getElementById('fab-btn').style.display = (name==='tickets') ? 'flex' : 'none';
-  document.getElementById('export-btn').style.display = (name==='tickets' && isAdmin()) ? 'flex' : 'none';
+  document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
 
   if(name==='dashboard') renderDashboard();
   if(name==='usuarios') renderUsersList();
@@ -951,7 +957,7 @@ window.addEventListener('focus', syncFromFirebase);
    ====================================================================== */
 function getFilteredTickets(){
   let list = tickets.slice();
-  if(!isAdmin()){
+  if(!isStaff()){
     list = list.filter(t => t.empleado_email === currentUser.email);
     if(EF.tab==='abiertos') list = list.filter(t => t.status !== 'cerrado');
     if(EF.tab==='cerrados') list = list.filter(t => t.status === 'cerrado');
@@ -960,7 +966,7 @@ function getFilteredTickets(){
     if(F.categoria) list = list.filter(t => t.categoria === F.categoria);
     if(F.locacion) list = list.filter(t => t.locacion === F.locacion);
   }
-  const q = (isAdmin() ? F.search : EF.search) || '';
+  const q = (isStaff() ? F.search : EF.search) || '';
   if(q){
     const s = q.toLowerCase();
     list = list.filter(t => [t.numero,t.descripcion,t.categoria,t.empleado_nombre].map(v=>(v||'').toLowerCase()).join(' ').includes(s));
@@ -970,18 +976,18 @@ function getFilteredTickets(){
 
 function onSearch(){
   const v = document.getElementById('search-input').value.trim().toLowerCase();
-  if(isAdmin()) F.search = v; else EF.search = v;
+  if(isStaff()) F.search = v; else EF.search = v;
   renderTicketsList();
 }
 
 function renderTicketsView(){
-  const admin = isAdmin();
-  document.getElementById('tickets-title').textContent = admin ? 'Tickets' : 'Mis Tickets';
-  document.getElementById('tickets-sub').textContent = admin ? 'Todos los tickets entrantes de la red' : 'Reporta y da seguimiento a tus incidencias';
-  document.getElementById('filter-btn').style.display = admin ? 'flex' : 'none';
+  const staff = isStaff();
+  document.getElementById('tickets-title').textContent = staff ? 'Tickets' : 'Mis Tickets';
+  document.getElementById('tickets-sub').textContent = staff ? 'Todos los tickets entrantes de la red' : 'Reporta y da seguimiento a tus incidencias';
+  document.getElementById('filter-btn').style.display = staff ? 'flex' : 'none';
 
   const chipsWrap = document.getElementById('quick-chips');
-  if(admin){
+  if(staff){
     chipsWrap.innerHTML = '';
     const active = F.status!=='todos' || F.categoria || F.locacion;
     document.getElementById('filter-btn').classList.toggle('has-filters', active);
@@ -997,7 +1003,7 @@ function renderTicketsList(){
   const list = getFilteredTickets();
   const el = document.getElementById('tickets-list');
   if(!list.length){
-    el.innerHTML = `<div class="empty-state">${ICONS.ticket}<div class="t">Sin tickets</div><div class="s">${isAdmin()?'No hay tickets que coincidan con los filtros.':'Toca el botón + para crear tu primer ticket.'}</div></div>`;
+    el.innerHTML = `<div class="empty-state">${ICONS.ticket}<div class="t">Sin tickets</div><div class="s">${isStaff()?'No hay tickets que coincidan con los filtros.':'Toca el botón + para crear tu primer ticket.'}</div></div>`;
     return;
   }
   el.innerHTML = list.map(t => renderTicketCard(t)).join('');
@@ -1020,7 +1026,7 @@ function renderTicketCard(t){
     <div class="desc">${esc(t.descripcion)}</div>
     <div class="meta-row">
       <div class="meta-item">${ICONS.pin}${esc(t.locacion)}</div>
-      ${isAdmin() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
+      ${isStaff() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
       ${days}
       ${t.prioridad==='alta' ? '<span class="prio-badge prio-alta">Urgente</span>' : ''}
       ${isVencido(t) ? '<span class="vencido-badge">Vencido</span>' : ''}
@@ -1051,10 +1057,10 @@ function resetFilters(){
    Crear ticket
    ====================================================================== */
 function openTicketForm(){
-  if(isAdmin()){
-    const empleados = USERS_LIST.filter(u=>u.role==='empleado');
-    if(!empleados.length){
-      showToast('Crea primero un usuario empleado en "Usuarios"');
+  if(isStaff()){
+    const locatarios = USERS_LIST.filter(u=>u.role==='locatario');
+    if(!locatarios.length){
+      showToast('Crea primero un usuario locatario en "Usuarios"');
       switchView('usuarios');
       return;
     }
@@ -1091,7 +1097,7 @@ async function saveTicket(){
   if(!descripcion){ showToast('Describe el problema antes de enviar'); return; }
 
   let reportante = currentUser;
-  if(isAdmin()){
+  if(isStaff()){
     const email = document.getElementById('f-reportante').value;
     const u = USERS_LIST.find(x=>x.email===email);
     if(!u){ showToast('Selecciona a nombre de quién se reporta'); return; }
@@ -1100,8 +1106,8 @@ async function saveTicket(){
 
   const id = String(Date.now());
   const ts = nowISO();
-  const notaCreacion = isAdmin()
-    ? `Ticket creado por administración (${currentUser.name}) a nombre de ${reportante.name}`
+  const notaCreacion = isStaff()
+    ? `Ticket creado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name}) a nombre de ${reportante.name}`
     : 'Ticket creado por el usuario';
   const ticket = {
     id, numero:'OF-'+id.slice(-7),
@@ -1125,9 +1131,9 @@ async function saveTicket(){
   renderTicketsView();
   showToast('Ticket enviado ✓ '+ticket.numero);
 
-  crearNotif('admin', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${reportante.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}): ${categoria}`);
-  crearNotif(reportante.email, 'confirmacion', id, isAdmin()
-    ? `La administración registró un ticket a tu nombre: ${ticket.numero}. Te avisaremos cuando tengamos novedades.`
+  crearNotif('staff', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${reportante.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}): ${categoria}`);
+  crearNotif(reportante.email, 'confirmacion', id, isStaff()
+    ? `${ROLE_LABELS[currentUser.role]} registró un ticket a tu nombre: ${ticket.numero}. Te avisaremos cuando tengamos novedades.`
     : `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
 
   fbSet('tickets', id, ticket).catch(e=>console.warn('save ticket sync', e));
@@ -1153,7 +1159,7 @@ function renderDetailBody(t){
     </div>`).join('');
 
   let actionBox = '';
-  if(isAdmin() && t.status !== 'cerrado'){
+  if(isStaff() && t.status !== 'cerrado'){
     const opts = STATUS_FLOW.map(s=>`<option value="${s}" ${s===t.status?'selected':''}>${STATUS_LABELS[s]}</option>`).join('');
     actionBox = `
     <div class="action-box">
@@ -1171,8 +1177,8 @@ function renderDetailBody(t){
   } else if(t.status === 'resuelto'){
     actionBox = `
     <div class="action-box">
-      <div class="t">${isAdmin() ? 'Este ticket fue marcado como resuelto' : 'Tu ticket fue resuelto'}</div>
-      <button class="btn btn-primary" style="width:100%;" onclick="openEvalFor('${t.id}')">${isAdmin() ? 'Confirmar y evaluar a nombre del empleado' : 'Confirmar recepción y evaluar'}</button>
+      <div class="t">${isStaff() ? 'Este ticket fue marcado como resuelto' : 'Tu ticket fue resuelto'}</div>
+      <button class="btn btn-primary" style="width:100%;" onclick="openEvalFor('${t.id}')">${isStaff() ? 'Confirmar y evaluar a nombre del locatario' : 'Confirmar recepción y evaluar'}</button>
     </div>`;
   } else if(t.status === 'cerrado' && t.evaluacion){
     actionBox = `
@@ -1180,13 +1186,13 @@ function renderDetailBody(t){
       <div class="t">Evaluación del usuario</div>
       <div class="stars-view">${Array.from({length:5}).map((_,i)=> i<t.evaluacion.rating ? ICONS.star : ICONS.star.replace('fill="var(--accent)"','')).join('')}</div>
       ${t.evaluacion.comentario ? `<div class="nota" style="margin-top:6px;">${esc(t.evaluacion.comentario)}</div>` : ''}
-      ${(isAdmin() || t.empleado_email===currentUser.email) ? `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="openEvalFor('${t.id}')">¿Volvió a fallar? Reabrir ticket</button>` : ''}
+      ${(isStaff() || t.empleado_email===currentUser.email) ? `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="openEvalFor('${t.id}')">¿Volvió a fallar? Reabrir ticket</button>` : ''}
     </div>`;
   }
 
   const comentarios = (t.comentarios||[]).map(c => `
     <div class="comment-item">
-      <div class="who">${esc(c.autor)}<span class="tag">${c.rol==='admin'?'Admin':'Empleado'}</span></div>
+      <div class="who">${esc(c.autor)}<span class="tag">${ROLE_TAG[c.rol]||esc(c.rol)}</span></div>
       <div class="when">${fmtDate(c.fecha)}</div>
       <div class="msg">${esc(c.mensaje)}</div>
     </div>`).join('') || `<p style="font-size:12.5px; color:var(--text3); margin:0 0 12px;">Sin comentarios todavía.</p>`;
@@ -1207,7 +1213,7 @@ function renderDetailBody(t){
       <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
     </div>
     <div class="detail-desc">${esc(t.descripcion)}
-      ${t.creado_por_rol==='admin' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por administración (${esc(t.creado_por_nombre)})</div>` : ''}
+      ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
     </div>
     ${actionBox}
     <div class="section-title">Historial</div>
@@ -1279,8 +1285,8 @@ async function addComentario(id){
   openTicketDetail(id); // re-render con el comentario nuevo
   showToast('Comentario agregado');
 
-  const destinatario = isAdmin() ? t.empleado_email : 'admin';
-  if(!(isAdmin() && destinatario===currentUser.email)){
+  const destinatario = isStaff() ? t.empleado_email : 'staff';
+  if(!(isStaff() && destinatario===currentUser.email)){
     crearNotif(destinatario, 'comentario', id, `Nuevo comentario en ${t.numero}: "${mensaje.slice(0,80)}${mensaje.length>80?'...':''}"`);
   }
   fbSet('tickets', id, t).catch(e=>console.warn('comment sync', e));
@@ -1329,8 +1335,8 @@ async function reabrirTicket(){
   renderTicketsList();
   showToast('Ticket reabierto — administración lo revisará de nuevo');
 
-  crearNotif('admin', 'reabierto', t.id, `El ticket ${t.numero} fue reabierto: ${motivo}`);
-  if(isAdmin() && t.empleado_email !== currentUser.email){
+  crearNotif('staff', 'reabierto', t.id, `El ticket ${t.numero} fue reabierto: ${motivo}`);
+  if(isStaff() && t.empleado_email !== currentUser.email){
     crearNotif(t.empleado_email, 'reabierto', t.id, `Tu ticket ${t.numero} fue reabierto para seguimiento.`);
   }
   fbSet('tickets', t.id, t).catch(e=>console.warn('reopen sync', e));
@@ -1344,9 +1350,9 @@ async function submitEvaluacion(){
   t.status = 'cerrado';
   t.fecha_actualizacion = ts;
   t.evaluacion = { rating: evalRating, comentario: document.getElementById('eval-comentario').value.trim(), fecha: ts };
-  const porAdmin = isAdmin() && currentUser.email !== t.empleado_email;
+  const porAdmin = isStaff() && currentUser.email !== t.empleado_email;
   const notaCierre = porAdmin
-    ? `Confirmado por administración (${currentUser.name}) a nombre de ${t.empleado_nombre} · calificación ${evalRating}/5`
+    ? `Confirmado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name}) a nombre de ${t.empleado_nombre} · calificación ${evalRating}/5`
     : `Confirmado por el usuario · calificación ${evalRating}/5`;
   t.historial.push({ status:'cerrado', fecha:ts, nota:notaCierre, usuario:currentUser.name });
 
@@ -1355,8 +1361,8 @@ async function submitEvaluacion(){
   renderTicketsList();
   showToast('¡Gracias por tu evaluación! ✓');
 
-  crearNotif('admin', 'cerrado', t.id, `El ticket ${t.numero} fue cerrado con calificación ${evalRating}/5.`);
-  if(porAdmin) crearNotif(t.empleado_email, 'cerrado', t.id, `Tu ticket ${t.numero} fue cerrado por administración con calificación ${evalRating}/5.`);
+  crearNotif('staff', 'cerrado', t.id, `El ticket ${t.numero} fue cerrado con calificación ${evalRating}/5.`);
+  if(porAdmin) crearNotif(t.empleado_email, 'cerrado', t.id, `Tu ticket ${t.numero} fue cerrado por ${ROLE_LABELS[currentUser.role]} con calificación ${evalRating}/5.`);
   fbSet('tickets', t.id, t).catch(e=>console.warn('eval sync', e));
 }
 
@@ -1371,7 +1377,7 @@ function crearNotif(para, tipo, ticketId, mensaje){
   fbSet('notificaciones', n.id, n).catch(e=>console.warn('notif sync', e));
 }
 function getMyNotifs(){
-  return NOTIFS.filter(n => isAdmin() ? n.para==='admin' : n.para===currentUser.email)
+  return NOTIFS.filter(n => isStaff() ? n.para==='staff' : n.para===currentUser.email)
                .sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
 }
 function updateBellBadge(){
@@ -1410,7 +1416,8 @@ function saveUsersRemote(){ sb.upsertMany('usuarios', USERS_LIST, 'email').catch
 
 function renderUsersList(){
   const el = document.getElementById('users-list');
-  const sorted = USERS_LIST.slice().sort((a,b)=> a.role===b.role ? a.name.localeCompare(b.name) : (a.role==='admin'?-1:1));
+  const ROLE_ORDER = { admin:0, empleado:1, locatario:2 };
+  const sorted = USERS_LIST.slice().sort((a,b)=> ROLE_ORDER[a.role]-ROLE_ORDER[b.role] || a.name.localeCompare(b.name));
   if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.users}<div class="t">Sin usuarios</div></div>`; return; }
   el.innerHTML = sorted.map(u => `
     <div class="user-card" onclick="openUserForm('${esc(u.email)}')">
@@ -1419,7 +1426,7 @@ function renderUsersList(){
         <div class="name">${esc(u.name)}</div>
         <div class="email">${esc(u.email)}${u.locacion?' · '+esc(u.locacion):''}</div>
       </div>
-      <span class="role-tag role-${u.role}">${u.role==='admin'?'Admin':'Empleado'}</span>
+      <span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>
     </div>`).join('');
 }
 
@@ -1439,7 +1446,7 @@ function openUserForm(email){
     document.getElementById('u-name').value = '';
     document.getElementById('u-email').value = '';
     document.getElementById('u-password').value = '';
-    document.getElementById('u-role').value = 'empleado';
+    document.getElementById('u-role').value = 'locatario';
     document.getElementById('u-locacion').value = 'D1';
     document.getElementById('u-empresa').value = '';
   }
@@ -1447,7 +1454,14 @@ function openUserForm(email){
   openDrawer('userform');
 }
 function onRoleFieldChange(){
-  document.getElementById('u-empleado-fields').style.display = document.getElementById('u-role').value==='empleado' ? 'block' : 'none';
+  const role = document.getElementById('u-role').value;
+  document.getElementById('u-locatario-fields').style.display = role==='locatario' ? 'block' : 'none';
+  const hints = {
+    admin: 'Controla toda la aplicación: tickets, usuarios y el Dashboard.',
+    empleado: 'Gestiona y responde tickets de todas las locaciones, igual que administración — pero sin acceso a Usuarios ni al Dashboard.',
+    locatario: 'Inquilino que reporta incidencias y da seguimiento a sus propios tickets.'
+  };
+  document.getElementById('u-role-hint').textContent = hints[role] || '';
 }
 
 async function saveUser(){
@@ -1455,8 +1469,8 @@ async function saveUser(){
   const email = document.getElementById('u-email').value.trim().toLowerCase();
   const password = document.getElementById('u-password').value.trim();
   const role = document.getElementById('u-role').value;
-  const locacion = role==='empleado' ? document.getElementById('u-locacion').value : '';
-  const empresa = role==='empleado' ? document.getElementById('u-empresa').value.trim() : '';
+  const locacion = role==='locatario' ? document.getElementById('u-locacion').value : '';
+  const empresa = role==='locatario' ? document.getElementById('u-empresa').value.trim() : '';
 
   if(!name || !email || !password){ showToast('Completa nombre, correo y contraseña'); return; }
   if(!editingUserEmail && USERS_LIST.some(u=>u.email===email)){ showToast('Ya existe un usuario con ese correo'); return; }
@@ -1500,13 +1514,13 @@ function renderProfile(){
   document.getElementById('profile-name').textContent = currentUser.name;
   document.getElementById('profile-email').textContent = currentUser.email;
   const rows = [
-    ['Rol', currentUser.role==='admin' ? 'Administración' : 'Empleado'],
+    ['Rol', ROLE_LABELS[currentUser.role]||currentUser.role],
   ];
-  if(currentUser.role!=='admin'){
+  if(currentUser.role==='locatario'){
     rows.push(['Locación', `${currentUser.locacion} — ${LOCACIONES[currentUser.locacion]||''}`]);
     if(currentUser.empresa) rows.push(['Empresa', currentUser.empresa]);
   }
-  rows.push(['Tickets', String(tickets.filter(t=>isAdmin()||t.empleado_email===currentUser.email).length)]);
+  rows.push(['Tickets', String(tickets.filter(t=>isStaff()||t.empleado_email===currentUser.email).length)]);
   document.getElementById('profile-list').innerHTML = rows.map(([l,v])=>`<div class="profile-row"><span class="l">${esc(l)}</span><span class="v">${esc(v)}</span></div>`).join('');
 }
 
@@ -1598,10 +1612,10 @@ function csvEsc(v){
   return `"${s}"`;
 }
 function exportTicketsCSV(){
-  if(!isAdmin()) return;
+  if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Empleado','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Resuelto','Dias_solucion','Calificacion','Comentario_evaluacion'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Resuelto','Dias_solucion','Calificacion','Comentario_evaluacion'];
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
     PRIORIDAD_LABELS[t.prioridad]||t.prioridad, STATUS_LABELS[t.status]||t.status, isVencido(t)?'Sí':'No',
