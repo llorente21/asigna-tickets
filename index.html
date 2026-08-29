@@ -252,6 +252,16 @@ main.view.active{display:block;}
 .action-box{background:var(--accent-light); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:14px; margin-top:6px; margin-bottom:6px;}
 .action-box .t{font-size:13.5px; font-weight:700; margin-bottom:8px;}
 
+.vencido-badge{font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:var(--danger-bg); color:var(--danger); text-transform:uppercase; letter-spacing:.3px;}
+
+.comments-list{margin-bottom:12px;}
+.comment-item{padding:10px 0; border-bottom:1px solid var(--border);}
+.comment-item:last-child{border-bottom:none;}
+.comment-item .who{font-size:12.5px; font-weight:700;}
+.comment-item .who .tag{font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; color:var(--text3); margin-left:6px;}
+.comment-item .when{font-size:10.5px; color:var(--text3); font-weight:600; margin:1px 0 4px;}
+.comment-item .msg{font-size:12.5px; color:var(--text2); line-height:1.4;}
+
 .stars{display:flex; gap:6px; justify-content:center; margin:10px 0 4px;}
 .star-btn{background:none; border:none; padding:2px;}
 .star-btn svg{width:34px; height:34px; stroke:var(--accent2); stroke-width:1.5; fill:none; transition:fill .15s;}
@@ -388,6 +398,9 @@ main.view.active{display:block;}
       <button class="filter-btn" id="filter-btn" onclick="openDrawer('filter')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       </button>
+      <button class="filter-btn" id="export-btn" onclick="exportTicketsCSV()" style="display:none;" aria-label="Exportar CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      </button>
     </div>
 
     <div class="chip-row" id="quick-chips"></div>
@@ -469,6 +482,11 @@ main.view.active{display:block;}
     <button class="drawer-close" onclick="closeDrawer('form')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="drawer-body">
+    <div class="field" id="f-reportante-wrap" style="display:none;">
+      <label>Reportado por</label>
+      <select id="f-reportante" onchange="onReportanteChange()"></select>
+      <div class="field-hint">La administración puede registrar un ticket a nombre de cualquier empleado (ej. reportes por teléfono).</div>
+    </div>
     <div class="readonly-box" id="form-user-box"></div>
     <div class="form-grid">
       <div class="field">
@@ -562,17 +580,25 @@ main.view.active{display:block;}
 <!-- Evaluación -->
 <div class="drawer" id="drawer-eval">
   <div class="drawer-handle"></div>
-  <div class="drawer-head"><h3>Confirmar y evaluar</h3>
+  <div class="drawer-head"><h3 id="eval-title">Confirmar y evaluar</h3>
     <button class="drawer-close" onclick="closeDrawer('eval')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="drawer-body">
-    <p style="font-size:13.5px; color:var(--text2); margin-top:0;">Tu ticket fue marcado como resuelto. Confirma que recibiste la solución y califica tu conformidad.</p>
-    <div class="field" style="text-align:center;">
-      <label style="text-align:center;">Tu evaluación</label>
-      <div class="stars" id="eval-stars"></div>
+    <div id="eval-confirm-section">
+      <p style="font-size:13.5px; color:var(--text2); margin-top:0;">Tu ticket fue marcado como resuelto. Confirma que recibiste la solución y califica tu conformidad.</p>
+      <div class="field" style="text-align:center;">
+        <label style="text-align:center;">Tu evaluación</label>
+        <div class="stars" id="eval-stars"></div>
+      </div>
+      <div class="field"><label>Comentario (opcional)</label><textarea id="eval-comentario" placeholder="Cuéntanos cómo fue tu experiencia..."></textarea></div>
+      <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="submitEvaluacion()">Confirmar recepción</button>
+      <button class="btn btn-outline" style="width:100%;" onclick="toggleReopenBox()">¿El problema sigue sin resolverse?</button>
     </div>
-    <div class="field"><label>Comentario (opcional)</label><textarea id="eval-comentario" placeholder="Cuéntanos cómo fue tu experiencia..."></textarea></div>
-    <button class="btn btn-primary" style="width:100%;" onclick="submitEvaluacion()">Confirmar recepción</button>
+    <div id="reopen-box" style="display:none; margin-top:12px;">
+      <p id="reopen-intro" style="font-size:13.5px; color:var(--text2); margin-top:0; display:none;">Cuéntanos qué sigue sin funcionar — reabrimos el ticket para que administración lo revise de nuevo.</p>
+      <div class="field"><label>Cuéntanos qué sigue mal</label><textarea id="reopen-motivo" placeholder="Ej. el aire volvió a fallar a los 10 minutos..."></textarea></div>
+      <button class="btn btn-danger" style="width:100%;" onclick="reabrirTicket()">Reabrir ticket</button>
+    </div>
   </div>
 </div>
 
@@ -605,6 +631,7 @@ const LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D
 const STATUS_FLOW = ['nuevo','en_revision','en_proceso','resuelto','cerrado'];
 const STATUS_LABELS = { nuevo:'Nuevo', en_revision:'En revisión', en_proceso:'En proceso', resuelto:'Resuelto', cerrado:'Cerrado' };
 const PRIORIDAD_LABELS = { baja:'Baja', media:'Media', alta:'Alta' };
+const SLA_DIAS = { baja:10, media:5, alta:2 }; // días esperados de solución según prioridad
 const DEFAULT_USERS = [
   { email:'admin@oficinasfelices.com', password:'OficinasFelices2026', role:'admin', name:'Administración', locacion:'', empresa:'' }
 ];
@@ -819,9 +846,17 @@ function sanitizeTicket(t){
     id: String(t.id||t._id),
     numero: t.numero || ('OF-'+String(t.id||t._id)),
     historial: Array.isArray(t.historial) ? t.historial : [],
+    comentarios: Array.isArray(t.comentarios) ? t.comentarios : [],
     prioridad: t.prioridad || 'media',
     status: STATUS_FLOW.includes(t.status) ? t.status : 'nuevo',
+    creado_por_nombre: t.creado_por_nombre || t.empleado_nombre || '',
+    creado_por_rol: t.creado_por_rol || 'empleado',
   };
+}
+function isVencido(t){
+  if(t.status === 'cerrado') return false;
+  const dias = SLA_DIAS[t.prioridad] || SLA_DIAS.media;
+  return diffDays(t.fecha_creacion, nowISO()) > dias;
 }
 
 function saveTicketsLocal(){ localStorage.setItem('of_tickets', JSON.stringify(tickets)); }
@@ -839,6 +874,16 @@ function buildStaticSelects(){
   document.getElementById('tmp-locacion').innerHTML = '<option value="">Todas</option>'+locOpts;
   document.getElementById('u-locacion').innerHTML = locOpts;
   document.getElementById('tmp-status').innerHTML = '<option value="todos">Todos</option>'+STATUS_FLOW.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
+}
+
+function buildReportanteOptions(){
+  const empleados = USERS_LIST.filter(u=>u.role==='empleado');
+  const sel = document.getElementById('f-reportante');
+  if(!empleados.length){
+    sel.innerHTML = '<option value="">— No hay empleados registrados —</option>';
+    return;
+  }
+  sel.innerHTML = empleados.map(u=>`<option value="${esc(u.email)}">${esc(u.name)} · ${u.locacion||'—'}</option>`).join('');
 }
 
 function onCategoriaChange(){
@@ -859,7 +904,7 @@ function buildNav(){
   document.getElementById('bottom-nav').innerHTML = tabs.map(([id,label,icon])=>
     `<button class="nav-btn" id="nav-${id}" onclick="switchView('${id}')">${icon}<span>${label}</span></button>`
   ).join('');
-  document.getElementById('fab-btn').style.display = admin ? 'none' : 'flex';
+  document.getElementById('fab-btn').style.display = 'flex';
   document.getElementById('header-sub').textContent = admin ? 'Panel de administración' : 'Tickets';
 }
 
@@ -870,7 +915,8 @@ function switchView(name){
   document.getElementById('view-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const navBtn = document.getElementById('nav-'+name); if(navBtn) navBtn.classList.add('active');
-  document.getElementById('fab-btn').style.display = (name==='tickets' && !isAdmin()) ? 'flex' : 'none';
+  document.getElementById('fab-btn').style.display = (name==='tickets') ? 'flex' : 'none';
+  document.getElementById('export-btn').style.display = (name==='tickets' && isAdmin()) ? 'flex' : 'none';
 
   if(name==='dashboard') renderDashboard();
   if(name==='usuarios') renderUsersList();
@@ -977,6 +1023,7 @@ function renderTicketCard(t){
       ${isAdmin() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
       ${days}
       ${t.prioridad==='alta' ? '<span class="prio-badge prio-alta">Urgente</span>' : ''}
+      ${isVencido(t) ? '<span class="vencido-badge">Vencido</span>' : ''}
     </div>
   </div>`;
 }
@@ -1004,13 +1051,34 @@ function resetFilters(){
    Crear ticket
    ====================================================================== */
 function openTicketForm(){
-  document.getElementById('form-user-box').innerHTML =
-    `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}<br>${esc(LOCACIONES[currentUser.locacion]||currentUser.locacion||'—')}${currentUser.empresa?' · '+esc(currentUser.empresa):''}`;
+  if(isAdmin()){
+    const empleados = USERS_LIST.filter(u=>u.role==='empleado');
+    if(!empleados.length){
+      showToast('Crea primero un usuario empleado en "Usuarios"');
+      switchView('usuarios');
+      return;
+    }
+    document.getElementById('f-reportante-wrap').style.display = 'block';
+    buildReportanteOptions();
+    onReportanteChange();
+  } else {
+    document.getElementById('f-reportante-wrap').style.display = 'none';
+    document.getElementById('form-user-box').innerHTML =
+      `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}<br>${esc(LOCACIONES[currentUser.locacion]||currentUser.locacion||'—')}${currentUser.empresa?' · '+esc(currentUser.empresa):''}`;
+  }
   document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
   onCategoriaChange();
   document.getElementById('f-descripcion').value = '';
   document.getElementById('f-urgente').checked = false;
   openDrawer('form');
+}
+
+function onReportanteChange(){
+  const email = document.getElementById('f-reportante').value;
+  const u = USERS_LIST.find(x=>x.email===email);
+  if(!u){ document.getElementById('form-user-box').innerHTML = '—'; return; }
+  document.getElementById('form-user-box').innerHTML =
+    `<b>${esc(u.name)}</b> · ${esc(u.email)}<br>${esc(LOCACIONES[u.locacion]||u.locacion||'—')}${u.empresa?' · '+esc(u.empresa):''}`;
 }
 
 async function saveTicket(){
@@ -1022,19 +1090,33 @@ async function saveTicket(){
 
   if(!descripcion){ showToast('Describe el problema antes de enviar'); return; }
 
+  let reportante = currentUser;
+  if(isAdmin()){
+    const email = document.getElementById('f-reportante').value;
+    const u = USERS_LIST.find(x=>x.email===email);
+    if(!u){ showToast('Selecciona a nombre de quién se reporta'); return; }
+    reportante = u;
+  }
+
   const id = String(Date.now());
   const ts = nowISO();
+  const notaCreacion = isAdmin()
+    ? `Ticket creado por administración (${currentUser.name}) a nombre de ${reportante.name}`
+    : 'Ticket creado por el usuario';
   const ticket = {
     id, numero:'OF-'+id.slice(-7),
-    empleado_email: currentUser.email, empleado_nombre: currentUser.name,
-    empresa: currentUser.empresa || '', locacion: currentUser.locacion || '',
+    empleado_email: reportante.email, empleado_nombre: reportante.name,
+    empresa: reportante.empresa || '', locacion: reportante.locacion || '',
     categoria, subcategoria, descripcion,
     prioridad: urgente ? 'alta' : 'media',
     asignado_a: '',
     status: 'nuevo',
     fecha_creacion: ts, fecha_actualizacion: ts, fecha_resolucion: '',
-    historial: [{ status:'nuevo', fecha:ts, nota:'Ticket creado por el usuario', usuario:currentUser.name }],
-    evaluacion: null
+    historial: [{ status:'nuevo', fecha:ts, nota:notaCreacion, usuario:currentUser.name }],
+    comentarios: [],
+    evaluacion: null,
+    creado_por_nombre: currentUser.name,
+    creado_por_rol: currentUser.role,
   };
 
   tickets.unshift(ticket);
@@ -1043,8 +1125,10 @@ async function saveTicket(){
   renderTicketsView();
   showToast('Ticket enviado ✓ '+ticket.numero);
 
-  crearNotif('admin', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${currentUser.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}): ${categoria}`);
-  crearNotif(currentUser.email, 'confirmacion', id, `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
+  crearNotif('admin', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${reportante.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}): ${categoria}`);
+  crearNotif(reportante.email, 'confirmacion', id, isAdmin()
+    ? `La administración registró un ticket a tu nombre: ${ticket.numero}. Te avisaremos cuando tengamos novedades.`
+    : `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
 
   fbSet('tickets', id, ticket).catch(e=>console.warn('save ticket sync', e));
 }
@@ -1084,21 +1168,28 @@ function renderDetailBody(t){
       <div class="field"><label>Nota (opcional)</label><textarea id="d-nota" placeholder="Detalle del avance..."></textarea></div>
       <button class="btn btn-primary" style="width:100%;" onclick="updateTicketStatus('${t.id}')">Actualizar ticket</button>
     </div>`;
-  } else if(!isAdmin() && t.status === 'resuelto'){
+  } else if(t.status === 'resuelto'){
     actionBox = `
     <div class="action-box">
-      <div class="t">Tu ticket fue resuelto</div>
-      <button class="btn btn-primary" style="width:100%;" onclick="openEvalFor('${t.id}')">Confirmar recepción y evaluar</button>
+      <div class="t">${isAdmin() ? 'Este ticket fue marcado como resuelto' : 'Tu ticket fue resuelto'}</div>
+      <button class="btn btn-primary" style="width:100%;" onclick="openEvalFor('${t.id}')">${isAdmin() ? 'Confirmar y evaluar a nombre del empleado' : 'Confirmar recepción y evaluar'}</button>
     </div>`;
   } else if(t.status === 'cerrado' && t.evaluacion){
     actionBox = `
     <div class="action-box">
-      <div class="t">Tu evaluación</div>
+      <div class="t">Evaluación del usuario</div>
       <div class="stars-view">${Array.from({length:5}).map((_,i)=> i<t.evaluacion.rating ? ICONS.star : ICONS.star.replace('fill="var(--accent)"','')).join('')}</div>
       ${t.evaluacion.comentario ? `<div class="nota" style="margin-top:6px;">${esc(t.evaluacion.comentario)}</div>` : ''}
+      ${(isAdmin() || t.empleado_email===currentUser.email) ? `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="openEvalFor('${t.id}')">¿Volvió a fallar? Reabrir ticket</button>` : ''}
     </div>`;
   }
-  if(isAdmin() && t.status !== 'cerrado' && t.evaluacion===null){ /* no-op */ }
+
+  const comentarios = (t.comentarios||[]).map(c => `
+    <div class="comment-item">
+      <div class="who">${esc(c.autor)}<span class="tag">${c.rol==='admin'?'Admin':'Empleado'}</span></div>
+      <div class="when">${fmtDate(c.fecha)}</div>
+      <div class="msg">${esc(c.mensaje)}</div>
+    </div>`).join('') || `<p style="font-size:12.5px; color:var(--text3); margin:0 0 12px;">Sin comentarios todavía.</p>`;
 
   return `
     <div class="detail-hero">
@@ -1108,17 +1199,24 @@ function renderDetailBody(t){
       </div>
       <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
     </div>
+    ${isVencido(t) ? `<div style="margin:-8px 0 14px;"><span class="vencido-badge">Vencido — pasó el tiempo esperado de solución (${SLA_DIAS[t.prioridad]}d)</span></div>` : ''}
     <div class="detail-grid">
       <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
       <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
       <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
       <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
     </div>
-    <div class="detail-desc">${esc(t.descripcion)}</div>
+    <div class="detail-desc">${esc(t.descripcion)}
+      ${t.creado_por_rol==='admin' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por administración (${esc(t.creado_por_nombre)})</div>` : ''}
+    </div>
     ${actionBox}
     <div class="section-title">Historial</div>
     <div class="timeline">${timeline}</div>
-    ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:18px;" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
+    <div class="section-title">Comentarios</div>
+    <div class="comments-list">${comentarios}</div>
+    <div class="field"><textarea id="comment-input" placeholder="Escribe un comentario para dar seguimiento..."></textarea></div>
+    <button class="btn btn-outline" style="width:100%;" onclick="addComentario('${t.id}')">Agregar comentario</button>
+    ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger);" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
   `;
 }
 
@@ -1165,12 +1263,43 @@ function deleteTicket(id){
 }
 
 /* ======================================================================
-   Evaluación (empleado)
+   Comentarios
+   ====================================================================== */
+async function addComentario(id){
+  const t = tickets.find(x=>x.id===id);
+  if(!t) return;
+  const input = document.getElementById('comment-input');
+  const mensaje = input.value.trim();
+  if(!mensaje) return;
+
+  const c = { autor:currentUser.name, rol:currentUser.role, mensaje, fecha:nowISO() };
+  t.comentarios = t.comentarios || [];
+  t.comentarios.push(c);
+  saveTicketsLocal();
+  openTicketDetail(id); // re-render con el comentario nuevo
+  showToast('Comentario agregado');
+
+  const destinatario = isAdmin() ? t.empleado_email : 'admin';
+  if(!(isAdmin() && destinatario===currentUser.email)){
+    crearNotif(destinatario, 'comentario', id, `Nuevo comentario en ${t.numero}: "${mensaje.slice(0,80)}${mensaje.length>80?'...':''}"`);
+  }
+  fbSet('tickets', id, t).catch(e=>console.warn('comment sync', e));
+}
+
+/* ======================================================================
+   Evaluación / Reapertura (empleado, o admin en nombre de un empleado)
    ====================================================================== */
 function openEvalFor(id){
   currentEvalId = id; evalRating = 0;
+  const t = tickets.find(x=>x.id===id);
+  const soloReabrir = t && t.status === 'cerrado';
   document.getElementById('eval-comentario').value = '';
+  document.getElementById('reopen-motivo').value = '';
   renderEvalStars();
+  document.getElementById('eval-confirm-section').style.display = soloReabrir ? 'none' : 'block';
+  document.getElementById('reopen-box').style.display = soloReabrir ? 'block' : 'none';
+  document.getElementById('reopen-intro').style.display = soloReabrir ? 'block' : 'none';
+  document.getElementById('eval-title').textContent = soloReabrir ? 'Reabrir ticket' : 'Confirmar y evaluar';
   closeDrawer('detail');
   openDrawer('eval');
 }
@@ -1179,6 +1308,33 @@ function renderEvalStars(){
     `<button type="button" class="star-btn ${i<evalRating?'active':''}" onclick="setEvalRating(${i+1})">${ICONS.star}</button>`).join('');
 }
 function setEvalRating(n){ evalRating = n; renderEvalStars(); }
+function toggleReopenBox(){
+  const box = document.getElementById('reopen-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function reabrirTicket(){
+  const t = tickets.find(x=>x.id===currentEvalId);
+  if(!t) return;
+  const motivo = document.getElementById('reopen-motivo').value.trim();
+  if(!motivo){ showToast('Cuéntanos qué sigue mal antes de reabrir'); return; }
+  const ts = nowISO();
+  t.status = 'en_revision';
+  t.fecha_actualizacion = ts;
+  t.fecha_resolucion = '';
+  t.historial.push({ status:'en_revision', fecha:ts, nota:`Reabierto por ${currentUser.name}: ${motivo}`, usuario:currentUser.name });
+
+  saveTicketsLocal();
+  closeDrawer('eval');
+  renderTicketsList();
+  showToast('Ticket reabierto — administración lo revisará de nuevo');
+
+  crearNotif('admin', 'reabierto', t.id, `El ticket ${t.numero} fue reabierto: ${motivo}`);
+  if(isAdmin() && t.empleado_email !== currentUser.email){
+    crearNotif(t.empleado_email, 'reabierto', t.id, `Tu ticket ${t.numero} fue reabierto para seguimiento.`);
+  }
+  fbSet('tickets', t.id, t).catch(e=>console.warn('reopen sync', e));
+}
 
 async function submitEvaluacion(){
   if(!evalRating){ showToast('Selecciona una calificación'); return; }
@@ -1188,14 +1344,19 @@ async function submitEvaluacion(){
   t.status = 'cerrado';
   t.fecha_actualizacion = ts;
   t.evaluacion = { rating: evalRating, comentario: document.getElementById('eval-comentario').value.trim(), fecha: ts };
-  t.historial.push({ status:'cerrado', fecha:ts, nota:`Confirmado por el usuario · calificación ${evalRating}/5`, usuario:currentUser.name });
+  const porAdmin = isAdmin() && currentUser.email !== t.empleado_email;
+  const notaCierre = porAdmin
+    ? `Confirmado por administración (${currentUser.name}) a nombre de ${t.empleado_nombre} · calificación ${evalRating}/5`
+    : `Confirmado por el usuario · calificación ${evalRating}/5`;
+  t.historial.push({ status:'cerrado', fecha:ts, nota:notaCierre, usuario:currentUser.name });
 
   saveTicketsLocal();
   closeDrawer('eval');
   renderTicketsList();
   showToast('¡Gracias por tu evaluación! ✓');
 
-  crearNotif('admin', 'cerrado', t.id, `El ticket ${t.numero} fue cerrado por el usuario con calificación ${evalRating}/5.`);
+  crearNotif('admin', 'cerrado', t.id, `El ticket ${t.numero} fue cerrado con calificación ${evalRating}/5.`);
+  if(porAdmin) crearNotif(t.empleado_email, 'cerrado', t.id, `Tu ticket ${t.numero} fue cerrado por administración con calificación ${evalRating}/5.`);
   fbSet('tickets', t.id, t).catch(e=>console.warn('eval sync', e));
 }
 
@@ -1231,7 +1392,7 @@ function renderNotifsDrawerContent(){
     </div>`).join('');
 }
 function notifTitle(tipo){
-  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado' }[tipo] || 'Notificación';
+  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto' }[tipo] || 'Notificación';
 }
 function onNotifClick(notifId, ticketId){
   const n = NOTIFS.find(x=>x.id===notifId);
@@ -1389,14 +1550,15 @@ function renderDashboard(){
     : '—';
   const evaluados = t.filter(x=>x.evaluacion && x.evaluacion.rating);
   const promSat = evaluados.length ? (evaluados.reduce((s,x)=>s+x.evaluacion.rating,0)/evaluados.length).toFixed(1) : '—';
+  const vencidos = t.filter(isVencido).length;
 
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi-card"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
     <div class="kpi-card"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
     <div class="kpi-card"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
+    <div class="kpi-card"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
     <div class="kpi-card"><div class="v">${promDias}${promDias!=='—'?'d':''}</div><div class="l">Prom. días de solución</div></div>
     <div class="kpi-card"><div class="v">${promSat}${promSat!=='—'?' ★':''}</div><div class="l">Satisfacción promedio</div></div>
-    <div class="kpi-card"><div class="v">${evaluados.length}</div><div class="l">Tickets evaluados</div></div>
   `;
 
   const porCategoria = Object.keys(CATEGORIAS).map((c,i)=>({label:c, value:t.filter(x=>x.categoria===c).length, color:CHART_COLORS[i%CHART_COLORS.length]})).sort((a,b)=>b.value-a.value);
@@ -1427,6 +1589,38 @@ function renderDashboard(){
   document.getElementById('solved-table-body').innerHTML = rows;
 }
 function statusVar(s){ return { nuevo:'--info', en_revision:'--warning', en_proceso:'--purple', resuelto:'--teal', cerrado:'--success' }[s]; }
+
+/* ======================================================================
+   Exportar CSV (admin)
+   ====================================================================== */
+function csvEsc(v){
+  const s = String(v==null ? '' : v).replace(/"/g,'""');
+  return `"${s}"`;
+}
+function exportTicketsCSV(){
+  if(!isAdmin()) return;
+  const list = getFilteredTickets();
+  if(!list.length){ showToast('No hay tickets para exportar'); return; }
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Empleado','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Resuelto','Dias_solucion','Calificacion','Comentario_evaluacion'];
+  const rows = list.map(t => [
+    t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
+    PRIORIDAD_LABELS[t.prioridad]||t.prioridad, STATUS_LABELS[t.status]||t.status, isVencido(t)?'Sí':'No',
+    fmtDate(t.fecha_creacion), fmtDate(t.fecha_actualizacion), t.fecha_resolucion?fmtDate(t.fecha_resolucion):'',
+    t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
+    t.evaluacion?t.evaluacion.rating:'', t.evaluacion?t.evaluacion.comentario||'':''
+  ]);
+  const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tickets_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showToast('CSV exportado ✓');
+}
 
 /* ======================================================================
    Arranque

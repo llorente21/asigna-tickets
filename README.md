@@ -10,6 +10,11 @@ build — se edita `index.html` y se sube tal cual.
 
 ✅ Interfaz completa y probada (login, roles, CRUD de tickets, notificaciones in-app,
 dashboard, gestión de usuarios, PWA).
+✅ **Funciones de help desk añadidas:** cualquier rol puede crear tickets (el admin
+elige "reportado por" para registrar a nombre de un empleado — útil para reportes
+telefónicos); hilo de comentarios en cada ticket; opción de reabrir un ticket resuelto o
+cerrado si el problema persiste; indicador de "Vencido" según SLA por prioridad (alta 2d
+/ media 5d / baja 10d) con KPI en el Dashboard; exportación de tickets a CSV.
 ✅ **Rebrand a ASIGNA aplicado** — header, splash, login, título de pestaña, `manifest.json`
 e ícono de la app (monograma "A") ya dicen ASIGNA en vez de "Oficinas Felices". Las
 categorías de incidencia y las locaciones D1–D4 (específicas de Oficinas Felices) se
@@ -19,7 +24,8 @@ separada, para no mezclar datos con MANGA). `FIREBASE_CONFIG` en `index.html` ya
 las credenciales reales y se verificó que los tickets/usuarios se guardan de verdad en
 Firestore (no solo en el navegador).
 ✅ **Reglas de Firestore cerradas** (ver sección 3) — ya no están en modo prueba abierto.
-⏳ **Pendiente:** hacer el deploy real a GitHub Pages (sección 5).
+✅ **En producción:** [https://llorente21.github.io/asigna-tickets/](https://llorente21.github.io/asigna-tickets/)
+(repo: [github.com/llorente21/asigna-tickets](https://github.com/llorente21/asigna-tickets)) — probado en desktop y móvil, login real contra Firebase confirmado.
 
 ## 1. Proyecto de Firebase (ya hecho)
 
