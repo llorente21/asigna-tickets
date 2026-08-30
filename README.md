@@ -19,9 +19,13 @@ tickets a CSV.
 ✅ **Tres roles:** Administrador, Empleado (staff interno) y Locatario (inquilino) — ver
 detalle en la sección 4.
 ✅ **Rebrand a ASIGNA aplicado** — header, splash, login, título de pestaña, `manifest.json`
-e ícono de la app (monograma "A") ya dicen ASIGNA en vez de "Oficinas Felices". Las
-categorías de incidencia y las locaciones D1–D4 (específicas de Oficinas Felices) se
-mantienen igual.
+e ícono de la app ya dicen ASIGNA en vez de "Oficinas Felices". Las categorías de
+incidencia y las locaciones D1–D4 (específicas de Oficinas Felices) se mantienen igual.
+✅ **Logo e identidad visual final** — se reemplazó el ícono generado por el logotipo
+real ("asigna" en minúsculas + destello, `logo-hero.jpg`) y se ajustó el color de acento
+en toda la app (`--accent`) al amarillo exacto del logo (`#E0C01A`), extraído por
+muestreo de píxeles. `icon-192.png`/`icon-512.png` son un recorte cuadrado ajustado del
+mismo logo para favicon/PWA.
 ✅ **Firebase conectado** — proyecto `asigna-feliz` (creado en una cuenta de Google
 separada, para no mezclar datos con MANGA). `FIREBASE_CONFIG` en `index.html` ya tiene
 las credenciales reales y se verificó que los tickets/usuarios se guardan de verdad en

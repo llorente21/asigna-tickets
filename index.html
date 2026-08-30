@@ -28,10 +28,10 @@ html,body{margin:0;padding:0;}
   --text:#221E1F;
   --text2:#4A4544;
   --text3:#847D75;
-  --accent:#F2D200;
-  --accent-ink:#221E1F;
-  --accent2:#D8BB00;
-  --accent-light:#FCF3B8;
+  --accent:#E0C01A;
+  --accent-ink:#000000;
+  --accent2:#C2A310;
+  --accent-light:#F7EFC0;
   --dark:#221E1F;
   --dark2:#332C2D;
   --danger:#D32F2F;   --danger-bg:#FDECEA;
@@ -57,14 +57,13 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 /* ---------- Splash ---------- */
 #splash-view{
   position:fixed; inset:0; z-index:500;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
-  background:var(--dark);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  background:var(--accent);
   transition:opacity .6s ease, transform .6s ease;
 }
 #splash-view.hide{opacity:0; transform:scale(1.04); pointer-events:none;}
-#splash-view img{width:88px; height:88px; border-radius:22px; box-shadow:var(--shadow-md);}
-#splash-view .brand{color:#fff; font-size:20px; letter-spacing:.3px;}
-#splash-view .sub{color:var(--accent); font-size:12.5px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;}
+#splash-view img{width:200px; height:200px; border-radius:28px;}
+#splash-view .sub{color:var(--accent-ink); font-size:12.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; opacity:.7;}
 
 /* ---------- Auth ---------- */
 #auth-screen{
@@ -74,10 +73,9 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 }
 #auth-screen.show{opacity:1; transform:translateY(0); pointer-events:all;}
 .auth-card{width:100%; max-width:380px;}
-.auth-logo{display:flex; align-items:center; gap:10px; margin-bottom:26px;}
-.auth-logo img{width:46px; height:46px; border-radius:12px;}
-.auth-logo .t1{font-size:17px; line-height:1.15;}
-.auth-logo .t2{font-size:11.5px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.4px;}
+.auth-logo{display:flex; flex-direction:column; align-items:flex-start; margin-bottom:22px;}
+.auth-logo img{width:120px; height:120px; border-radius:18px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
+.auth-logo .t2{font-size:11.5px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
 .auth-title{font-size:22px; margin:0 0 4px;}
 .auth-desc{color:var(--text2); font-size:13.5px; margin:0 0 22px;}
 .field{margin-bottom:14px;}
@@ -150,7 +148,7 @@ main.view.active{display:block;}
 .fab{
   position:fixed; bottom:70px; right:16px; z-index:90;
   width:56px; height:56px; border-radius:50%; border:none; background:var(--accent); color:var(--accent-ink);
-  box-shadow:0 6px 20px rgba(242,210,0,.5); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 20px rgba(224,192,26,.5); display:flex; align-items:center; justify-content:center;
 }
 .fab svg{width:26px; height:26px;}
 
@@ -332,7 +330,7 @@ main.view.active{display:block;}
 }
 #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 #loading-overlay{position:fixed; inset:0; background:rgba(34,30,31,.75); z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;}
-.spinner{width:38px; height:38px; border:3px solid rgba(242,210,0,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
+.spinner{width:38px; height:38px; border:3px solid rgba(224,192,26,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 #loading-msg{color:#fff; font-size:13.5px; font-weight:600;}
 
@@ -343,8 +341,7 @@ main.view.active{display:block;}
 <body>
 
 <div id="splash-view">
-  <img src="icon-192.png" alt="ASIGNA">
-  <div class="brand">ASIGNA</div>
+  <img src="logo-hero.jpg" alt="ASIGNA">
   <div class="sub">para Oficinas Felices</div>
 </div>
 
@@ -352,11 +349,8 @@ main.view.active{display:block;}
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="icon-192.png" alt="">
-      <div>
-        <div class="t1 brand">ASIGNA</div>
-        <div class="t2">para Oficinas Felices</div>
-      </div>
+      <img src="logo-hero.jpg" alt="ASIGNA">
+      <div class="t2">para Oficinas Felices</div>
     </div>
     <h1 class="auth-title">Iniciar sesión</h1>
     <p class="auth-desc">Reporta y da seguimiento a incidencias de tu oficina.</p>
@@ -1527,7 +1521,7 @@ function renderProfile(){
 /* ======================================================================
    Dashboard
    ====================================================================== */
-const CHART_COLORS = ['#F2D200','#221E1F','#1565C0','#6A4C93','#0F9D8C','#B8860B','#D32F2F','#2E7D32'];
+const CHART_COLORS = ['#E0C01A','#221E1F','#1565C0','#6A4C93','#0F9D8C','#B8860B','#D32F2F','#2E7D32'];
 
 function barRows(data){
   const max = Math.max(1, ...data.map(d=>d.value));
