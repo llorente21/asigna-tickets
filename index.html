@@ -389,12 +389,12 @@ main.view.active{display:block;}
 #desktop-content-slot main.view{padding:0; max-width:none; min-height:0;}
 
 .desktop-content .kpi-grid{grid-template-columns:repeat(4,1fr);}
-.desktop-content #tickets-list, .desktop-content #users-list, .desktop-content #clientes-list{
+.desktop-content #tickets-list, .desktop-content #users-list{
   display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:10px; align-content:start;
 }
 .desktop-content .ticket-card, .desktop-content .user-card{margin-bottom:0;}
 .desktop-content .catalog-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px;}
-.desktop-content #tickets-list.table-mode, .desktop-content #users-list.table-mode, .desktop-content #clientes-list.table-mode{display:block;}
+.desktop-content #tickets-list.table-mode, .desktop-content #users-list.table-mode{display:block;}
 
 .data-table{width:100%; border-collapse:collapse; font-size:12.5px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
 .data-table th{text-align:left; color:var(--text3); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap;}
@@ -569,32 +569,23 @@ main.view.active{display:block;}
     <div style="display:flex; align-items:center; justify-content:space-between;">
       <div>
         <h1 class="page-title" style="margin-bottom:0;">Usuarios</h1>
-        <p class="page-sub">Cuentas de Administración y Empleados (staff interno)</p>
+        <p class="page-sub">Todas las cuentas de acceso: Administración, Empleados y Locatarios</p>
       </div>
-      <button class="btn btn-dark btn-sm" onclick="openUserForm(null,'empleado')">+ Nuevo</button>
+      <button class="btn btn-dark btn-sm" onclick="openUserForm()">+ Nuevo</button>
     </div>
     <div id="users-list"></div>
   </main>
 
-  <!-- ---------- Clientes / Locatarios (admin) ---------- -->
-  <main class="view" id="view-clientes">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <div>
-        <h1 class="page-title" style="margin-bottom:0;">Clientes</h1>
-        <p class="page-sub">Locatarios (inquilinos) que reportan incidencias</p>
-      </div>
-      <button class="btn btn-dark btn-sm" onclick="openUserForm(null,'locatario')">+ Nuevo</button>
-    </div>
+  <!-- ---------- Empresas (admin) ---------- -->
+  <main class="view" id="view-empresas">
+    <h1 class="page-title">Empresas</h1>
+    <p class="page-sub">Compañías clientes de la red — no confundir con las personas que reportan (eso vive en Usuarios)</p>
 
-    <div class="section-title">Empresas registradas</div>
     <div class="empresas-wrap" id="empresas-chips"></div>
-    <div style="display:flex; gap:8px; margin-bottom:20px;">
+    <div style="display:flex; gap:8px; max-width:480px;">
       <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa" style="flex:1; font-size:16px; padding:11px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); outline:none;">
       <button class="btn btn-dark btn-sm" onclick="addEmpresa()">+ Agregar</button>
     </div>
-
-    <div class="section-title">Locatarios</div>
-    <div id="clientes-list"></div>
   </main>
 
   <!-- ---------- Áreas (admin) ---------- -->
@@ -844,7 +835,8 @@ const ICONS = {
   list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
   flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4a1 1 0 0 1 1-1h13.5a.5.5 0 0 1 .4.8L15 9l3.9 5.2a.5.5 0 0 1-.4.8H5"/></svg>',
   gauge:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M12 4a9 9 0 0 0-8.6 11.7M12 4a9 9 0 0 1 8.6 11.7M14 13l3-4"/></svg>',
-  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>'
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+  building:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 6h.01M9 10h.01M9 14h.01M15 6h.01M15 10h.01M15 14h.01"/></svg>'
 };
 
 /* ======================================================================
@@ -1111,19 +1103,19 @@ function onCategoriaChange(){
   } else { wrap.style.display = 'none'; }
 }
 
-const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', clientes:'Clientes', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
+const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
 const VIEW_SUBS = {
   tickets:'Todos los tickets entrantes de la red',
   dashboard:'Métricas del sistema de tickets — Oficinas Felices',
-  usuarios:'Cuentas de Administración y Empleados (staff interno)',
-  clientes:'Locatarios (inquilinos) que reportan incidencias',
+  usuarios:'Todas las cuentas de acceso: Administración, Empleados y Locatarios',
+  empresas:'Compañías clientes de la red',
   areas:'Categorías de incidencia que puede reportar un locatario',
   estados:'Flujo de estatus por el que pasa un ticket',
   prioridades:'Nivel de urgencia y SLA de solución esperado',
   configuracion:'Información general de la aplicación',
   perfil:''
 };
-const ADMIN_ONLY_VIEWS = ['dashboard','usuarios','clientes','areas','estados','prioridades','configuracion'];
+const ADMIN_ONLY_VIEWS = ['dashboard','usuarios','empresas','areas','estados','prioridades','configuracion'];
 
 function buildNav(){
   const admin = isAdmin();
@@ -1147,7 +1139,7 @@ function buildSidebarNav(){
     html += `
       <div class="sidebar-section">Administración</div>
       <button class="sidebar-link" id="side-usuarios" onclick="switchView('usuarios')">${ICONS.users}<span>Usuarios</span></button>
-      <button class="sidebar-link" id="side-clientes" onclick="switchView('clientes')">${ICONS.user}<span>Clientes</span></button>
+      <button class="sidebar-link" id="side-empresas" onclick="switchView('empresas')">${ICONS.building}<span>Empresas</span></button>
       <button class="sidebar-link" id="side-areas" onclick="switchView('areas')">${ICONS.grid}<span>Áreas</span></button>
       <button class="sidebar-link" id="side-estados" onclick="switchView('estados')">${ICONS.flag}<span>Estados</span></button>
       <button class="sidebar-link" id="side-prioridades" onclick="switchView('prioridades')">${ICONS.gauge}<span>Prioridades</span></button>
@@ -1165,14 +1157,13 @@ function updateSidebarUser(){
 
 function isDesktopLayout(){ return isStaff() && window.innerWidth >= 1024; }
 
-const LIST_CAPABLE_VIEWS = ['tickets','usuarios','clientes'];
+const LIST_CAPABLE_VIEWS = ['tickets','usuarios'];
 function toggleViewMode(){
   listViewMode = listViewMode === 'cards' ? 'list' : 'cards';
   localStorage.setItem('of_view_mode', listViewMode);
   updateViewToggleBtn();
   if(currentView==='tickets') renderTicketsList();
   if(currentView==='usuarios') renderUsersList();
-  if(currentView==='clientes') renderClientesList();
 }
 function updateViewToggleBtn(){
   const btn = document.getElementById('view-toggle-btn');
@@ -1214,7 +1205,7 @@ function switchView(name){
 
   if(name==='dashboard') renderDashboard();
   if(name==='usuarios') renderUsersList();
-  if(name==='clientes') renderClientesList();
+  if(name==='empresas') renderEmpresasView();
   if(name==='areas') renderAreasView();
   if(name==='estados') renderEstadosView();
   if(name==='prioridades') renderPrioridadesView();
@@ -1229,7 +1220,7 @@ function renderAll(){
   updateSidebarUser();
   if(currentView==='dashboard') renderDashboard();
   if(currentView==='usuarios') renderUsersList();
-  if(currentView==='clientes') renderClientesList();
+  if(currentView==='empresas') renderEmpresasView();
   if(currentView==='areas') renderAreasView();
   if(currentView==='estados') renderEstadosView();
   if(currentView==='prioridades') renderPrioridadesView();
@@ -1754,7 +1745,7 @@ function userCardHTML(u){
       <div class="avatar">${initials(u.name)}</div>
       <div class="info">
         <div class="name">${esc(u.name)}</div>
-        <div class="email">${esc(u.email)}${u.locacion?' · '+esc(u.locacion):''}</div>
+        <div class="email">${esc(u.email)}${u.locacion?' · '+esc(u.locacion):''}${u.empresa?' · '+esc(u.empresa):''}</div>
       </div>
       <span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>
     </div>`;
@@ -1777,21 +1768,15 @@ function usersTableHTML(list){
 
 function renderUsersList(){
   const el = document.getElementById('users-list');
-  const sorted = USERS_LIST.filter(u=>u.role!=='locatario').sort((a,b)=> ROLE_ORDER[a.role]-ROLE_ORDER[b.role] || a.name.localeCompare(b.name));
+  const sorted = USERS_LIST.slice().sort((a,b)=> ROLE_ORDER[a.role]-ROLE_ORDER[b.role] || a.name.localeCompare(b.name));
   const tableMode = listViewMode==='list' && isDesktopLayout();
   el.classList.toggle('table-mode', tableMode);
   if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.users}<div class="t">Sin usuarios</div></div>`; return; }
   el.innerHTML = tableMode ? usersTableHTML(sorted) : sorted.map(userCardHTML).join('');
 }
 
-function renderClientesList(){
+function renderEmpresasView(){
   renderEmpresasChips();
-  const el = document.getElementById('clientes-list');
-  const sorted = USERS_LIST.filter(u=>u.role==='locatario').sort((a,b)=> a.name.localeCompare(b.name));
-  const tableMode = listViewMode==='list' && isDesktopLayout();
-  el.classList.toggle('table-mode', tableMode);
-  if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.user}<div class="t">Sin clientes</div><div class="s">Los locatarios que crees aparecerán aquí.</div></div>`; return; }
-  el.innerHTML = tableMode ? usersTableHTML(sorted) : sorted.map(userCardHTML).join('');
 }
 
 /* ======================================================================
@@ -1897,7 +1882,7 @@ async function saveUser(){
   }
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
   closeDrawer('userform');
-  renderUsersList(); renderClientesList();
+  renderUsersList();
   showToast('Usuario guardado ✓');
   saveUsersRemote();
 }
@@ -1913,7 +1898,7 @@ async function deleteUser(){
   USERS_LIST = USERS_LIST.filter(u=>u.email!==editingUserEmail);
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
   closeDrawer('userform');
-  renderUsersList(); renderClientesList();
+  renderUsersList();
   showToast('Usuario eliminado');
   fbDelete('usuarios', editingUserEmail).catch(e=>console.warn(e));
 }
