@@ -586,8 +586,13 @@ main.view.active{display:block;}
 
   <!-- ---------- Áreas (admin) ---------- -->
   <main class="view" id="view-areas">
-    <h1 class="page-title">Áreas</h1>
-    <p class="page-sub">Categorías de incidencia que puede reportar un locatario</p>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <h1 class="page-title" style="margin-bottom:0;">Áreas</h1>
+        <p class="page-sub">Categorías de incidencia que puede reportar un locatario</p>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="openCategoriaForm()">+ Nueva</button>
+    </div>
     <div class="catalog-grid" id="areas-grid"></div>
   </main>
 
@@ -759,6 +764,24 @@ main.view.active{display:block;}
   </div>
 </div>
 
+<!-- Áreas (categorías de incidencia) -->
+<div class="drawer" id="drawer-categoriaform">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head"><h3 id="categoriaform-title">Nueva área</h3>
+    <button class="drawer-close" onclick="closeDrawer('categoriaform')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="field"><label>Nombre del área</label><input id="cat-nombre" placeholder="Ej. Ascensores"></div>
+    <div class="field">
+      <label>Subcategorías</label>
+      <input id="cat-subs" placeholder="Ej. No funciona, Hace ruido">
+      <div class="field-hint">Sepáralas con coma. Aparecen como opción de "Incidente" al crear un ticket de esta área — déjalo vacío si no aplica.</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveCategoria()">Guardar área</button>
+    <button class="btn btn-danger" style="width:100%; display:none;" id="cat-delete-btn" onclick="deleteCategoriaForm()">Eliminar área</button>
+  </div>
+</div>
+
 <!-- Notificaciones -->
 <div class="drawer" id="drawer-notifs">
   <div class="drawer-handle"></div>
@@ -809,15 +832,30 @@ const FB_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.p
 /* ======================================================================
    Constantes de negocio
    ====================================================================== */
-const CATEGORIAS = {
-  "Aires Acondicionados": ["No enciende", "No enfría"],
-  "Internet": ["No navega", "No hay señal"],
-  "Limpieza": [],
-  "Valet Parking": [],
-  "Puertas, llavines y ventanas": [],
-  "Luces": [],
-  "Incidencias de agua": ["Filtración", "Lluvias"]
-};
+const DEFAULT_CATEGORIAS = [
+  { id:'cat_aire', nombre:'Aires Acondicionados', subcategorias:['No enciende','No enfría'] },
+  { id:'cat_internet', nombre:'Internet', subcategorias:['No navega','No hay señal'] },
+  { id:'cat_limpieza', nombre:'Limpieza', subcategorias:[] },
+  { id:'cat_valet', nombre:'Valet Parking', subcategorias:[] },
+  { id:'cat_puertas', nombre:'Puertas, llavines y ventanas', subcategorias:[] },
+  { id:'cat_luces', nombre:'Luces', subcategorias:[] },
+  { id:'cat_agua', nombre:'Incidencias de agua', subcategorias:['Filtración','Lluvias'] }
+];
+function loadCategoriasLocal(){
+  try{ const s=localStorage.getItem('of_categorias'); if(s){ const p=JSON.parse(s); if(Array.isArray(p) && p.length) return p; } }catch(e){}
+  return DEFAULT_CATEGORIAS.slice();
+}
+function saveCategoriasLocal(){ localStorage.setItem('of_categorias', JSON.stringify(CATEGORIAS_LIST)); }
+function categoriasAsObject(){
+  const obj = {};
+  CATEGORIAS_LIST.forEach(c => obj[c.nombre] = Array.isArray(c.subcategorias) ? c.subcategorias : []);
+  return obj;
+}
+function rebuildCategorias(){ CATEGORIAS = categoriasAsObject(); }
+let CATEGORIAS_LIST = loadCategoriasLocal();
+// Objeto derivado {nombre: [subcategorías]} — se mantiene por compatibilidad con el
+// resto del código, que sigue leyendo CATEGORIAS[cat] / Object.keys(CATEGORIAS).
+let CATEGORIAS = categoriasAsObject();
 const LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D3: "DIX Business Center 3", D4: "DIX Business Center 4" };
 const STATUS_FLOW = ['nuevo','en_revision','en_proceso','resuelto','cerrado'];
 const STATUS_LABELS = { nuevo:'Nuevo', en_revision:'En revisión', en_proceso:'En proceso', resuelto:'Resuelto', cerrado:'Cerrado' };
@@ -915,6 +953,7 @@ let USERS_LIST = [];
 let NOTIFS = [];
 let editingUserEmail = null;
 let editingEmpresaId = null;
+let editingCategoriaId = null;
 let currentDetailId = null;
 let currentEvalId = null;
 let evalRating = 0;
@@ -1035,15 +1074,29 @@ async function enterApp(){
   showLoading('Cargando datos...');
   tickets = []; NOTIFS = [];
   try{
-    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas] = await Promise.all([
-      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas')
+    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias] = await Promise.all([
+      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas'),
+      // 'categorias' es una colección nueva — si las reglas de Firestore todavía no la
+      // incluyen, esto falla con 403. Se aísla con su propio catch para que ese fallo no
+      // tumbe la sincronización de tickets/usuarios/empresas también.
+      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed (¿reglas de Firestore actualizadas?)', e); return null; })
     ]);
     tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket);
     if(Array.isArray(remoteUsers) && remoteUsers.length){ USERS_LIST = remoteUsers; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     NOTIFS = Array.isArray(remoteNotifs) ? remoteNotifs : [];
     EMPRESAS = Array.isArray(remoteEmpresas) ? remoteEmpresas : [];
-    saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal();
+    if(Array.isArray(remoteCategorias) && remoteCategorias.length){
+      CATEGORIAS_LIST = remoteCategorias;
+    } else {
+      // Primera vez que se lee esta colección: la sembramos con las áreas por defecto
+      // para que quede en Firestore en vez de depender de un valor hardcodeado.
+      CATEGORIAS_LIST = DEFAULT_CATEGORIAS.slice();
+      sb.upsertMany('categorias', CATEGORIAS_LIST, 'id').catch(e=>console.warn('seed categorias', e));
+    }
+    saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal(); saveCategoriasLocal();
+    rebuildCategorias();
     buildEmpresaOptions();
+    buildCategoriaSelects();
   }catch(e){
     console.warn('enterApp sync failed', e);
     tickets = loadTicketsLocal().map(sanitizeTicket);
@@ -1081,12 +1134,16 @@ function loadTicketsLocal(){ try{ const s=localStorage.getItem('of_tickets'); if
 function saveNotifsLocal(){ localStorage.setItem('of_notifs', JSON.stringify(NOTIFS)); }
 function loadNotifsLocal(){ try{ const s=localStorage.getItem('of_notifs'); if(s){ const p=JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){} return []; }
 
-function buildStaticSelects(){
+function buildCategoriaSelects(){
   const catOpts = Object.keys(CATEGORIAS).map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
-  document.getElementById('f-categoria').innerHTML = catOpts;
-  onCategoriaChange();
+  const fCat = document.getElementById('f-categoria');
+  if(fCat){ fCat.innerHTML = catOpts; onCategoriaChange(); }
+  const tmpCat = document.getElementById('tmp-categoria');
+  if(tmpCat) tmpCat.innerHTML = '<option value="">Todas</option>'+catOpts;
+}
 
-  document.getElementById('tmp-categoria').innerHTML = '<option value="">Todas</option>'+catOpts;
+function buildStaticSelects(){
+  buildCategoriaSelects();
   const locOpts = Object.entries(LOCACIONES).map(([k,v])=>`<option value="${k}">${k} — ${esc(v)}</option>`).join('');
   document.getElementById('tmp-locacion').innerHTML = '<option value="">Todas</option>'+locOpts;
   document.getElementById('u-locacion').innerHTML = locOpts;
@@ -1245,11 +1302,15 @@ function renderAll(){
 async function syncFromFirebase(){
   if(!currentUser) return;
   try{
-    const [t,u,n,emp] = await Promise.all([sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas')]);
+    const [t,u,n,emp,cat] = await Promise.all([
+      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas'),
+      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; })
+    ]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
     if(Array.isArray(u) && u.length){ USERS_LIST = u; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     if(Array.isArray(n)){ NOTIFS = n; saveNotifsLocal(); }
     if(Array.isArray(emp)){ EMPRESAS = emp; saveEmpresasLocal(); buildEmpresaOptions(); }
+    if(Array.isArray(cat) && cat.length){ CATEGORIAS_LIST = cat; saveCategoriasLocal(); rebuildCategorias(); buildCategoriaSelects(); }
     renderAll();
   }catch(e){ console.warn('Sync failed:', e); }
 }
@@ -1979,17 +2040,78 @@ async function deleteUser(){
    Catálogos — Áreas / Estados / Prioridades (solo lectura por ahora)
    ====================================================================== */
 function renderAreasView(){
-  const html = Object.entries(CATEGORIAS).map(([nombre, subs], i)=>{
-    const count = tickets.filter(t=>t.categoria===nombre).length;
+  const sorted = CATEGORIAS_LIST.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  if(!sorted.length){
+    document.getElementById('areas-grid').innerHTML = `<div class="empty-state">${ICONS.grid}<div class="t">Sin áreas registradas</div></div>`;
+    return;
+  }
+  const html = sorted.map((c,i)=>{
+    const count = tickets.filter(t=>t.categoria===c.nombre).length;
     const color = CHART_COLORS[i % CHART_COLORS.length];
+    const subs = c.subcategorias || [];
     return `
-    <div class="catalog-card">
-      <div class="top"><span class="title">${esc(nombre)}</span><span class="count">${count}</span></div>
+    <div class="catalog-card" onclick="openCategoriaForm('${esc(c.id)}')" style="cursor:pointer;">
+      <div class="top"><span class="title">${esc(c.nombre)}</span><span class="count">${count}</span></div>
       <div class="sub">${subs.length ? subs.map(esc).join(' · ') : 'Sin subcategorías'}</div>
       <div class="bar" style="background:${color}"></div>
     </div>`;
   }).join('');
   document.getElementById('areas-grid').innerHTML = html;
+}
+
+function openCategoriaForm(id){
+  editingCategoriaId = id || null;
+  document.getElementById('categoriaform-title').textContent = id ? 'Editar área' : 'Nueva área';
+  document.getElementById('cat-delete-btn').style.display = id ? 'block' : 'none';
+  if(id){
+    const c = CATEGORIAS_LIST.find(x=>x.id===id);
+    document.getElementById('cat-nombre').value = c.nombre;
+    document.getElementById('cat-subs').value = (c.subcategorias||[]).join(', ');
+  } else {
+    document.getElementById('cat-nombre').value = '';
+    document.getElementById('cat-subs').value = '';
+  }
+  openDrawer('categoriaform');
+}
+
+async function saveCategoria(){
+  const nombre = document.getElementById('cat-nombre').value.trim();
+  const subsRaw = document.getElementById('cat-subs').value.trim();
+  const subcategorias = subsRaw ? subsRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  if(!nombre){ showToast('Escribe el nombre del área'); return; }
+  if(CATEGORIAS_LIST.some(x=>x.nombre.toLowerCase()===nombre.toLowerCase() && x.id!==editingCategoriaId)){
+    showToast('Esa área ya está registrada'); return;
+  }
+
+  let c;
+  if(editingCategoriaId){
+    c = CATEGORIAS_LIST.find(x=>x.id===editingCategoriaId);
+    c.nombre = nombre; c.subcategorias = subcategorias;
+  } else {
+    c = { id: String(Date.now()), nombre, subcategorias };
+    CATEGORIAS_LIST.push(c);
+  }
+  saveCategoriasLocal();
+  rebuildCategorias();
+  closeDrawer('categoriaform');
+  renderAreasView();
+  buildCategoriaSelects();
+  showToast('Área guardada ✓');
+  fbSet('categorias', c.id, c).catch(err=>console.warn('categoria sync', err));
+}
+
+async function deleteCategoriaForm(){
+  if(!editingCategoriaId) return;
+  if(!confirm('¿Eliminar esta área? Los tickets que ya la tienen asignada no cambian.')) return;
+  const id = editingCategoriaId;
+  CATEGORIAS_LIST = CATEGORIAS_LIST.filter(c=>c.id!==id);
+  saveCategoriasLocal();
+  rebuildCategorias();
+  closeDrawer('categoriaform');
+  renderAreasView();
+  buildCategoriaSelects();
+  showToast('Área eliminada');
+  fbDelete('categorias', id).catch(err=>console.warn(err));
 }
 
 const ESTADO_DESC = {

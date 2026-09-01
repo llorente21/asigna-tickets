@@ -31,10 +31,11 @@ ven un panel tipo escritorio (sidebar de navegación + topbar + contenido), con 
 nuevas: **Usuarios** (las 3 cuentas: Administrador, Empleado y Locatario, todas juntas —
 cada locatario muestra su empresa en su tarjeta), **Empresas** (catálogo de compañías
 clientes, sin personas — formulario con nombre, oficina/locación y teléfono; vista de
-tarjetas o lista), **Áreas** (categorías de incidencia), **Estados**, **Prioridades** y
-**Configuración** (política de SLA, locaciones, acerca de). Áreas/Estados/Prioridades
-son de solo lectura por ahora — el cambio a catálogos editables por el admin queda para
-una siguiente iteración. Los Locatarios y cualquier pantalla angosta (<1024px) siguen con
+tarjetas o lista), **Áreas** (categorías de incidencia — nombre + subcategorías,
+editables desde un formulario igual que Empresas/Usuarios), **Estados** y
+**Prioridades** (estas dos siguen de solo lectura por ahora — el cambio a catálogos
+editables queda para una siguiente iteración) y **Configuración** (política de SLA,
+locaciones, acerca de). Los Locatarios y cualquier pantalla angosta (<1024px) siguen con
 la experiencia móvil original (header + tarjetas + navegación inferior + botón +). El
 cambio de layout es automático según rol + ancho de pantalla, sin recargar la página.
 ✅ **Firebase conectado** — proyecto `asigna-feliz` (creado en una cuenta de Google
@@ -51,7 +52,7 @@ El proyecto vive en una cuenta de Google distinta a la de MANGA, para mantenerlo
 separados. Datos de referencia (no hace falta repetir este paso):
 
 - Proyecto: `asigna-feliz`
-- Colecciones en Firestore: `tickets`, `usuarios`, `notificaciones`, `empresas`
+- Colecciones en Firestore: `tickets`, `usuarios`, `notificaciones`, `empresas`, `categorias`
 
 Si en algún momento hay que recrear la conexión (otro proyecto, otra cuenta), los pasos
 generales son: [console.firebase.google.com](https://console.firebase.google.com) →
@@ -111,6 +112,12 @@ service cloud.firestore {
     }
 
     match /empresas/{empresaId} {
+      allow read: if true;
+      allow create, update: if tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if true;
+    }
+
+    match /categorias/{categoriaId} {
       allow read: if true;
       allow create, update: if tieneClaves(request.resource.data, ['id','nombre']);
       allow delete: if true;
@@ -192,7 +199,11 @@ y abre `http://localhost:5183` — sirve la carpeta tal cual la vería GitHub Pa
 7. El Dashboard (solo Administrador) muestra: tickets por categoría, por locación, distribución por estatus,
    promedio de días de solución (general y por categoría), tendencia mensual y satisfacción promedio.
 
-## Categorías de incidencia
+## Categorías de incidencia (Áreas)
+
+Editables desde **Áreas** en el panel de administración (nombre + subcategorías
+opcionales). Por defecto la app siembra estas 7 la primera vez que se conecta a un
+proyecto de Firebase nuevo:
 
 - Aires Acondicionados → No enciende / No enfría
 - Internet → No navega / No hay señal
