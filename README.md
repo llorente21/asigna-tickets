@@ -13,9 +13,14 @@ dashboard, gestión de usuarios, PWA).
 ✅ **Funciones de help desk añadidas:** cualquier rol puede crear tickets (Admin y
 Empleado eligen "reportado por" para registrar a nombre de un locatario — útil para
 reportes telefónicos); hilo de comentarios en cada ticket; opción de reabrir un ticket
-resuelto o cerrado si el problema persiste; indicador de "Vencido" según SLA por
+cerrado si el problema persiste; indicador de "Vencido" según SLA por
 prioridad (alta 2d / media 5d / baja 10d) con KPI en el Dashboard; exportación de
 tickets a CSV.
+✅ **Flujo de estatus simplificado (2026-09-01):** el flujo pasó de 5 pasos a 3 —
+**Nuevo → En proceso → Cerrado**. Se quitaron "En revisión" y "Resuelto", y con ellos
+la evaluación de conformidad del locatario (1-5 estrellas) — ya no existe ese paso ni
+esa métrica en el Dashboard/CSV. Reabrir un ticket cerrado ahora lo regresa a "En
+proceso" directamente (antes iba a "En revisión").
 ✅ **Tres roles:** Administrador, Empleado (staff interno) y Locatario (inquilino) — ver
 detalle en la sección 4.
 ✅ **Rebrand a ASIGNA aplicado** — header, splash, login, título de pestaña, `manifest.json`
@@ -191,13 +196,13 @@ y abre `http://localhost:5183` — sirve la carpeta tal cual la vería GitHub Pa
    Administración y Empleado también pueden crear un ticket a nombre de un locatario (ej. reporte telefónico).
 2. Crea un ticket: categoría/subcategoría de incidencia + descripción (+ marcar urgente).
 3. Se generan notificaciones in-app: una para el equipo (Admin + Empleado), una de confirmación para el locatario.
-4. Administración o Empleado revisan, actualizan estatus (Nuevo → En revisión → En proceso → Resuelto → Cerrado),
-   asignan responsable y prioridad, y pueden comentar en el ticket — cada cambio queda en el historial con fecha.
-5. Al marcar "Resuelto", se notifica al locatario.
-6. El locatario confirma recepción y califica su conformidad (1–5 estrellas + comentario) — esto cierra el ticket,
-   o reabre el ticket si el problema persiste (también disponible desde un ticket ya cerrado).
-7. El Dashboard (solo Administrador) muestra: tickets por categoría, por locación, distribución por estatus,
-   promedio de días de solución (general y por categoría), tendencia mensual y satisfacción promedio.
+4. Administración o Empleado revisan, actualizan estatus (Nuevo → En proceso → Cerrado),
+   asignan responsable y prioridad, y pueden comentar en el ticket — cada cambio queda en el historial con fecha,
+   y se notifica al locatario en cada cambio de estatus.
+5. Si el problema persiste, cualquiera de los dos (Admin/Empleado o el locatario dueño del ticket) puede reabrir
+   un ticket ya cerrado — vuelve a "En proceso" y administración lo retoma.
+6. El Dashboard (solo Administrador) muestra: tickets por categoría, por locación, distribución por estatus,
+   promedio de días de solución (general y por categoría) y tendencia mensual.
 
 ## Categorías de incidencia (Áreas)
 
