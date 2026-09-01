@@ -643,13 +643,22 @@ main.view.active{display:block;}
     <div class="field" id="f-reportante-wrap" style="display:none;">
       <label>Reportado por</label>
       <select id="f-reportante" onchange="onReportanteChange()"></select>
-      <div class="field-hint">Administración y Empleados pueden registrar un ticket a nombre de cualquier locatario (ej. reportes por teléfono).</div>
+      <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
     </div>
-    <div class="field">
-      <label>Oficina o Cliente</label>
+    <div class="field" id="f-reportante-info-wrap">
+      <label>Reportado por</label>
       <div class="readonly-box" id="form-user-box"></div>
     </div>
     <div class="form-grid">
+      <div class="field half">
+        <label>Oficina</label>
+        <select id="f-locacion"></select>
+      </div>
+      <div class="field half">
+        <label>Cliente / Empresa</label>
+        <input type="text" id="f-empresa" placeholder="Nombre de la empresa">
+      </div>
+      <div class="field-hint" style="grid-column:span 2; margin:-6px 0 4px;">La oficina/empresa que tiene el problema — no siempre coincide con quién reporta.</div>
       <div class="field half">
         <label>Categoría de Incidente</label>
         <select id="f-categoria" onchange="onCategoriaChange()"></select>
@@ -1055,6 +1064,7 @@ function buildStaticSelects(){
   const locOpts = Object.entries(LOCACIONES).map(([k,v])=>`<option value="${k}">${k} — ${esc(v)}</option>`).join('');
   document.getElementById('tmp-locacion').innerHTML = '<option value="">Todas</option>'+locOpts;
   document.getElementById('u-locacion').innerHTML = locOpts;
+  document.getElementById('f-locacion').innerHTML = locOpts;
   document.getElementById('tmp-status').innerHTML = '<option value="todos">Todos</option>'+STATUS_FLOW.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
 }
 
@@ -1349,12 +1359,15 @@ function openTicketForm(){
       return;
     }
     document.getElementById('f-reportante-wrap').style.display = 'block';
+    document.getElementById('f-reportante-info-wrap').style.display = 'none';
     buildReportanteOptions();
     onReportanteChange();
   } else {
     document.getElementById('f-reportante-wrap').style.display = 'none';
-    document.getElementById('form-user-box').innerHTML =
-      `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}<br>${esc(LOCACIONES[currentUser.locacion]||currentUser.locacion||'—')}${currentUser.empresa?' · '+esc(currentUser.empresa):''}`;
+    document.getElementById('f-reportante-info-wrap').style.display = 'block';
+    document.getElementById('form-user-box').innerHTML = `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}`;
+    document.getElementById('f-locacion').value = currentUser.locacion || 'D1';
+    document.getElementById('f-empresa').value = currentUser.empresa || '';
   }
   document.getElementById('f-fecha').value = nowLocalInputValue();
   document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
@@ -1368,8 +1381,11 @@ function onReportanteChange(){
   const email = document.getElementById('f-reportante').value;
   const u = USERS_LIST.find(x=>x.email===email);
   if(!u){ document.getElementById('form-user-box').innerHTML = '—'; return; }
-  document.getElementById('form-user-box').innerHTML =
-    `<b>${esc(u.name)}</b> · ${esc(u.email)}<br>${esc(LOCACIONES[u.locacion]||u.locacion||'—')}${u.empresa?' · '+esc(u.empresa):''}`;
+  document.getElementById('form-user-box').innerHTML = `<b>${esc(u.name)}</b> · ${esc(u.email)}`;
+  // Precarga la oficina/empresa de quien reporta como punto de partida — el
+  // problema puede ser de otra oficina, así que queda libre para cambiarla.
+  document.getElementById('f-locacion').value = u.locacion || 'D1';
+  document.getElementById('f-empresa').value = u.empresa || '';
 }
 
 async function saveTicket(){
@@ -1391,6 +1407,8 @@ async function saveTicket(){
     if(!u){ showToast('Selecciona a nombre de quién se reporta'); return; }
     reportante = u;
   }
+  const locacion = document.getElementById('f-locacion').value;
+  const empresa = document.getElementById('f-empresa').value.trim();
 
   const id = String(Date.now());
   const ts = nowISO();
@@ -1401,7 +1419,7 @@ async function saveTicket(){
   const ticket = {
     id, numero:'OF-'+id.slice(-7),
     empleado_email: reportante.email, empleado_nombre: reportante.name,
-    empresa: reportante.empresa || '', locacion: reportante.locacion || '',
+    empresa, locacion,
     categoria, subcategoria, descripcion,
     prioridad,
     asignado_a: '',
