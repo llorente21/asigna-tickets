@@ -373,9 +373,13 @@ main.view.active{display:block;}
 .desktop-main{flex:1; min-width:0; display:flex; flex-direction:column; height:100vh; height:100dvh; overflow-y:auto;}
 .topbar{
   position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:flex-end; padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between; padding:14px 28px;
 }
+.topbar-heading h1{font-size:18px; margin:0;}
+.topbar-heading p{font-size:12.5px; color:var(--text3); margin:2px 0 0;}
 .topbar-actions{display:flex; align-items:center; gap:10px;}
+/* El título ya vive en el topbar — no repetirlo dentro del contenido de escritorio */
+#desktop-content-slot .page-title, #desktop-content-slot .page-sub{display:none;}
 .icon-btn-light{
   position:relative; width:38px; height:38px; border-radius:10px; border:1px solid var(--border);
   background:var(--surface); display:flex; align-items:center; justify-content:center;
@@ -473,6 +477,10 @@ main.view.active{display:block;}
     </aside>
     <div class="desktop-main">
       <div class="topbar">
+        <div class="topbar-heading">
+          <h1 id="topbar-title">Tickets</h1>
+          <p id="topbar-sub"></p>
+        </div>
         <div class="topbar-actions">
           <button class="btn btn-primary btn-sm" id="topbar-new-ticket" onclick="openTicketForm()" style="display:none;">+ Nuevo Ticket</button>
           <button class="icon-btn-light" onclick="openDrawer('notifs')" aria-label="Notificaciones">
@@ -1042,6 +1050,17 @@ function onCategoriaChange(){
 }
 
 const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', clientes:'Clientes', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
+const VIEW_SUBS = {
+  tickets:'Todos los tickets entrantes de la red',
+  dashboard:'Métricas del sistema de tickets — Oficinas Felices',
+  usuarios:'Cuentas de Administración y Empleados (staff interno)',
+  clientes:'Locatarios (inquilinos) que reportan incidencias',
+  areas:'Categorías de incidencia que puede reportar un locatario',
+  estados:'Flujo de estatus por el que pasa un ticket',
+  prioridades:'Nivel de urgencia y SLA de solución esperado',
+  configuracion:'Información general de la aplicación',
+  perfil:''
+};
 const ADMIN_ONLY_VIEWS = ['dashboard','usuarios','clientes','areas','estados','prioridades','configuracion'];
 
 function buildNav(){
@@ -1108,6 +1127,8 @@ function switchView(name){
   document.getElementById('fab-btn').style.display = (name==='tickets' && !isDesktopLayout()) ? 'flex' : 'none';
   document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
   const topNewTicket = document.getElementById('topbar-new-ticket'); if(topNewTicket) topNewTicket.style.display = (name==='tickets') ? 'inline-flex' : 'none';
+  const topTitle = document.getElementById('topbar-title'); if(topTitle) topTitle.textContent = VIEW_TITLES[name] || '';
+  const topSub = document.getElementById('topbar-sub'); if(topSub) topSub.textContent = VIEW_SUBS[name] || '';
   if(isDesktopLayout()) document.title = `${VIEW_TITLES[name]||'ASIGNA'} · ASIGNA`;
 
   if(name==='dashboard') renderDashboard();
