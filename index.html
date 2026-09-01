@@ -419,6 +419,10 @@ main.view.active{display:block;}
 .settings-row .l{color:var(--text3); font-weight:600;}
 .settings-row .v{font-weight:700;}
 
+.empresas-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+.empresa-chip{display:inline-flex; align-items:center; gap:7px; background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:7px 8px 7px 14px; font-size:12.5px; font-weight:600;}
+.empresa-chip button{width:18px; height:18px; border-radius:50%; border:none; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:12px; line-height:1; padding:0;}
+
 /* Visibilidad mobile-vs-desktop la decide JS (applyLayoutMode), según rol + ancho */
 </style>
 </head>
@@ -581,6 +585,15 @@ main.view.active{display:block;}
       </div>
       <button class="btn btn-dark btn-sm" onclick="openUserForm(null,'locatario')">+ Nuevo</button>
     </div>
+
+    <div class="section-title">Empresas registradas</div>
+    <div class="empresas-wrap" id="empresas-chips"></div>
+    <div style="display:flex; gap:8px; margin-bottom:20px;">
+      <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa" style="flex:1; font-size:16px; padding:11px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); outline:none;">
+      <button class="btn btn-dark btn-sm" onclick="addEmpresa()">+ Agregar</button>
+    </div>
+
+    <div class="section-title">Locatarios</div>
     <div id="clientes-list"></div>
   </main>
 
@@ -656,7 +669,7 @@ main.view.active{display:block;}
       </div>
       <div class="field half">
         <label>Cliente / Empresa</label>
-        <input type="text" id="f-empresa" placeholder="Nombre de la empresa">
+        <select id="f-empresa"></select>
       </div>
       <div class="field-hint" style="grid-column:span 2; margin:-6px 0 4px;">La oficina/empresa que tiene el problema — no siempre coincide con quién reporta.</div>
       <div class="field half">
@@ -737,7 +750,7 @@ main.view.active{display:block;}
     </div>
     <div id="u-locatario-fields">
       <div class="field"><label>Locación</label><select id="u-locacion"></select></div>
-      <div class="field"><label>Empresa (arrendataria)</label><input id="u-empresa" placeholder="Nombre de la empresa"></div>
+      <div class="field"><label>Empresa (arrendataria)</label><select id="u-empresa"></select></div>
     </div>
     <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveUser()">Guardar usuario</button>
     <button class="btn btn-danger" style="width:100%; display:none;" id="u-delete-btn" onclick="deleteUser()">Eliminar usuario</button>
@@ -960,6 +973,13 @@ function loadUsersLocal(){
 }
 USERS_LIST = loadUsersLocal();
 
+function loadEmpresasLocal(){
+  try{ const s = localStorage.getItem('of_empresas'); if(s){ const p=JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
+function saveEmpresasLocal(){ localStorage.setItem('of_empresas', JSON.stringify(EMPRESAS)); }
+let EMPRESAS = loadEmpresasLocal();
+
 function findUser(email, pw){
   return USERS_LIST.find(u => u.email.toLowerCase().trim()===email.toLowerCase().trim() && String(u.password).trim()===pw.trim());
 }
@@ -1011,13 +1031,15 @@ async function enterApp(){
   showLoading('Cargando datos...');
   tickets = []; NOTIFS = [];
   try{
-    const [remoteTickets, remoteUsers, remoteNotifs] = await Promise.all([
-      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones')
+    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas] = await Promise.all([
+      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas')
     ]);
     tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket);
     if(Array.isArray(remoteUsers) && remoteUsers.length){ USERS_LIST = remoteUsers; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     NOTIFS = Array.isArray(remoteNotifs) ? remoteNotifs : [];
-    saveTicketsLocal(); saveNotifsLocal();
+    EMPRESAS = Array.isArray(remoteEmpresas) ? remoteEmpresas : [];
+    saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal();
+    buildEmpresaOptions();
   }catch(e){
     console.warn('enterApp sync failed', e);
     tickets = loadTicketsLocal().map(sanitizeTicket);
@@ -1066,6 +1088,7 @@ function buildStaticSelects(){
   document.getElementById('u-locacion').innerHTML = locOpts;
   document.getElementById('f-locacion').innerHTML = locOpts;
   document.getElementById('tmp-status').innerHTML = '<option value="todos">Todos</option>'+STATUS_FLOW.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
+  buildEmpresaOptions();
 }
 
 function buildReportanteOptions(){
@@ -1217,10 +1240,11 @@ function renderAll(){
 async function syncFromFirebase(){
   if(!currentUser) return;
   try{
-    const [t,u,n] = await Promise.all([sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones')]);
+    const [t,u,n,emp] = await Promise.all([sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas')]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
     if(Array.isArray(u) && u.length){ USERS_LIST = u; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     if(Array.isArray(n)){ NOTIFS = n; saveNotifsLocal(); }
+    if(Array.isArray(emp)){ EMPRESAS = emp; saveEmpresasLocal(); buildEmpresaOptions(); }
     renderAll();
   }catch(e){ console.warn('Sync failed:', e); }
 }
@@ -1761,12 +1785,61 @@ function renderUsersList(){
 }
 
 function renderClientesList(){
+  renderEmpresasChips();
   const el = document.getElementById('clientes-list');
   const sorted = USERS_LIST.filter(u=>u.role==='locatario').sort((a,b)=> a.name.localeCompare(b.name));
   const tableMode = listViewMode==='list' && isDesktopLayout();
   el.classList.toggle('table-mode', tableMode);
   if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.user}<div class="t">Sin clientes</div><div class="s">Los locatarios que crees aparecerán aquí.</div></div>`; return; }
   el.innerHTML = tableMode ? usersTableHTML(sorted) : sorted.map(userCardHTML).join('');
+}
+
+/* ======================================================================
+   Empresas — base de datos de clientes (compañías)
+   ====================================================================== */
+function buildEmpresaOptions(){
+  const opts = '<option value="">— Selecciona una empresa —</option>' +
+    EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e=>`<option value="${esc(e.nombre)}">${esc(e.nombre)}</option>`).join('');
+  const fEmpresa = document.getElementById('f-empresa'); if(fEmpresa) fEmpresa.innerHTML = opts;
+  const uEmpresa = document.getElementById('u-empresa'); if(uEmpresa) uEmpresa.innerHTML = opts;
+}
+
+function renderEmpresasChips(){
+  const el = document.getElementById('empresas-chips');
+  if(!el) return;
+  if(!EMPRESAS.length){
+    el.innerHTML = `<span style="font-size:12.5px; color:var(--text3);">Sin empresas registradas todavía — agrega la primera abajo.</span>`;
+    return;
+  }
+  el.innerHTML = EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e => `
+    <span class="empresa-chip">${esc(e.nombre)}<button onclick="deleteEmpresa('${esc(e.id)}')" aria-label="Eliminar empresa">✕</button></span>
+  `).join('');
+}
+
+async function addEmpresa(){
+  const input = document.getElementById('nueva-empresa-input');
+  const nombre = input.value.trim();
+  if(!nombre) return;
+  if(EMPRESAS.some(e=>e.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Esa empresa ya está registrada'); return; }
+
+  const e = { id: String(Date.now()), nombre };
+  EMPRESAS.push(e);
+  saveEmpresasLocal();
+  input.value = '';
+  renderEmpresasChips();
+  buildEmpresaOptions();
+  showToast('Empresa agregada ✓');
+  fbSet('empresas', e.id, e).catch(err=>console.warn('empresa sync', err));
+}
+
+async function deleteEmpresa(id){
+  if(!confirm('¿Eliminar esta empresa de la lista? Los tickets y usuarios que ya la tienen asignada no cambian.')) return;
+  EMPRESAS = EMPRESAS.filter(e=>e.id!==id);
+  saveEmpresasLocal();
+  renderEmpresasChips();
+  buildEmpresaOptions();
+  showToast('Empresa eliminada');
+  fbDelete('empresas', id).catch(err=>console.warn(err));
 }
 
 function openUserForm(email, forcedRole){

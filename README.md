@@ -108,6 +108,12 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    match /empresas/{empresaId} {
+      allow read: if true;
+      allow create, update: if tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if true;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
