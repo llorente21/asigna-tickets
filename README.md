@@ -26,6 +26,15 @@ real ("asigna" en minúsculas + destello, `logo-hero.jpg`) y se ajustó el color
 en toda la app (`--accent`) al amarillo exacto del logo (`#E0C01A`), extraído por
 muestreo de píxeles. `icon-192.png`/`icon-512.png` son un recorte cuadrado ajustado del
 mismo logo para favicon/PWA.
+✅ **Panel de escritorio con sidebar** — en pantallas ≥1024px, Administrador y Empleado
+ven un panel tipo escritorio (sidebar de navegación + topbar + contenido), con secciones
+nuevas: **Usuarios** (staff), **Clientes** (locatarios), **Áreas** (categorías de
+incidencia), **Estados**, **Prioridades** y **Configuración** (política de SLA,
+locaciones, acerca de). Áreas/Estados/Prioridades son de solo lectura por ahora — el
+cambio a catálogos editables por el admin queda para una siguiente iteración. Los
+Locatarios y cualquier pantalla angosta (<1024px) siguen con la experiencia móvil
+original (header + tarjetas + navegación inferior + botón +). El cambio de layout es
+automático según rol + ancho de pantalla, sin recargar la página.
 ✅ **Firebase conectado** — proyecto `asigna-feliz` (creado en una cuenta de Google
 separada, para no mezclar datos con MANGA). `FIREBASE_CONFIG` en `index.html` ya tiene
 las credenciales reales y se verificó que los tickets/usuarios se guardan de verdad en

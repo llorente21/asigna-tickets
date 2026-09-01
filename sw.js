@@ -1,4 +1,4 @@
-const CACHE = 'asigna-tickets-v1.1';
+const CACHE = 'asigna-tickets-v1.2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-hero.jpg'];
 
 self.addEventListener('install', e => {
