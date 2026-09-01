@@ -636,19 +636,26 @@ main.view.active{display:block;}
     <button class="drawer-close" onclick="closeDrawer('form')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="drawer-body">
+    <div class="field">
+      <label>Fecha de notificación</label>
+      <input type="datetime-local" id="f-fecha">
+    </div>
     <div class="field" id="f-reportante-wrap" style="display:none;">
       <label>Reportado por</label>
       <select id="f-reportante" onchange="onReportanteChange()"></select>
       <div class="field-hint">Administración y Empleados pueden registrar un ticket a nombre de cualquier locatario (ej. reportes por teléfono).</div>
     </div>
-    <div class="readonly-box" id="form-user-box"></div>
+    <div class="field">
+      <label>Oficina o Cliente</label>
+      <div class="readonly-box" id="form-user-box"></div>
+    </div>
     <div class="form-grid">
-      <div class="field">
-        <label>Categoría de incidencia</label>
+      <div class="field half">
+        <label>Categoría de Incidente</label>
         <select id="f-categoria" onchange="onCategoriaChange()"></select>
       </div>
-      <div class="field" id="f-subcategoria-wrap" style="display:none;">
-        <label>Detalle</label>
+      <div class="field half" id="f-subcategoria-wrap" style="display:none;">
+        <label>Incidente</label>
         <select id="f-subcategoria"></select>
       </div>
       <div class="field">
@@ -656,8 +663,12 @@ main.view.active{display:block;}
         <textarea id="f-descripcion" placeholder="Describe qué está ocurriendo, desde cuándo, y cualquier detalle útil..."></textarea>
       </div>
       <div class="field">
-        <label class="field-check"><input type="checkbox" id="f-urgente" style="width:auto;"> Marcar como urgente</label>
-        <div class="field-hint">Úsalo solo si la incidencia afecta la operación de tu oficina de forma crítica.</div>
+        <label>Prioridad</label>
+        <select id="f-prioridad">
+          <option value="baja">Baja</option>
+          <option value="media" selected>Media</option>
+          <option value="alta">Alta</option>
+        </select>
       </div>
     </div>
     <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="saveTicket()">Enviar ticket</button>
@@ -891,6 +902,11 @@ let listViewMode = localStorage.getItem('of_view_mode') || 'cards'; // 'cards' |
    ====================================================================== */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function nowISO(){ return new Date().toISOString(); }
+function nowLocalInputValue(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}); }
 function fmtDateShort(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.toLocaleDateString('es-DO',{day:'2-digit',month:'short'}); }
 function diffDays(a,b){ const d1=new Date(a), d2=new Date(b); if(isNaN(d1)||isNaN(d2)) return 0; return Math.max(0, Math.round((d2-d1)/86400000)); }
@@ -1340,10 +1356,11 @@ function openTicketForm(){
     document.getElementById('form-user-box').innerHTML =
       `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}<br>${esc(LOCACIONES[currentUser.locacion]||currentUser.locacion||'—')}${currentUser.empresa?' · '+esc(currentUser.empresa):''}`;
   }
+  document.getElementById('f-fecha').value = nowLocalInputValue();
   document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
   onCategoriaChange();
   document.getElementById('f-descripcion').value = '';
-  document.getElementById('f-urgente').checked = false;
+  document.getElementById('f-prioridad').value = 'media';
   openDrawer('form');
 }
 
@@ -1360,9 +1377,12 @@ async function saveTicket(){
   const subs = CATEGORIAS[categoria] || [];
   const subcategoria = subs.length ? document.getElementById('f-subcategoria').value : '';
   const descripcion = document.getElementById('f-descripcion').value.trim();
-  const urgente = document.getElementById('f-urgente').checked;
+  const prioridad = document.getElementById('f-prioridad').value || 'media';
+  const fechaInput = document.getElementById('f-fecha').value;
+  const fechaNotif = fechaInput ? new Date(fechaInput) : new Date();
 
   if(!descripcion){ showToast('Describe el problema antes de enviar'); return; }
+  if(isNaN(fechaNotif)){ showToast('La fecha de notificación no es válida'); return; }
 
   let reportante = currentUser;
   if(isStaff()){
@@ -1377,16 +1397,17 @@ async function saveTicket(){
   const notaCreacion = isStaff()
     ? `Ticket creado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name}) a nombre de ${reportante.name}`
     : 'Ticket creado por el usuario';
+  const fechaNotifISO = fechaNotif.toISOString();
   const ticket = {
     id, numero:'OF-'+id.slice(-7),
     empleado_email: reportante.email, empleado_nombre: reportante.name,
     empresa: reportante.empresa || '', locacion: reportante.locacion || '',
     categoria, subcategoria, descripcion,
-    prioridad: urgente ? 'alta' : 'media',
+    prioridad,
     asignado_a: '',
     status: 'nuevo',
-    fecha_creacion: ts, fecha_actualizacion: ts, fecha_resolucion: '',
-    historial: [{ status:'nuevo', fecha:ts, nota:notaCreacion, usuario:currentUser.name }],
+    fecha_creacion: fechaNotifISO, fecha_actualizacion: ts, fecha_resolucion: '',
+    historial: [{ status:'nuevo', fecha:fechaNotifISO, nota:notaCreacion, usuario:currentUser.name }],
     comentarios: [],
     evaluacion: null,
     creado_por_nombre: currentUser.name,
