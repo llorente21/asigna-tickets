@@ -583,7 +583,7 @@ main.view.active{display:block;}
 
     <div class="empresas-wrap" id="empresas-chips"></div>
     <div style="display:flex; gap:8px; max-width:480px;">
-      <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa" style="flex:1; font-size:16px; padding:11px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); outline:none;">
+      <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa" onkeydown="if(event.key==='Enter'){event.preventDefault(); addEmpresa();}" style="flex:1; font-size:16px; padding:11px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); outline:none;">
       <button class="btn btn-dark btn-sm" onclick="addEmpresa()">+ Agregar</button>
     </div>
   </main>
