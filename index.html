@@ -1359,12 +1359,13 @@ function ticketsTableHTML(list){
       <td>${esc(t.categoria)}${t.subcategoria?' · '+esc(t.subcategoria):''}</td>
       <td>${esc(t.empleado_nombre)}</td>
       <td>${esc(t.locacion)}</td>
+      <td>${t.empresa ? esc(t.empresa) : '—'}</td>
       <td><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></td>
       <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${isVencido(t) ? ' <span class="vencido-badge">Vencido</span>' : ''}</td>
       <td>${fmtDateShort(t.fecha_creacion)}</td>
     </tr>`).join('');
   return `<div style="overflow-x:auto;"><table class="data-table">
-    <thead><tr><th>Código</th><th>Asunto</th><th>Locatario</th><th>Locación</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead>
+    <thead><tr><th>Código</th><th>Asunto</th><th>Locatario</th><th>Locación</th><th>Empresa</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -1386,6 +1387,7 @@ function renderTicketCard(t){
     <div class="desc">${esc(t.descripcion)}</div>
     <div class="meta-row">
       <div class="meta-item">${ICONS.pin}${esc(t.locacion)}</div>
+      ${t.empresa ? `<div class="meta-item">${ICONS.building}${esc(t.empresa)}</div>` : ''}
       ${isStaff() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
       ${days}
       ${t.prioridad==='alta' ? '<span class="prio-badge prio-alta">Urgente</span>' : ''}
@@ -1572,6 +1574,7 @@ function renderDetailBody(t){
     <div class="detail-grid">
       <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
       <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
+      ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
       <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
       <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
     </div>
