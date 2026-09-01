@@ -30,13 +30,13 @@ mismo logo para favicon/PWA.
 ven un panel tipo escritorio (sidebar de navegación + topbar + contenido), con secciones
 nuevas: **Usuarios** (las 3 cuentas: Administrador, Empleado y Locatario, todas juntas —
 cada locatario muestra su empresa en su tarjeta), **Empresas** (catálogo de compañías
-clientes, sin personas), **Áreas** (categorías de incidencia), **Estados**,
-**Prioridades** y **Configuración** (política de SLA, locaciones, acerca de).
-Áreas/Estados/Prioridades son de solo lectura por ahora — el cambio a catálogos
-editables por el admin queda para una siguiente iteración. Los Locatarios y cualquier
-pantalla angosta (<1024px) siguen con la experiencia móvil original (header + tarjetas +
-navegación inferior + botón +). El cambio de layout es automático según rol + ancho de
-pantalla, sin recargar la página.
+clientes, sin personas — formulario con nombre, oficina/locación y teléfono; vista de
+tarjetas o lista), **Áreas** (categorías de incidencia), **Estados**, **Prioridades** y
+**Configuración** (política de SLA, locaciones, acerca de). Áreas/Estados/Prioridades
+son de solo lectura por ahora — el cambio a catálogos editables por el admin queda para
+una siguiente iteración. Los Locatarios y cualquier pantalla angosta (<1024px) siguen con
+la experiencia móvil original (header + tarjetas + navegación inferior + botón +). El
+cambio de layout es automático según rol + ancho de pantalla, sin recargar la página.
 ✅ **Firebase conectado** — proyecto `asigna-feliz` (creado en una cuenta de Google
 separada, para no mezclar datos con MANGA). `FIREBASE_CONFIG` en `index.html` ya tiene
 las credenciales reales y se verificó que los tickets/usuarios se guardan de verdad en

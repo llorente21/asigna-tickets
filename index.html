@@ -389,12 +389,12 @@ main.view.active{display:block;}
 #desktop-content-slot main.view{padding:0; max-width:none; min-height:0;}
 
 .desktop-content .kpi-grid{grid-template-columns:repeat(4,1fr);}
-.desktop-content #tickets-list, .desktop-content #users-list{
+.desktop-content #tickets-list, .desktop-content #users-list, .desktop-content #empresas-list{
   display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:10px; align-content:start;
 }
 .desktop-content .ticket-card, .desktop-content .user-card{margin-bottom:0;}
 .desktop-content .catalog-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px;}
-.desktop-content #tickets-list.table-mode, .desktop-content #users-list.table-mode{display:block;}
+.desktop-content #tickets-list.table-mode, .desktop-content #users-list.table-mode, .desktop-content #empresas-list.table-mode{display:block;}
 
 .data-table{width:100%; border-collapse:collapse; font-size:12.5px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
 .data-table th{text-align:left; color:var(--text3); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap;}
@@ -418,10 +418,6 @@ main.view.active{display:block;}
 .settings-row:last-child{border-bottom:none;}
 .settings-row .l{color:var(--text3); font-weight:600;}
 .settings-row .v{font-weight:700;}
-
-.empresas-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
-.empresa-chip{display:inline-flex; align-items:center; gap:7px; background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:7px 8px 7px 14px; font-size:12.5px; font-weight:600;}
-.empresa-chip button{width:18px; height:18px; border-radius:50%; border:none; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:12px; line-height:1; padding:0;}
 
 /* Visibilidad mobile-vs-desktop la decide JS (applyLayoutMode), según rol + ancho */
 </style>
@@ -578,14 +574,14 @@ main.view.active{display:block;}
 
   <!-- ---------- Empresas (admin) ---------- -->
   <main class="view" id="view-empresas">
-    <h1 class="page-title">Empresas</h1>
-    <p class="page-sub">Compañías clientes de la red — no confundir con las personas que reportan (eso vive en Usuarios)</p>
-
-    <div class="empresas-wrap" id="empresas-chips"></div>
-    <div style="display:flex; gap:8px; max-width:480px;">
-      <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa" onkeydown="if(event.key==='Enter'){event.preventDefault(); addEmpresa();}" style="flex:1; font-size:16px; padding:11px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); outline:none;">
-      <button class="btn btn-dark btn-sm" onclick="addEmpresa()">+ Agregar</button>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <h1 class="page-title" style="margin-bottom:0;">Empresas</h1>
+        <p class="page-sub">Compañías clientes de la red — no confundir con las personas que reportan (eso vive en Usuarios)</p>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="openEmpresaForm()">+ Nueva</button>
     </div>
+    <div id="empresas-list"></div>
   </main>
 
   <!-- ---------- Áreas (admin) ---------- -->
@@ -748,6 +744,21 @@ main.view.active{display:block;}
   </div>
 </div>
 
+<!-- Empresas -->
+<div class="drawer" id="drawer-empresaform">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head"><h3 id="empresaform-title">Nueva empresa</h3>
+    <button class="drawer-close" onclick="closeDrawer('empresaform')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="field"><label>Nombre de la empresa</label><input id="e-nombre" placeholder="Ej. 8LOGOS, SRL"></div>
+    <div class="field"><label>Oficina / Locación</label><select id="e-locacion"></select></div>
+    <div class="field"><label>Teléfono</label><input id="e-telefono" type="tel" placeholder="Ej. 809-555-1234"></div>
+    <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveEmpresa()">Guardar empresa</button>
+    <button class="btn btn-danger" style="width:100%; display:none;" id="e-delete-btn" onclick="deleteEmpresaForm()">Eliminar empresa</button>
+  </div>
+</div>
+
 <!-- Notificaciones -->
 <div class="drawer" id="drawer-notifs">
   <div class="drawer-handle"></div>
@@ -903,6 +914,7 @@ let tickets = [];
 let USERS_LIST = [];
 let NOTIFS = [];
 let editingUserEmail = null;
+let editingEmpresaId = null;
 let currentDetailId = null;
 let currentEvalId = null;
 let evalRating = 0;
@@ -1079,6 +1091,7 @@ function buildStaticSelects(){
   document.getElementById('tmp-locacion').innerHTML = '<option value="">Todas</option>'+locOpts;
   document.getElementById('u-locacion').innerHTML = locOpts;
   document.getElementById('f-locacion').innerHTML = locOpts;
+  document.getElementById('e-locacion').innerHTML = '<option value="">— Sin especificar —</option>'+locOpts;
   document.getElementById('tmp-status').innerHTML = '<option value="todos">Todos</option>'+STATUS_FLOW.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
   buildEmpresaOptions();
 }
@@ -1157,13 +1170,14 @@ function updateSidebarUser(){
 
 function isDesktopLayout(){ return isStaff() && window.innerWidth >= 1024; }
 
-const LIST_CAPABLE_VIEWS = ['tickets','usuarios'];
+const LIST_CAPABLE_VIEWS = ['tickets','usuarios','empresas'];
 function toggleViewMode(){
   listViewMode = listViewMode === 'cards' ? 'list' : 'cards';
   localStorage.setItem('of_view_mode', listViewMode);
   updateViewToggleBtn();
   if(currentView==='tickets') renderTicketsList();
   if(currentView==='usuarios') renderUsersList();
+  if(currentView==='empresas') renderEmpresasList();
 }
 function updateViewToggleBtn(){
   const btn = document.getElementById('view-toggle-btn');
@@ -1776,7 +1790,7 @@ function renderUsersList(){
 }
 
 function renderEmpresasView(){
-  renderEmpresasChips();
+  renderEmpresasList();
 }
 
 /* ======================================================================
@@ -1789,39 +1803,97 @@ function buildEmpresaOptions(){
   const uEmpresa = document.getElementById('u-empresa'); if(uEmpresa) uEmpresa.innerHTML = opts;
 }
 
-function renderEmpresasChips(){
-  const el = document.getElementById('empresas-chips');
-  if(!el) return;
-  if(!EMPRESAS.length){
-    el.innerHTML = `<span style="font-size:12.5px; color:var(--text3);">Sin empresas registradas todavía — agrega la primera abajo.</span>`;
-    return;
-  }
-  el.innerHTML = EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e => `
-    <span class="empresa-chip">${esc(e.nombre)}<button onclick="deleteEmpresa('${esc(e.id)}')" aria-label="Eliminar empresa">✕</button></span>
-  `).join('');
+function empresaSubtitle(e){
+  const parts = [];
+  if(e.locacion) parts.push(e.locacion + (LOCACIONES[e.locacion] ? ' — '+LOCACIONES[e.locacion] : ''));
+  if(e.telefono) parts.push(e.telefono);
+  return parts.length ? esc(parts.join(' · ')) : 'Sin datos adicionales';
 }
 
-async function addEmpresa(){
-  const input = document.getElementById('nueva-empresa-input');
-  const nombre = input.value.trim();
-  if(!nombre) return;
-  if(EMPRESAS.some(e=>e.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Esa empresa ya está registrada'); return; }
+function empresaCardHTML(e){
+  return `
+    <div class="user-card" onclick="openEmpresaForm('${esc(e.id)}')">
+      <div class="avatar">${initials(e.nombre)}</div>
+      <div class="info">
+        <div class="name">${esc(e.nombre)}</div>
+        <div class="email">${empresaSubtitle(e)}</div>
+      </div>
+    </div>`;
+}
 
-  const e = { id: String(Date.now()), nombre };
-  EMPRESAS.push(e);
+function empresasTableHTML(list){
+  const rows = list.map(e => `
+    <tr onclick="openEmpresaForm('${esc(e.id)}')">
+      <td><div class="name-cell"><div class="avatar">${initials(e.nombre)}</div>${esc(e.nombre)}</div></td>
+      <td>${e.locacion ? esc(e.locacion) : '—'}</td>
+      <td>${e.telefono ? esc(e.telefono) : '—'}</td>
+    </tr>`).join('');
+  return `<div style="overflow-x:auto;"><table class="data-table">
+    <thead><tr><th>Nombre</th><th>Locación</th><th>Teléfono</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function renderEmpresasList(){
+  const el = document.getElementById('empresas-list');
+  if(!el) return;
+  const sorted = EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const tableMode = listViewMode==='list' && isDesktopLayout();
+  el.classList.toggle('table-mode', tableMode);
+  if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.building}<div class="t">Sin empresas registradas todavía</div></div>`; return; }
+  el.innerHTML = tableMode ? empresasTableHTML(sorted) : sorted.map(empresaCardHTML).join('');
+}
+
+function openEmpresaForm(id){
+  editingEmpresaId = id || null;
+  document.getElementById('empresaform-title').textContent = id ? 'Editar empresa' : 'Nueva empresa';
+  document.getElementById('e-delete-btn').style.display = id ? 'block' : 'none';
+  if(id){
+    const e = EMPRESAS.find(x=>x.id===id);
+    document.getElementById('e-nombre').value = e.nombre;
+    document.getElementById('e-locacion').value = e.locacion || '';
+    document.getElementById('e-telefono').value = e.telefono || '';
+  } else {
+    document.getElementById('e-nombre').value = '';
+    document.getElementById('e-locacion').value = '';
+    document.getElementById('e-telefono').value = '';
+  }
+  openDrawer('empresaform');
+}
+
+async function saveEmpresa(){
+  const nombre = document.getElementById('e-nombre').value.trim();
+  const locacion = document.getElementById('e-locacion').value;
+  const telefono = document.getElementById('e-telefono').value.trim();
+  if(!nombre){ showToast('Escribe el nombre de la empresa'); return; }
+  if(EMPRESAS.some(x=>x.nombre.toLowerCase()===nombre.toLowerCase() && x.id!==editingEmpresaId)){
+    showToast('Esa empresa ya está registrada'); return;
+  }
+
+  let e;
+  if(editingEmpresaId){
+    e = EMPRESAS.find(x=>x.id===editingEmpresaId);
+    e.nombre = nombre; e.locacion = locacion; e.telefono = telefono;
+  } else {
+    e = { id: String(Date.now()), nombre, locacion, telefono };
+    EMPRESAS.push(e);
+  }
   saveEmpresasLocal();
-  input.value = '';
-  renderEmpresasChips();
+  closeDrawer('empresaform');
+  renderEmpresasList();
   buildEmpresaOptions();
-  showToast('Empresa agregada ✓');
+  showToast('Empresa guardada ✓');
   fbSet('empresas', e.id, e).catch(err=>console.warn('empresa sync', err));
 }
 
-async function deleteEmpresa(id){
+async function deleteEmpresaForm(){
+  if(!editingEmpresaId) return;
   if(!confirm('¿Eliminar esta empresa de la lista? Los tickets y usuarios que ya la tienen asignada no cambian.')) return;
+  const id = editingEmpresaId;
   EMPRESAS = EMPRESAS.filter(e=>e.id!==id);
   saveEmpresasLocal();
-  renderEmpresasChips();
+  closeDrawer('empresaform');
+  renderEmpresasList();
   buildEmpresaOptions();
   showToast('Empresa eliminada');
   fbDelete('empresas', id).catch(err=>console.warn(err));
