@@ -1627,6 +1627,16 @@ function deleteTicket(id){
   renderTicketsList();
   showToast('Ticket eliminado');
   fbDelete('tickets', id).catch(e=>console.warn(e));
+
+  // Limpiar también las notificaciones de este ticket — si no, quedan huérfanas
+  // (apuntando a un ticket que ya no existe) e inflan el contador de la campanita.
+  const notifsDelTicket = NOTIFS.filter(n=>n.ticket_id===id);
+  if(notifsDelTicket.length){
+    NOTIFS = NOTIFS.filter(n=>n.ticket_id!==id);
+    saveNotifsLocal();
+    updateBellBadge();
+    notifsDelTicket.forEach(n=>fbDelete('notificaciones', n.id).catch(e=>console.warn(e)));
+  }
 }
 
 /* ======================================================================
