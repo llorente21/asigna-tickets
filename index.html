@@ -373,9 +373,8 @@ main.view.active{display:block;}
 .desktop-main{flex:1; min-width:0; display:flex; flex-direction:column; height:100vh; height:100dvh; overflow-y:auto;}
 .topbar{
   position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between; padding:16px 28px;
+  display:flex; align-items:center; justify-content:flex-end; padding:14px 28px;
 }
-.topbar h1{font-size:19px; margin:0;}
 .topbar-actions{display:flex; align-items:center; gap:10px;}
 .icon-btn-light{
   position:relative; width:38px; height:38px; border-radius:10px; border:1px solid var(--border);
@@ -474,7 +473,6 @@ main.view.active{display:block;}
     </aside>
     <div class="desktop-main">
       <div class="topbar">
-        <h1 id="topbar-title">Tickets</h1>
         <div class="topbar-actions">
           <button class="btn btn-primary btn-sm" id="topbar-new-ticket" onclick="openTicketForm()" style="display:none;">+ Nuevo Ticket</button>
           <button class="icon-btn-light" onclick="openDrawer('notifs')" aria-label="Notificaciones">
@@ -1109,8 +1107,8 @@ function switchView(name){
   const sideBtn = document.getElementById('side-'+name); if(sideBtn) sideBtn.classList.add('active');
   document.getElementById('fab-btn').style.display = (name==='tickets' && !isDesktopLayout()) ? 'flex' : 'none';
   document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
-  const topTitle = document.getElementById('topbar-title'); if(topTitle) topTitle.textContent = VIEW_TITLES[name] || '';
   const topNewTicket = document.getElementById('topbar-new-ticket'); if(topNewTicket) topNewTicket.style.display = (name==='tickets') ? 'inline-flex' : 'none';
+  if(isDesktopLayout()) document.title = `${VIEW_TITLES[name]||'ASIGNA'} · ASIGNA`;
 
   if(name==='dashboard') renderDashboard();
   if(name==='usuarios') renderUsersList();
