@@ -27,7 +27,10 @@
    de borrar (nunca reusar un ID visto antes en la conversación).
 5. `git add` + `git commit` con mensaje descriptivo en español.
 6. Push a `main` **solo cuando el usuario lo indique explícitamente** — hasta entonces
-   trabajar en una rama.
+   trabajar en una rama. Si el push falla por falta de credenciales de git, **usar
+   siempre el flujo de GitHub device login** (ver procedimiento completo en
+   `01-ARQUITECTURA.md`, sección "Autenticación de git para push") — no pedir un
+   token de acceso personal al usuario ni improvisar otro método.
 7. Tras un push a `main`: verificar que
    https://llorente21.github.io/asigna-tickets/ ya sirve el cambio (esperar ~1 min,
    confirmar por ejemplo con curl) antes de cerrar la tarea.
@@ -51,6 +54,16 @@
 
 ## Lecciones aprendidas
 
+- **Push a GitHub siempre vía device login, nunca pidiendo un token al usuario.**
+  El entorno del agente no trae credenciales de git preconfiguradas. La primera vez
+  que se necesitó, tardó varios intentos (un intento con proceso en segundo plano se
+  perdió porque los procesos no sobreviven entre llamadas de `device_bash`; un token
+  obtenido con scope `repo` fue rechazado por `gh auth login` porque `gh` exige
+  también `read:org`). La forma que funciona: pedir el `device_code` por la API REST
+  de GitHub, mostrar el código al usuario, hacer *polling* del token vía curl (no vía
+  `gh`), y configurar el *credential helper* de git directamente con ese token — sin
+  pasar por `gh auth login`. Procedimiento completo y comandos exactos en
+  `01-ARQUITECTURA.md`.
 - **Caché viciada del Service Worker tras deploys** (commit `4f42058`): un `sw.js` con
   estrategia cache-first puede seguir sirviendo una versión vieja del `index.html`
   después de un push a producción, aunque GitHub Pages ya tenga el archivo nuevo. Se

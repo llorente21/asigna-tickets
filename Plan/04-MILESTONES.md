@@ -6,6 +6,15 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-02 — Primer push a `main` con Plan/ y CLAUDE.md (vía device login)
+Se hizo merge fast-forward de `plan/carpeta-planificacion` a `main` y push a
+`origin/main` (`84c88f2` → `d5eeee0`) por instrucción de Jose. El entorno no tenía
+credenciales de git configuradas; se autenticó usando el flujo de GitHub device
+login (ver procedimiento documentado en `01-ARQUITECTURA.md` y la lección aprendida
+en `05-ESTANDARES.md`). Verificado en GitHub que `CLAUDE.md` y `Plan/` ya están en
+`main` remoto (no hay nada que verificar en producción/GitHub Pages porque este
+cambio no toca `index.html`).
+
 ## 2026-09-02 — Carpeta `Plan/` y `CLAUDE.md` de referencia para agentes
 Se creó esta carpeta (`Plan/`) como fuente de verdad de planificación para cualquier
 agente que trabaje en el repo (código o diseño), y `CLAUDE.md` en la raíz para que

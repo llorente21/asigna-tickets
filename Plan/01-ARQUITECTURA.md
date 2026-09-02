@@ -95,3 +95,52 @@ por bueno.
   — el objetivo es que GitHub y producción siempre coincidan con lo acordado.
 - Verificar el despliegue después de cada push a `main` (por ejemplo con curl contra
   el `index.html` público) antes de dar la tarea por terminada.
+
+### Autenticación de git para push (siempre GitHub device login)
+
+El entorno del agente (la VM Linux que puentea con la carpeta del usuario) **no
+tiene credenciales de git preconfiguradas** — ni credential helper, ni `gh` instalado
+por defecto, ni token en variables de entorno. Un `git push` directo falla con
+`could not read Username for 'https://github.com'`.
+
+**Siempre usar el flujo de device login de GitHub para autenticar el push** — no
+pedir al usuario un token de acceso personal ni intentar otros métodos. Pasos:
+
+1. Pedir un `device_code` a la API de GitHub:
+   ```bash
+   curl -s -X POST https://github.com/login/device/code \
+     -H "Accept: application/json" \
+     -d "client_id=178c6fc778ccc68e1d6a" \
+     -d "scope=repo"
+   ```
+   (ese `client_id` es el cliente OAuth público del propio `gh` CLI — no es secreto).
+   Devuelve `device_code`, `user_code`, `verification_uri` (siempre
+   `https://github.com/login/device`) y `expires_in` (~15 min).
+2. Mostrar al usuario el `user_code` y pedirle que lo ingrese en esa URL — usar
+   `AskUserQuestion` con al menos 2 opciones reales (ej. "Ya lo autoricé" /
+   "Cancelar"; el tool rechaza preguntas de una sola opción).
+3. Hacer *polling* del token con el `device_code` (cada ~5s, en llamadas de
+   `device_bash` separadas si hace falta esperar la respuesta del usuario — los
+   procesos en segundo plano **no sobreviven entre llamadas** porque cada llamada de
+   `device_bash` corre en su propio namespace aislado que se destruye al terminar):
+   ```bash
+   curl -s -X POST https://github.com/login/oauth/access_token \
+     -H "Accept: application/json" \
+     -d "client_id=178c6fc778ccc68e1d6a" \
+     -d "device_code=$DEVICE_CODE" \
+     -d "grant_type=urn:ietf:params:oauth:grant-type:device_code"
+   ```
+   Responde `{"error":"authorization_pending",...}` hasta que el usuario autoriza, y
+   entonces `{"access_token":...,"scope":"repo"}`.
+4. **No usar `gh auth login --with-token` para validar el token** — `gh` exige
+   además el scope `read:org` y rechaza un token que solo tiene `repo` (scope
+   suficiente para hacer push). Configurar el *credential helper* de git
+   directamente en vez de depender de `gh`:
+   ```bash
+   git config --global credential."https://github.com".helper \
+     '!f() { echo username=x-access-token; echo "password=$TOKEN"; }; f'
+   ```
+5. Hacer el push. Cada `device_code` es de un solo uso — si algo falla a mitad de
+   camino (por ejemplo el proceso que mostraba el código murió antes de que el
+   usuario alcanzara a autorizar), pedir un `device_code` nuevo, no reintentar con el
+   mismo.
