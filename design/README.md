@@ -1,29 +1,22 @@
-# Diseño visual — ASIGNA
+# ASIGNA — design files
 
-Carpeta para el sistema de diseño visual de ASIGNA (creado con Claude Design).
+Diseños producidos en Claude Design a partir de este repositorio (`index.html`).
 
-## Qué va aquí
+## Ver sin instalar nada
+Abre estos archivos en cualquier navegador — son autocontenidos, funcionan offline:
 
-Los archivos exportados del canvas de Claude Design: artboards `.dc.html`,
-imágenes de referencia y cualquier export (PNG / PDF) que sirva de guía visual.
+- `asigna-estado-actual.html` — la interfaz actual, reconstruida con sus tokens reales
+- `asigna-tres-direcciones.html` — las tres direcciones visuales propuestas (1a Luz de día, 1b Vecinos, 1c Panel claro)
 
-## Cómo usarlo
+## Editar en Claude Design
+1. Crea (o abre) un proyecto en Claude Design.
+2. Sube toda la carpeta `design/source/` al proyecto — incluye los dos `.dc.html`,
+   `support.js` (runtime), los marcos `ios-frame.jsx` / `browser-window.jsx` y los assets del logo.
+3. Abre cualquiera de los `.dc.html`. Los archivos son componentes de diseño: se editan
+   en el lienzo y se puede navegar/ampliar libremente.
 
-1. Copia aquí los archivos del canvas.
-2. Los `.dc.html` se abren directamente en el navegador (doble clic) — no
-   requieren servidor ni build.
-3. Esta carpeta es **solo referencia de diseño**. No la carga la app:
-   `index.html`, `manifest.json` y `sw.js` en la raíz siguen siendo lo que
-   se publica en GitHub Pages.
+Los dos `.dc.html` no dependen de Firebase ni del código de la app: son maquetas de
+diseño con datos de ejemplo.
 
-## Convención de nombres
-
-Un archivo por pantalla o por grupo de artboards, en minúsculas y con guiones:
-
-```
-design/
-  tokens.dc.html          colores, tipografía, espaciado
-  mobile-locatario.dc.html
-  desktop-panel.dc.html
-  flujo-tickets.dc.html
-```
+## Assets del repo usados
+`icon-192.png`, `logo-hero.jpg` — copiados sin modificar desde la raíz del repositorio.

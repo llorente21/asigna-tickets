@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;800&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDEBE4;font-family:'Inter',sans-serif;}
+a{color:#C2A310;}
+a:hover{color:#221E1F;}
+</style>
+</helmet>
+
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#E0C01A"/><g fill="#221E1F"><rect x="28" y="34" width="44" height="8" rx="2"/><rect x="28" y="48" width="44" height="8" rx="2"/><rect x="28" y="62" width="26" height="8" rx="2"/></g></svg></template>
+
+<section id="turn0" style="padding:56px 64px 96px; display:flex; flex-direction:column; gap:44px;">
+  <div style="display:flex; flex-direction:column; gap:8px; max-width:900px;">
+    <div style="font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#847D75;">Recreación del código actual · llorente21/asigna-tickets · index.html</div>
+    <h1 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:40px; line-height:1.05; margin:0; color:#221E1F;">ASIGNA hoy</h1>
+    <p style="font-size:15px; line-height:1.6; color:#4A4544; margin:0; max-width:660px; text-wrap:pretty;">Las cinco pantallas que pediste, reconstruidas con los tokens reales del archivo: fondo <span style="font-family:'Roboto Mono',monospace;">#FAFAF7</span>, acento <span style="font-family:'Roboto Mono',monospace;">#E0C01A</span>, tinta <span style="font-family:'Roboto Mono',monospace;">#221E1F</span>, Public Sans 800 en títulos, Inter en cuerpo, Roboto Mono en códigos. Radios 14 / 9 px y sombra <span style="font-family:'Roboto Mono',monospace;">0 2px 8px</span>. Es la línea base contra la que se comparan las tres direcciones.</p>
+  </div>
+
+  <div style="display:flex; flex-wrap:nowrap; gap:56px; align-items:flex-start; width:max-content;">
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'Roboto Mono',monospace; font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#847D75;">01 · Mis Tickets — locatario, móvil</div>
+      <div style="flex:0 0 auto;"><x-import component-from-global-scope="IOSDevice" style="flex:0 0 auto;" from="./ios-frame.jsx" width="{{ 390 }}" height="{{ 844 }}" hint-size="390px,844px">
+        <div data-screen-label="Mis Tickets (móvil)" style="height:844px; position:relative; background:#FAFAF7; overflow:hidden;">
+          <div style="height:58px; margin-top:50px; background:linear-gradient(90deg,#221E1F,#332C2D); border-bottom:2px solid #E0C01A; padding:0 12px; display:flex; align-items:center; gap:10px;">
+            <img src="icon-192.png" alt="" style="width:30px; height:30px; border-radius:8px;">
+            <div style="flex:1; font-family:'Public Sans',sans-serif; font-weight:800; color:#fff; font-size:15px; line-height:1.1;">ASIGNA<small style="display:block; font-family:'Inter',sans-serif; font-size:10px; color:#E0C01A; font-weight:600; letter-spacing:.4px; text-transform:uppercase;">Tickets</small></div>
+            <div style="position:relative; width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" style="width:19px; height:19px;"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              <span style="position:absolute; top:4px; right:4px; min-width:15px; height:15px; padding:0 3px; border-radius:100px; background:#D32F2F; color:#fff; font-size:9.5px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid #332C2D;">2</span>
+            </div>
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" style="width:19px; height:19px;"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+            </div>
+          </div>
+
+          <div style="padding:12px 14px 0;">
+            <h1 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:20px; margin:2px 0 4px; color:#221E1F;">Mis Tickets</h1>
+            <p style="color:#4A4544; font-size:13px; margin:0 0 16px;">Reporta y da seguimiento a tus incidencias</p>
+
+            <div style="display:flex; align-items:center; gap:8px; background:#FBF6DE; border:1.5px solid #ECE4C8; border-radius:9px; padding:0 12px; margin-bottom:14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:17px; height:17px; flex:0 0 auto;"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+              <div style="padding:11px 0; font-size:16px; color:#847D75; flex:1;">Buscar por número, descripción...</div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:14px;">
+              <div style="padding:8px 14px; border-radius:100px; background:#221E1F; border:1.5px solid #221E1F; font-size:12.5px; font-weight:700; color:#fff;">Todos</div>
+              <div style="padding:8px 14px; border-radius:100px; background:#FBF6DE; border:1.5px solid #ECE4C8; font-size:12.5px; font-weight:700; color:#4A4544;">Abiertos</div>
+              <div style="padding:8px 14px; border-radius:100px; background:#FBF6DE; border:1.5px solid #ECE4C8; font-size:12.5px; font-weight:700; color:#4A4544;">Cerrados</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#1565C0;"></div>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                  <div>
+                    <div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8842190</div>
+                    <div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Aires Acondicionados · No enfría</div>
+                  </div>
+                  <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; background:#E3F2FD; color:#1565C0;">Nuevo</span>
+                </div>
+                <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">El aire de la sala de reuniones enfría por 10 minutos y luego solo sopla aire tibio.</div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M12 22s7-6.2 7-12A7 7 0 0 0 5 10c0 5.8 7 12 7 12Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>D2</div>
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><rect x="4" y="2" width="16" height="20" rx="1"></rect><path d="M9 22v-4h6v4"></path></svg>8LOGOS, SRL</div>
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path></svg>1d abierto</div>
+                  <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FDECEA; color:#D32F2F;">Urgente</span>
+                </div>
+              </div>
+
+              <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#6A4C93;"></div>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                  <div>
+                    <div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8836004</div>
+                    <div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Internet · No navega</div>
+                  </div>
+                  <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; background:#EFE7F6; color:#6A4C93;">En proceso</span>
+                </div>
+                <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">La red del piso 3 se cae cada tarde. Ya reiniciamos el router de la oficina.</div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M12 22s7-6.2 7-12A7 7 0 0 0 5 10c0 5.8 7 12 7 12Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>D2</div>
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path></svg>6d abierto</div>
+                  <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FDECEA; color:#D32F2F; text-transform:uppercase; letter-spacing:.3px;">Vencido</span>
+                </div>
+              </div>
+
+              <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#2E7D32;"></div>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                  <div>
+                    <div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8791233</div>
+                    <div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Puertas, llavines y ventanas</div>
+                  </div>
+                  <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; background:#E8F5E9; color:#2E7D32;">Cerrado</span>
+                </div>
+                <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">El llavín de la puerta principal quedó duro y cuesta abrirlo por las mañanas.</div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M12 22s7-6.2 7-12A7 7 0 0 0 5 10c0 5.8 7 12 7 12Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>D2</div>
+                  <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:#847D75; font-weight:600;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path></svg>3d para resolver</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute; bottom:70px; right:16px; width:56px; height:56px; border-radius:50%; background:#E0C01A; box-shadow:0 6px 20px rgba(224,192,26,.5); display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" style="width:26px; height:26px;"><path d="M12 5v14M5 12h14"></path></svg>
+          </div>
+          <div style="position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #ECE4C8; display:flex; padding:6px 4px 22px; box-shadow:0 -2px 12px rgba(34,30,31,.06);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; font-size:10.5px; font-weight:600; color:#000;">
+              <svg viewBox="0 0 24 24" fill="#E0C01A" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:21px; height:21px;"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path></svg>
+              <span>Tickets</span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; font-size:10.5px; font-weight:600; color:#847D75;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:21px; height:21px;"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+              <span>Perfil</span>
+            </div>
+          </div>
+        </div>
+      </x-import></div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'Roboto Mono',monospace; font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#847D75;">02 · Detalle del ticket — drawer + historial</div>
+      <div style="flex:0 0 auto;"><x-import component-from-global-scope="IOSDevice" style="flex:0 0 auto;" from="./ios-frame.jsx" width="{{ 390 }}" height="{{ 844 }}" hint-size="390px,844px">
+        <div data-screen-label="Detalle del ticket (móvil)" style="height:844px; position:relative; background:#FAFAF7; overflow:hidden;">
+          <div style="position:absolute; inset:0; background:rgba(34,30,31,.55);"></div>
+          <div style="position:absolute; bottom:0; left:0; right:0; background:#fff; border-radius:20px 20px 0 0; height:780px; overflow:hidden;">
+            <div style="width:38px; height:4px; background:#DCD0A0; border-radius:100px; margin:11px auto 4px;"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 4px;">
+              <h3 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:16.5px; margin:0;">Detalle del ticket</h3>
+              <div style="width:32px; height:32px; border-radius:9px; background:#FBF6DE; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2.2" stroke-linecap="round" style="width:15px; height:15px;"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+              </div>
+            </div>
+            <div style="padding:12px 18px 24px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div>
+                  <div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:12.5px; color:#847D75;">OF-8836004</div>
+                  <div style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:18px; margin:2px 0;">Internet · No navega</div>
+                </div>
+                <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#EFE7F6; color:#6A4C93;">En proceso</span>
+              </div>
+              <div style="margin:-8px 0 14px;"><span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FDECEA; color:#D32F2F; text-transform:uppercase; letter-spacing:.3px;">Vencido — pasó el tiempo esperado de solución (5d)</span></div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                <div style="background:#FBF6DE; border-radius:9px; padding:10px 12px;"><div style="font-size:10.5px; color:#847D75; font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;">Solicitante</div><div style="font-size:13.5px; font-weight:600;">Carla Méndez</div></div>
+                <div style="background:#FBF6DE; border-radius:9px; padding:10px 12px;"><div style="font-size:10.5px; color:#847D75; font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;">Locación</div><div style="font-size:13.5px; font-weight:600;">D2 — DIX Business Center 2</div></div>
+                <div style="background:#FBF6DE; border-radius:9px; padding:10px 12px;"><div style="font-size:10.5px; color:#847D75; font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;">Empresa</div><div style="font-size:13.5px; font-weight:600;">8LOGOS, SRL</div></div>
+                <div style="background:#FBF6DE; border-radius:9px; padding:10px 12px;"><div style="font-size:10.5px; color:#847D75; font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;">Creado</div><div style="font-size:13.5px; font-weight:600;">26/08/2026 09:14</div></div>
+                <div style="background:#FBF6DE; border-radius:9px; padding:10px 12px;"><div style="font-size:10.5px; color:#847D75; font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;">Prioridad</div><div style="font-size:13.5px; font-weight:600;"><span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FFF8DB; color:#B8860B;">Media</span></div></div>
+              </div>
+              <div style="background:#FBF6DE; border-radius:9px; padding:12px 14px; font-size:13.5px; line-height:1.5; color:#221E1F; margin-bottom:16px;">La red del piso 3 se cae cada tarde. Ya reiniciamos el router de la oficina.
+                <div style="margin-top:8px; font-size:11.5px; color:#847D75;">Registrado por Empleado (José Ramírez)</div>
+              </div>
+              <div style="background:#F7EFC0; border:1.5px solid #C2A310; border-radius:14px; padding:14px; margin:6px 0;">
+                <div style="font-size:13.5px; font-weight:700; margin-bottom:8px;">Actualizar estatus</div>
+                <div style="margin-bottom:14px;">
+                  <label style="display:block; font-size:12.5px; font-weight:600; color:#4A4544; margin-bottom:6px;">Nuevo estatus</label>
+                  <div style="font-size:16px; padding:12px 14px; border:1.5px solid #ECE4C8; border-radius:9px; background:#FBF6DE; color:#221E1F;">En proceso</div>
+                </div>
+                <div style="margin-bottom:14px;">
+                  <label style="display:block; font-size:12.5px; font-weight:600; color:#4A4544; margin-bottom:6px;">Nota (opcional)</label>
+                  <div style="font-size:16px; padding:12px 14px; border:1.5px solid #ECE4C8; border-radius:9px; background:#FBF6DE; color:#847D75; min-height:60px;">Detalle del avance...</div>
+                </div>
+                <div style="background:#E0C01A; color:#000; border-radius:9px; padding:13px 18px; font-size:14.5px; font-weight:700; text-align:center;">Actualizar ticket</div>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:#4A4544; text-transform:uppercase; letter-spacing:.4px; margin:22px 0 10px;">Historial</div>
+              <div style="border-left:2px solid #ECE4C8; margin-left:6px; padding-left:16px;">
+                <div style="position:relative; padding-bottom:16px;">
+                  <div style="position:absolute; left:-21px; top:2px; width:10px; height:10px; border-radius:50%; background:#E0C01A; border:2px solid #fff;"></div>
+                  <div style="font-size:13px; font-weight:700;">En proceso</div>
+                  <div style="font-size:11px; color:#847D75; font-weight:600; margin:1px 0 3px;">27/08/2026 11:02 · José Ramírez</div>
+                  <div style="font-size:12.5px; color:#4A4544;">Se escaló al proveedor de internet; esperamos visita técnica.</div>
+                </div>
+                <div style="position:relative;">
+                  <div style="position:absolute; left:-21px; top:2px; width:10px; height:10px; border-radius:50%; background:#E0C01A; border:2px solid #fff;"></div>
+                  <div style="font-size:13px; font-weight:700;">Nuevo</div>
+                  <div style="font-size:11px; color:#847D75; font-weight:600; margin:1px 0 3px;">26/08/2026 09:14 · José Ramírez</div>
+                  <div style="font-size:12.5px; color:#4A4544;">Ticket creado por Empleado (José Ramírez) a nombre de Carla Méndez</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </x-import></div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'Roboto Mono',monospace; font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#847D75;">03 · Panel de escritorio — Tickets (admin)</div>
+      <div style="flex:0 0 auto;"><x-import component-from-global-scope="ChromeWindow" style="flex:0 0 auto;" from="./browser-window.jsx" width="{{ 1280 }}" height="{{ 800 }}" url="llorente21.github.io/asigna-tickets" hint-size="1280px,800px">
+        <div data-screen-label="Tickets (escritorio)" style="display:flex; height:800px; background:#FAFAF7; font-family:'Inter',sans-serif; color:#221E1F; overflow:hidden;">
+          <aside style="width:252px; flex:0 0 252px; background:#fff; border-right:1px solid #ECE4C8; display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; gap:10px; height:67px; padding:0 20px; border-bottom:1px solid #ECE4C8;">
+              <img src="icon-192.png" alt="" style="width:34px; height:34px; border-radius:9px;">
+              <span style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:16px;">ASIGNA</span>
+            </div>
+            <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px;">
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 3v18h18"></path><path d="M7 15v3M12 10v8M17 6v12"></path></svg><span>Dashboard</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:700; color:#221E1F; background:#F7EFC0;"><svg viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path></svg><span>Tickets</span></div>
+              <div style="font-size:10.5px; font-weight:800; color:#847D75; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px 6px;">Administración</div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Usuarios</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="4" y="2" width="16" height="20" rx="1"></rect><path d="M9 22v-4h6v4"></path></svg><span>Empresas</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><span>Áreas</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M4 21V4a1 1 0 0 1 1-1h13.5a.5.5 0 0 1 .4.8L15 9l3.9 5.2a.5.5 0 0 1-.4.8H5"></path></svg><span>Estados</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="M12 4a9 9 0 0 0-8.6 11.7M12 4a9 9 0 0 1 8.6 11.7M14 13l3-4"></path></svg><span>Prioridades</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg><span>Configuración</span></div>
+            </nav>
+            <div style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-top:1px solid #ECE4C8;">
+              <div style="width:34px; height:34px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">AD</div>
+              <div style="min-width:0;">
+                <div style="font-size:12.5px; font-weight:700;">Administración</div>
+                <div style="font-size:10.5px; color:#847D75; font-weight:600;">Administración</div>
+              </div>
+            </div>
+          </aside>
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+            <div style="background:#fff; border-bottom:1px solid #ECE4C8; display:flex; align-items:center; justify-content:space-between; height:67px; padding:0 28px;">
+              <div>
+                <h1 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:18px; margin:0;">Tickets</h1>
+                <p style="font-size:12.5px; color:#847D75; margin:2px 0 0;">Todos los tickets entrantes de la red</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:38px; height:38px; border-radius:10px; border:1px solid #ECE4C8; background:#fff; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></div>
+                <div style="background:#E0C01A; color:#000; border-radius:8px; padding:9px 13px; font-size:13px; font-weight:700;">+ Nuevo Ticket</div>
+                <div style="position:relative; width:38px; height:38px; border-radius:10px; border:1px solid #ECE4C8; background:#fff; display:flex; align-items:center; justify-content:center;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span style="position:absolute; top:-4px; right:-4px; min-width:15px; height:15px; padding:0 3px; border-radius:100px; background:#D32F2F; color:#fff; font-size:9.5px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid #fff;">5</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding:24px 28px 40px; overflow:hidden;">
+              <div style="display:flex; align-items:center; gap:8px; background:#FBF6DE; border:1.5px solid #ECE4C8; border-radius:9px; padding:0 12px; margin-bottom:14px; max-width:560px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" style="width:17px; height:17px;"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                <div style="padding:11px 0; font-size:16px; color:#847D75; flex:1;">Buscar por número, descripción...</div>
+                <div style="width:38px; height:38px; border-radius:10px; border:1.5px solid #C2A310; background:#F7EFC0; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2" stroke-linecap="round" style="width:17px;height:17px;"><path d="M4 6h16M7 12h10M10 18h4"></path></svg></div>
+                <div style="width:38px; height:38px; border-radius:10px; border:1.5px solid #ECE4C8; background:#fff; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg></div>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;">
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#1565C0;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8842190</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Aires Acondicionados · No enfría</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#E3F2FD; color:#1565C0;">Nuevo</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">El aire de la sala de reuniones enfría por 10 minutos y luego solo sopla aire tibio.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D2</span><span>8LOGOS, SRL</span><span>Carla Méndez</span><span>1d abierto</span>
+                    <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FDECEA; color:#D32F2F;">Urgente</span>
+                  </div>
+                </div>
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#6A4C93;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8836004</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Internet · No navega</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#EFE7F6; color:#6A4C93;">En proceso</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">La red del piso 3 se cae cada tarde. Ya reiniciamos el router de la oficina.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D2</span><span>Carla Méndez</span><span>6d abierto</span>
+                    <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:#FDECEA; color:#D32F2F; text-transform:uppercase; letter-spacing:.3px;">Vencido</span>
+                  </div>
+                </div>
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#1565C0;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8841077</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Incidencias de agua · Filtración</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#E3F2FD; color:#1565C0;">Nuevo</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">Gotea agua del plafón cerca del área de café desde la lluvia del lunes.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D4</span><span>Grupo Nexa</span><span>Luis Batista</span><span>0d abierto</span>
+                  </div>
+                </div>
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#2E7D32;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8791233</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Puertas, llavines y ventanas</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#E8F5E9; color:#2E7D32;">Cerrado</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">El llavín de la puerta principal quedó duro y cuesta abrirlo por las mañanas.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D2</span><span>Carla Méndez</span><span>3d para resolver</span>
+                  </div>
+                </div>
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#6A4C93;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8839521</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Limpieza</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#EFE7F6; color:#6A4C93;">En proceso</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">El baño del pasillo necesita reposición de insumos dos veces al día.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D1</span><span>Ana Coste</span><span>2d abierto</span>
+                  </div>
+                </div>
+                <div style="background:#fff; border-radius:14px; border:1px solid #ECE4C8; padding:14px 14px 14px 18px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:#1565C0;"></div>
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                    <div><div style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:#847D75;">OF-8842355</div><div style="font-size:14.5px; font-weight:700; margin:2px 0 3px;">Luces</div></div>
+                    <span style="font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; background:#E3F2FD; color:#1565C0;">Nuevo</span>
+                  </div>
+                  <div style="font-size:12.5px; color:#4A4544; line-height:1.4;">Dos luminarias del pasillo de entrada están parpadeando.</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; font-size:11.5px; color:#847D75; font-weight:600;">
+                    <span>D3</span><span>Vértice Legal</span><span>Pedro Sosa</span><span>0d abierto</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </x-import></div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'Roboto Mono',monospace; font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#847D75;">04 · Dashboard (admin)</div>
+      <div style="flex:0 0 auto;"><x-import component-from-global-scope="ChromeWindow" style="flex:0 0 auto;" from="./browser-window.jsx" width="{{ 1280 }}" height="{{ 800 }}" url="llorente21.github.io/asigna-tickets" hint-size="1280px,800px">
+        <div data-screen-label="Dashboard (escritorio)" style="display:flex; height:800px; background:#FAFAF7; font-family:'Inter',sans-serif; color:#221E1F; overflow:hidden;">
+          <aside style="width:252px; flex:0 0 252px; background:#fff; border-right:1px solid #ECE4C8; display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; gap:10px; height:67px; padding:0 20px; border-bottom:1px solid #ECE4C8;">
+              <img src="icon-192.png" alt="" style="width:34px; height:34px; border-radius:9px;">
+              <span style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:16px;">ASIGNA</span>
+            </div>
+            <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px;">
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:700; color:#221E1F; background:#F7EFC0;"><svg viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 3v18h18"></path><path d="M7 15v3M12 10v8M17 6v12"></path></svg><span>Dashboard</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path></svg><span>Tickets</span></div>
+              <div style="font-size:10.5px; font-weight:800; color:#847D75; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px 6px;">Administración</div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg><span>Usuarios</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="4" y="2" width="16" height="20" rx="1"></rect><path d="M9 22v-4h6v4"></path></svg><span>Empresas</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><span>Áreas</span></div>
+            </nav>
+            <div style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-top:1px solid #ECE4C8;">
+              <div style="width:34px; height:34px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">AD</div>
+              <div><div style="font-size:12.5px; font-weight:700;">Administración</div><div style="font-size:10.5px; color:#847D75; font-weight:600;">Administración</div></div>
+            </div>
+          </aside>
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+            <div style="background:#fff; border-bottom:1px solid #ECE4C8; display:flex; align-items:center; justify-content:space-between; height:67px; padding:0 28px;">
+              <div>
+                <h1 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:18px; margin:0;">Dashboard</h1>
+                <p style="font-size:12.5px; color:#847D75; margin:2px 0 0;">Métricas del sistema de tickets</p>
+              </div>
+              <div style="position:relative; width:38px; height:38px; border-radius:10px; border:1px solid #ECE4C8; background:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#4A4544" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </div>
+            </div>
+            <div style="padding:24px 28px 40px;">
+              <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;">
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(34,30,31,0.08);"><div style="font-family:'Public Sans',sans-serif; font-size:24px; font-weight:800; line-height:1;">148</div><div style="font-size:11.5px; color:#847D75; font-weight:600; margin-top:5px;">Tickets totales</div></div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(34,30,31,0.08);"><div style="font-family:'Public Sans',sans-serif; font-size:24px; font-weight:800; line-height:1;">23</div><div style="font-size:11.5px; color:#847D75; font-weight:600; margin-top:5px;">Abiertos</div></div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(34,30,31,0.08);"><div style="font-family:'Public Sans',sans-serif; font-size:24px; font-weight:800; line-height:1;">125</div><div style="font-size:11.5px; color:#847D75; font-weight:600; margin-top:5px;">Cerrados</div></div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(34,30,31,0.08);"><div style="font-family:'Public Sans',sans-serif; font-size:24px; font-weight:800; line-height:1; color:#D32F2F;">6</div><div style="font-size:11.5px; color:#847D75; font-weight:600; margin-top:5px;">Vencidos (fuera de SLA)</div></div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <h4 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:13.5px; margin:0 0 14px; text-transform:uppercase; letter-spacing:.3px; color:#4A4544;">Tickets por categoría</h4>
+                  <div style="display:flex; flex-direction:column; gap:11px;">
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Aires Acondicionados</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:100%; border-radius:100px; background:#E0C01A;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">41</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Internet</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:71%; border-radius:100px; background:#221E1F;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">29</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Limpieza</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:54%; border-radius:100px; background:#1565C0;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">22</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Incidencias de agua</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:44%; border-radius:100px; background:#6A4C93;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">18</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Luces</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:34%; border-radius:100px; background:#0F9D8C;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">14</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Puertas y llavines</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:29%; border-radius:100px; background:#B8860B;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">12</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><div style="width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:#4A4544;">Valet Parking</div><div style="flex:1; height:12px; background:#FBF6DE; border-radius:100px; overflow:hidden;"><div style="height:100%; width:29%; border-radius:100px; background:#D32F2F;"></div></div><div style="width:26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;">12</div></div>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                    <h4 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:13.5px; margin:0 0 14px; text-transform:uppercase; letter-spacing:.3px; color:#4A4544;">Distribución por estatus</h4>
+                    <div style="display:flex; align-items:center; gap:20px;">
+                      <svg viewBox="0 0 42 42" style="width:120px; height:120px; flex:0 0 120px; transform:rotate(-90deg);">
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#1565C0" stroke-width="7" stroke-dasharray="8.11 91.89" stroke-dashoffset="25"></circle>
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#6A4C93" stroke-width="7" stroke-dasharray="7.43 92.57" stroke-dashoffset="16.89"></circle>
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2E7D32" stroke-width="7" stroke-dasharray="84.46 15.54" stroke-dashoffset="9.46"></circle>
+                      </svg>
+                      <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#4A4544; font-weight:600;"><span style="width:10px; height:10px; border-radius:3px; background:#1565C0;"></span>Nuevo<b style="margin-left:auto; font-family:'Roboto Mono',monospace; color:#221E1F;">12</b></div>
+                        <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#4A4544; font-weight:600;"><span style="width:10px; height:10px; border-radius:3px; background:#6A4C93;"></span>En proceso<b style="margin-left:auto; font-family:'Roboto Mono',monospace; color:#221E1F;">11</b></div>
+                        <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#4A4544; font-weight:600;"><span style="width:10px; height:10px; border-radius:3px; background:#2E7D32;"></span>Cerrado<b style="margin-left:auto; font-family:'Roboto Mono',monospace; color:#221E1F;">125</b></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                    <h4 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:13.5px; margin:0 0 14px; text-transform:uppercase; letter-spacing:.3px; color:#4A4544;">Promedio de días de solución por categoría</h4>
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                      <thead><tr>
+                        <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding-bottom:8px; border-bottom:1px solid #ECE4C8;">Categoría</th>
+                        <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding-bottom:8px; border-bottom:1px solid #ECE4C8;">Resueltos</th>
+                        <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding-bottom:8px; border-bottom:1px solid #ECE4C8;">Prom. días</th>
+                      </tr></thead>
+                      <tbody>
+                        <tr><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">Aires Acondicionados</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">38</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">2.4 d</td></tr>
+                        <tr><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">Internet</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">25</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">3.1 d</td></tr>
+                        <tr><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">Limpieza</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">22</td><td style="padding:9px 0; border-bottom:1px solid #ECE4C8;">0.8 d</td></tr>
+                        <tr><td style="padding:9px 0;">Incidencias de agua</td><td style="padding:9px 0;">15</td><td style="padding:9px 0;">4.6 d</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </x-import></div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'Roboto Mono',monospace; font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#847D75;">05 · Usuarios · Empresas · Áreas</div>
+      <div style="flex:0 0 auto;"><x-import component-from-global-scope="ChromeWindow" style="flex:0 0 auto;" from="./browser-window.jsx" width="{{ 1280 }}" height="{{ 800 }}" url="llorente21.github.io/asigna-tickets" hint-size="1280px,800px">
+        <div data-screen-label="Catálogos (escritorio)" style="display:flex; height:800px; background:#FAFAF7; font-family:'Inter',sans-serif; color:#221E1F; overflow:hidden;">
+          <aside style="width:252px; flex:0 0 252px; background:#fff; border-right:1px solid #ECE4C8; display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; gap:10px; height:67px; padding:0 20px; border-bottom:1px solid #ECE4C8;">
+              <img src="icon-192.png" alt="" style="width:34px; height:34px; border-radius:9px;">
+              <span style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:16px;">ASIGNA</span>
+            </div>
+            <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px;">
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 3v18h18"></path><path d="M7 15v3M12 10v8M17 6v12"></path></svg><span>Dashboard</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path></svg><span>Tickets</span></div>
+              <div style="font-size:10.5px; font-weight:800; color:#847D75; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px 6px;">Administración</div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:700; color:#221E1F; background:#F7EFC0;"><svg viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg><span>Usuarios</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="4" y="2" width="16" height="20" rx="1"></rect><path d="M9 22v-4h6v4"></path></svg><span>Empresas</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:#4A4544;"><svg viewBox="0 0 24 24" fill="none" stroke="#847D75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><span>Áreas</span></div>
+            </nav>
+            <div style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-top:1px solid #ECE4C8;">
+              <div style="width:34px; height:34px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">AD</div>
+              <div><div style="font-size:12.5px; font-weight:700;">Administración</div><div style="font-size:10.5px; color:#847D75; font-weight:600;">Administración</div></div>
+            </div>
+          </aside>
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+            <div style="background:#fff; border-bottom:1px solid #ECE4C8; display:flex; align-items:center; justify-content:space-between; height:67px; padding:0 28px;">
+              <div>
+                <h1 style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:18px; margin:0;">Usuarios</h1>
+                <p style="font-size:12.5px; color:#847D75; margin:2px 0 0;">Todas las cuentas de acceso: Administración, Empleados y Locatarios</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div style="background:#221E1F; color:#fff; border-radius:8px; padding:9px 13px; font-size:13px; font-weight:700;">+ Nuevo</div>
+              </div>
+            </div>
+            <div style="padding:24px 28px 40px;">
+              <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:26px;">
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:13px 14px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="width:40px; height:40px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;">AD</div>
+                  <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700;">Administración</div><div style="font-size:11.5px; color:#847D75;">admin@oficinasfelices.com</div></div>
+                  <span style="font-size:10px; font-weight:800; padding:3px 9px; border-radius:100px; text-transform:uppercase; background:#221E1F; color:#E0C01A;">Admin</span>
+                </div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:13px 14px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="width:40px; height:40px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;">JR</div>
+                  <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700;">José Ramírez</div><div style="font-size:11.5px; color:#847D75;">jose@oficinasfelices.com</div></div>
+                  <span style="font-size:10px; font-weight:800; padding:3px 9px; border-radius:100px; text-transform:uppercase; background:#EFE7F6; color:#6A4C93;">Empleado</span>
+                </div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:13px 14px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="width:40px; height:40px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;">CM</div>
+                  <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700;">Carla Méndez</div><div style="font-size:11.5px; color:#847D75;">carla@8logos.do · D2 · 8LOGOS, SRL</div></div>
+                  <span style="font-size:10px; font-weight:800; padding:3px 9px; border-radius:100px; text-transform:uppercase; background:#FBF6DE; color:#4A4544; border:1px solid #ECE4C8;">Locatario</span>
+                </div>
+              </div>
+
+              <div style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:13px; color:#4A4544; text-transform:uppercase; letter-spacing:.4px; margin-bottom:10px;">Áreas — vista de catálogo</div>
+              <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px;">
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><span style="font-size:14.5px; font-weight:700;">Aires Acondicionados</span><span style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:13px; color:#847D75;">41</span></div>
+                  <div style="font-size:12px; color:#847D75; line-height:1.5;">No enciende · No enfría</div>
+                  <div style="height:5px; border-radius:100px; margin-top:10px; background:#E0C01A;"></div>
+                </div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><span style="font-size:14.5px; font-weight:700;">Internet</span><span style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:13px; color:#847D75;">29</span></div>
+                  <div style="font-size:12px; color:#847D75; line-height:1.5;">No navega · No hay señal</div>
+                  <div style="height:5px; border-radius:100px; margin-top:10px; background:#221E1F;"></div>
+                </div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><span style="font-size:14.5px; font-weight:700;">Limpieza</span><span style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:13px; color:#847D75;">22</span></div>
+                  <div style="font-size:12px; color:#847D75; line-height:1.5;">Sin subcategorías</div>
+                  <div style="height:5px; border-radius:100px; margin-top:10px; background:#1565C0;"></div>
+                </div>
+                <div style="background:#fff; border:1px solid #ECE4C8; border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(34,30,31,0.08);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><span style="font-size:14.5px; font-weight:700;">Incidencias de agua</span><span style="font-family:'Roboto Mono',monospace; font-weight:700; font-size:13px; color:#847D75;">18</span></div>
+                  <div style="font-size:12px; color:#847D75; line-height:1.5;">Filtración · Lluvias</div>
+                  <div style="height:5px; border-radius:100px; margin-top:10px; background:#6A4C93;"></div>
+                </div>
+              </div>
+
+              <div style="font-family:'Public Sans',sans-serif; font-weight:800; font-size:13px; color:#4A4544; text-transform:uppercase; letter-spacing:.4px; margin:26px 0 10px;">Empresas — vista de lista</div>
+              <table style="width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; border:1px solid #ECE4C8; border-radius:14px; overflow:hidden;">
+                <thead><tr>
+                  <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding:10px 14px; border-bottom:1px solid #ECE4C8; background:#FBF6DE;">Nombre</th>
+                  <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding:10px 14px; border-bottom:1px solid #ECE4C8; background:#FBF6DE;">Locación</th>
+                  <th style="text-align:left; color:#847D75; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding:10px 14px; border-bottom:1px solid #ECE4C8; background:#FBF6DE;">Teléfono</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:26px; height:26px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px;">8L</div>8LOGOS, SRL</div></td><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;">D2</td><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;">809-555-1234</td></tr>
+                  <tr><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:26px; height:26px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px;">GN</div>Grupo Nexa</div></td><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;">D4</td><td style="padding:10px 14px; border-bottom:1px solid #ECE4C8;">809-555-8890</td></tr>
+                  <tr><td style="padding:10px 14px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:26px; height:26px; border-radius:50%; background:#E0C01A; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px;">VL</div>Vértice Legal</div></td><td style="padding:10px 14px;">D3</td><td style="padding:10px 14px;">809-555-4402</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </x-import></div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+</body>
+</html>
