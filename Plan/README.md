@@ -41,6 +41,10 @@ opcional aparte.
   reciente arriba.
 - [`05-ESTANDARES.md`](05-ESTANDARES.md) — convenciones de código, skills relevantes,
   checklist antes de dar un cambio por bueno, lecciones aprendidas.
+- [`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md) —
+  brief de producto (seguridad, roles, dashboard) dado por Jose y prompt de revisión
+  para alinear ASIGNA a él. **Borrador con decisiones pendientes de Jose** — no
+  implementar sus puntos de conflicto sin confirmación explícita.
 
 ## Para el agente de diseño
 
