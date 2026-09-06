@@ -938,6 +938,26 @@ async function fbGetOne(collection, id){
   if(!res.ok) throw new Error(await res.text());
   return fbDocToObj(await res.json());
 }
+// Consulta estructurada (:runQuery) con un filtro de igualdad — a diferencia de
+// fbGet (que lista TODA la colección), esto es lo que permite que las reglas de
+// Firestore verifiquen que un Locatario solo pide SUS propios documentos (ver
+// reglas nuevas de tickets/notificaciones en README.md sección 3.1 y
+// Plan/01-ARQUITECTURA.md, "seguridad por fila"). Firestore valida que el `where`
+// de esta consulta coincide con la condición de la regla antes de permitir el
+// list — si no coincide, la regla rechaza toda la consulta.
+async function fbQuery(collection, field, value){
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: collection }],
+      where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: jsToFbVal(value) } }
+    }
+  };
+  const res = await fetch(`${FB_URL}:runQuery?key=${FIREBASE_CONFIG.apiKey}`,
+    { method:'POST', headers:{'Content-Type':'application/json', ...(await authHeaders())}, body:JSON.stringify(body) });
+  if(!res.ok) throw new Error(await res.text());
+  const rows = await res.json();
+  return (Array.isArray(rows) ? rows : []).filter(r=>r.document).map(r=>fbDocToObj(r.document));
+}
 async function fbSet(collection, id, obj){
   const fields = objToFbFields(obj);
   const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`,
@@ -1157,10 +1177,15 @@ async function enterApp(){
     // Firestore) el staff (admin/empleado) — un Locatario ya trae su propio perfil
     // en currentUser desde el login y no debe descargar la lista de todos los
     // usuarios (ni sus contraseñas heredadas). Ver Plan/01-ARQUITECTURA.md.
+    // Un Locatario no puede (ni debe) listar TODA la colección de tickets ni de
+    // notificaciones — las reglas de Firestore solo permiten un `list` filtrado a
+    // sus propios documentos (:runQuery), nunca la colección completa. Staff sí
+    // puede listar todo. Ver Plan/01-ARQUITECTURA.md, "seguridad por fila".
     const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias] = await Promise.all([
-      sb.getAll('tickets'),
+      isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
-      sb.getAll('notificaciones'), sb.getAll('empresas'),
+      isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
+      sb.getAll('empresas'),
       // 'categorias' es una colección nueva — si las reglas de Firestore todavía no la
       // incluyen, esto falla con 403. Se aísla con su propio catch para que ese fallo no
       // tumbe la sincronización de tickets/usuarios/empresas también.
@@ -1399,9 +1424,10 @@ async function syncFromFirebase(){
   if(!currentUser) return;
   try{
     const [t,u,n,emp,cat] = await Promise.all([
-      sb.getAll('tickets'),
+      isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
-      sb.getAll('notificaciones'), sb.getAll('empresas'),
+      isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
+      sb.getAll('empresas'),
       sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; })
     ]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }

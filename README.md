@@ -77,21 +77,27 @@ const FIREBASE_CONFIG = {
 
 ## 3. Reglas de Firestore
 
-### 3.1 — Reglas nuevas (2026-09), pendientes de pegar en la consola
+### 3.1 — Reglas activas en producción (2026-09)
 
-ASIGNA migró el login a **Firebase Authentication** (ver `Plan/01-ARQUITECTURA.md`,
-sección "Autenticación de usuarios"). El código de `index.html` ya funciona con las
-reglas viejas (abajo, 3.2) porque migra cada cuenta a Firebase Authentication la
-primera vez que inicia sesión con el código nuevo — pero **la protección real de
-"cada quien ve solo lo suyo" no existe hasta que se peguen estas reglas nuevas.**
+**Estado: ya publicadas y probadas con las 3 cuentas de rol (Admin, Empleado,
+Locatario) en producción**, tras la migración a Firebase Authentication (ver
+`Plan/01-ARQUITECTURA.md`, sección "Autenticación de usuarios").
 
-**No pegar todavía sin haber confirmado antes que las 3 cuentas de rol (Admin,
-Empleado, Locatario) ya iniciaron sesión al menos una vez con el `index.html`
-desplegado que incluye Firebase Authentication** — si una cuenta no se ha migrado
-aún y estas reglas ya están activas, esa cuenta no podrá iniciar sesión (el
-`accounts:signUp` de migración funciona sin reglas nuevas, pero las reglas nuevas
-exigen ya tener un perfil autenticado para casi todo). Ver
-`Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md` para el detalle completo del plan.
+### 3.2 — Reglas nuevas, pendientes de pegar (seguridad por fila de tickets/notificaciones)
+
+Añaden lo que las reglas de 3.1 (ya activas) todavía no resolvían: que un
+**Locatario** no pueda listar la colección completa de `tickets`/`notificaciones` —
+solo puede consultar (`list`) los documentos donde él es el dueño, y Firestore lo
+verifica comparando el `where` de la consulta contra la condición de la regla, no
+confiando en el cliente. El código de `index.html` ya usa `:runQuery` con ese
+filtro para el rol Locatario (`fbQuery`, ver `Plan/01-ARQUITECTURA.md`) — funciona
+igual con las reglas de 3.1 activas (porque ahí "leer" no distinguía `get`/`list`),
+así que **puedes probar el código nuevo antes de pegar estas reglas.**
+
+**No pegar todavía sin haber confirmado antes que las 3 cuentas de rol siguen
+funcionando bien con el código nuevo** (tickets, notificaciones, comentarios,
+reabrir) — igual que la vez anterior. Ver `Plan/03-ROADMAP.md` y
+`Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
 
 ```
 rules_version = '2';
@@ -140,21 +146,20 @@ service cloud.firestore {
     }
 
     match /tickets/{ticketId} {
-      // NOTA (ver Plan/03-ROADMAP.md, "seguridad por fila"): esto exige estar
-      // autenticado, pero todavía NO restringe a un Locatario a ver solo sus
-      // propios tickets a nivel de base de datos — eso requiere reescribir el
-      // fetch de tickets a consultas estructuradas (:runQuery) y es la siguiente
-      // tarea de seguridad pendiente, no incluida en esta migración.
-      allow read: if autenticado();
+      // "empleado_email" guarda, pese al nombre heredado, el correo de quien
+      // REPORTÓ el ticket (el Locatario) — no el del responsable asignado.
+      allow get: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
+      allow list: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
       allow create: if autenticado() && tieneClaves(request.resource.data,
                       ['id','numero','empleado_email','locacion','categoria','descripcion','status','historial'])
                    && request.resource.data.status == 'nuevo';
-      allow update: if autenticado() && request.resource.data.status in ['nuevo','en_proceso','cerrado'];
+      allow update: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
       allow delete: if soyAdmin();
     }
 
     match /notificaciones/{notifId} {
-      allow read: if autenticado();
+      allow get: if soyStaff() || (autenticado() && resource.data.para == miEmail());
+      allow list: if soyStaff() || (autenticado() && resource.data.para == miEmail());
       allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','para','tipo','mensaje','fecha','leida']);
       allow delete: if autenticado();
     }
@@ -178,19 +183,14 @@ service cloud.firestore {
 }
 ```
 
-**Lo que estas reglas nuevas sí resuelven:** ya nadie puede leer/escribir Firestore
-sin haber iniciado sesión con una cuenta real (antes, cualquiera con el `apiKey`
-público —visible en el código— podía leer toda la colección `usuarios`, contraseñas
-en texto plano incluidas, sin loguearse). También impiden que un Empleado se otorgue
-a sí mismo o a otro un rol de Admin/Empleado.
+**Lo que estas reglas nuevas (3.1.1) resuelven:** que un Locatario ya no puede
+listar/leer tickets o notificaciones de otras empresas/locatarios llamando a la API
+directo — Firestore rechaza cualquier consulta que no esté filtrada exactamente por
+su propio correo en `empleado_email`/`para`. Empresas y Categorías siguen abiertas a
+cualquier cuenta autenticada (son catálogos de referencia, no datos confidenciales
+por tenant) — eso sigue igual que en 3.1.
 
-**Lo que NO resuelven todavía:** que un Locatario solo vea *sus* tickets a nivel de
-base de datos (hoy sigue siendo, como antes, un filtro de interfaz — cualquier
-cuenta autenticada, incluida una de Locatario, puede listar la colección completa de
-`tickets`/`notificaciones` si llama a la API directo). Cerrar esa brecha es la
-siguiente tarea de seguridad — ver `Plan/03-ROADMAP.md`.
-
-### 3.2 — Reglas anteriores (activas en producción hasta que se peguen las de 3.1)
+### 3.3 — Reglas históricas (reemplazadas por las de 3.1, antes de Firebase Authentication)
 
 ```
 rules_version = '2';
@@ -246,10 +246,10 @@ service cloud.firestore {
 }
 ```
 
-⚠️ **Límite real de estas reglas (las de 3.2, todavía activas):** como no verifican
-identidad, cualquiera con la `apiKey` (pública, va en el código) puede leer la lista
+⚠️ **Límite real de estas reglas (3.3, ya reemplazadas):** como no verificaban
+identidad, cualquiera con la `apiKey` (pública, va en el código) podía leer la lista
 de usuarios (incluidas las contraseñas en texto plano) y crear tickets con datos
-válidos. Esta es exactamente la brecha que cierran las reglas de 3.1.
+válidos. Esa es exactamente la brecha que cerraron las reglas de 3.1, ya activas.
 
 ## 4. Primer ingreso
 

@@ -111,16 +111,19 @@ backend propio y sin romper el acceso de las cuentas ya existentes:
   limpia la sesión guardada y se pide iniciar sesión de nuevo (evita una app que
   parece funcionar pero en realidad no puede leer nada por falta de token válido).
 
-**Pendiente, NO resuelto por esta migración (ver `Plan/03-ROADMAP.md`):**
-seguridad por fila para `tickets`/`notificaciones` — hoy cualquier cuenta
-autenticada (incluida una de Locatario) puede listar la colección completa vía la
-API REST simple de "listar documentos", porque las reglas de `list` de Firestore no
-pueden filtrar por documento salvo usando consultas estructuradas (`:runQuery`) con
-un `where` que la regla valide — el cliente de ASIGNA hoy usa el endpoint simple de
-listado, no consultas estructuradas. Cerrar esto requiere reescribir cómo se piden
-los tickets para el rol Locatario y las reglas correspondientes, y probarlo con
-cuidado — se dejó fuera de este cambio a propósito para no mezclar una reescritura
-más grande y riesgosa con la migración de login.
+**Seguridad por fila (2026-09, código listo — reglas pendientes de pegar):**
+para `tickets`/`notificaciones`, un Locatario ya no usa `fbGet` (lista TODA la
+colección) — usa `fbQuery(collection, campo, valor)`, que llama al endpoint de
+consultas estructuradas de Firestore (`:runQuery`) con un filtro de igualdad
+(`empleado_email` en tickets — el campo que guarda, pese al nombre heredado, el
+correo de quien REPORTÓ el ticket, no el del responsable asignado — y `para` en
+notificaciones). Las reglas nuevas (README.md sección 3.2) separan `get`/`list` de
+`tickets`/`notificaciones` en `soyStaff() || resource.data.<campo> == miEmail()` —
+Firestore verifica que el `where` de la consulta coincida con esa condición antes de
+permitir el `list`; si el cliente pidiera la colección sin ese filtro, la regla la
+rechaza entera. Staff (admin/empleado) sigue usando `fbGet` sin filtrar, permitido
+por `soyStaff()`. Empresas y Categorías quedan fuera de este cambio (catálogos de
+referencia, no confidenciales por tenant).
 
 ## PWA
 - `manifest.json` + `sw.js`.

@@ -15,6 +15,29 @@ en `05-ESTANDARES.md`). Verificado en GitHub que `CLAUDE.md` y `Plan/` ya están
 `main` remoto (no hay nada que verificar en producción/GitHub Pages porque este
 cambio no toca `index.html`).
 
+## 2026-09-02 — Fases 1 y 2 en producción, probadas con las 3 cuentas
+Jose activó Firebase Authentication (Email/Password) en la consola —no estaba
+activado, causa del primer intento fallido de login— y publicó las reglas de
+Firestore de la sección 3.1 del README. Probó las 3 cuentas de rol (Admin, Empleado
+`katherine@...`, Locatario `hola@...`) en local antes y después de publicar las
+reglas: todas migraron a Firebase Authentication correctamente y la app siguió
+funcionando. Se hizo merge a `main` y push (`b8e0fc7` → `a7c6578`) — verificado en
+producción (`https://llorente21.github.io/asigna-tickets/`) vía el navegador
+integrado, que cargó con una sesión activa (solo posible con el flujo de Auth ya
+desplegado).
+
+## 2026-09-02 — Seguridad por fila para tickets/notificaciones: código listo
+Rama `plan/seguridad-por-fila-tickets`. Se agregó `fbQuery()` (Firestore
+`:runQuery`, consulta estructurada con filtro de igualdad) y se cambió `enterApp`/
+`syncFromFirebase` para que un Locatario pida sus tickets/notificaciones filtrados
+por `empleado_email`/`para` en vez de listar la colección completa (que hacían con
+`fbGet`, igual que staff). Reglas nuevas escritas en README.md sección 3.2
+(`allow get/list` separados por `resource.data.<campo> == miEmail()`), pendientes de
+publicar — el código ya funciona con las reglas de 3.1 (activas), así que se puede
+probar antes de pegar las de 3.2. Sin verificar contra Firebase real por el agente
+(mismo límite de red de siempre) — pendiente de que Jose repita la prueba de las 3
+cuentas.
+
 ## 2026-09-02 — Fase 1 (Firebase Authentication) y Fase 2 (rol Empleado ampliado): código listo
 Implementado en `index.html` (rama `plan/revision-seguridad-ux-dashboard`, sin
 desplegar todavía): login vía Firebase Authentication REST con migración perezosa
