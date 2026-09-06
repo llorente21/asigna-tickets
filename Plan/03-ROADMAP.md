@@ -5,15 +5,31 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-_(vacío — nada en progreso al crear este documento)_
+_(vacío — ver "Pendiente — prioridad alta" para el plan de ajustes 2026-09 acordado
+con Jose; detalle completo en `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`)_
 
-## Pendiente — prioridad alta
-- **Seguridad real por rol vía Firebase Authentication.** Hoy las reglas de Firestore
-  solo validan la *forma* de los datos, no *quién* escribe (login casero, sin Auth).
-  Cualquiera con el `apiKey` público puede leer `usuarios` (incluidas contraseñas en
-  texto plano) o crear tickets válidos. Migrar a Firebase Authentication (o al menos
-  hashear contraseñas) es la mejora de seguridad pendiente más importante. No bloquea
-  el uso interno normal, pero es una deuda técnica real.
+## Pendiente — prioridad alta (plan de ajustes 2026-09, decidido con Jose)
+Detalle completo, justificación y orden sugerido en
+[`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md)
+(secciones 4 y 5). Resumen:
+
+1. **Migrar a Firebase Authentication** (reemplaza el ítem anterior de este roadmap).
+   Base de seguridad real: hoy las reglas de Firestore solo validan la forma de los
+   datos, no quién escribe — cualquiera con el `apiKey` público puede leer `usuarios`
+   (contraseñas en texto plano incluidas) o crear tickets válidos. Migración vía
+   Identity Toolkit REST (`accounts:signUp`) reutilizando las contraseñas actuales,
+   sin backend propio. Alto riesgo si se hace mal — probar las 3 cuentas de rol antes
+   de tocar producción.
+2. **Rol Empleado ampliado** (perfiles de Locatario + Dashboard de solo lectura) —
+   se implementa junto con la Fase 1 porque toca las mismas reglas de Firestore.
+3. **Auto-registro con aprobación** para Locatario — depende de la Fase 1.
+4. **Calificación del servicio al cerrar ticket** (1-5 estrellas) — independiente,
+   bajo riesgo, se puede hacer en paralelo.
+5. **"Suplidor" como catálogo** de responsables externos (sin cuenta propia) —
+   independiente, bajo riesgo.
+6. **Dashboard ampliado** (carga por responsable, vencidos en tiempo real, tasa de
+   reapertura, tiempo de primera respuesta, promedio de calificación) — al final,
+   depende de datos que generan las Fases 2 y 4.
 
 ## Pendiente — prioridad media
 - **Estados y Prioridades como catálogos editables.** Hoy son de solo lectura en el

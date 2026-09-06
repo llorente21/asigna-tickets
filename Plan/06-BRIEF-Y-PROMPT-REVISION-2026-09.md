@@ -140,3 +140,62 @@ misma sesión o en una nueva) para hacer la revisión y los ajustes.
 > flujo de GitHub device login documentado en `01-ARQUITECTURA.md`.
 
 ---
+
+## 4. Decisiones tomadas por Jose (2026-09-02)
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | Seguridad | **Migrar a Firebase Authentication** (solución real, no la mejora intermedia). |
+| 2 | Auto-registro | **Con aprobación del admin/empleado** — el locatario se registra solo, pero la cuenta queda pendiente hasta aprobación. |
+| 3 | Calificación del servicio | **Sí, al cerrar el ticket** (1-5 estrellas), sin reintroducir el paso "Resuelto". Flujo sigue siendo Nuevo → En proceso → Cerrado. |
+| 4 | "Suplidor" | **Etiqueta/categoría de responsable, sin cuenta propia** — el suplidor no entra a ASIGNA, alguien interno lo registra y le da seguimiento. |
+| 5 | Empleado — perfiles | **Sí** — puede crear/editar cuentas de Locatario (no Admin/Empleado, no puede otorgarse ni otorgar roles iguales o superiores). |
+| 6 | Empleado — Dashboard | **Sí** — acceso de solo lectura al Dashboard. |
+
+Ya no son puntos abiertos: quedan integradas en `02-FUNCIONALIDAD.md` cuando se
+implementen, y removidas de aquí como pendiente de decisión.
+
+## 5. Plan de ajustes priorizado
+
+**Fase 1 — Seguridad real (Firebase Authentication).** Base de todo lo demás: hacer
+auto-registro y ampliar permisos de Empleado sin identidad verificable solo agregaría
+más superficie a la misma vulnerabilidad conocida. Migración sin backend propio:
+usar el REST endpoint de Identity Toolkit (`accounts:signUp`) para crear en Firebase
+Auth una cuenta por cada usuario ya existente en Firestore, usando su mismo
+email+contraseña en texto plano (nadie tiene que resetear su clave). Luego:
+reescribir `firestore.rules` para verificar `request.auth` (identidad real, no solo
+forma de datos) y dar a cada colección reglas por rol/dueño; cambiar el login de
+`index.html` para autenticar contra Firebase Auth (REST `accounts:signInWithPassword`)
+en vez de comparar contraseña directo en Firestore. **Alto riesgo si se hace mal —
+probar exhaustivamente con las 3 cuentas de rol antes de tocar producción, en una
+rama, con respaldo de la colección `usuarios` actual antes de migrar.**
+
+**Fase 2 — Rol Empleado ampliado.** Una vez reescritas las reglas en la Fase 1 (se
+hace en el mismo paso, ya que toca las mismas reglas): Empleado puede gestionar
+perfiles de Locatario (UI + regla que impide asignar rol admin/empleado) y tiene
+acceso de solo lectura al Dashboard (UI + regla de lectura, sin acciones de edición).
+
+**Fase 3 — Auto-registro con aprobación.** Depende de la Fase 1 (crea cuentas reales
+en Firebase Auth). Pantalla de registro para Locatario (nunca para Admin/Empleado),
+cuenta nueva con `aprobado: false`; notificación a Admin/Empleado; el locatario puede
+iniciar sesión pero ve "cuenta pendiente de aprobación" hasta que se apruebe — no
+accede a tickets ni puede crearlos antes de eso.
+
+**Fase 4 — Calificación del servicio.** Independiente de las anteriores, bajo riesgo:
+al cerrar un ticket, el locatario puede calificar 1-5 estrellas (campo opcional en el
+ticket); agregar promedio de calificación al Dashboard.
+
+**Fase 5 — "Suplidor" como catálogo.** Independiente, bajo riesgo: nuevo catálogo
+(similar a Empresas) de proveedores/suplidores externos; el campo "responsable" del
+ticket puede apuntar a un Empleado interno o a un Suplidor del catálogo.
+
+**Fase 6 — Dashboard como pilar (productiva).** Ampliar métricas: carga de trabajo
+por responsable (empleado/suplidor), vencidos por SLA en tiempo real, tasa de
+reapertura, tiempo de primera respuesta vs. resolución, promedio de calificación
+(una vez exista la Fase 4). Aplica la visibilidad de solo lectura para Empleado
+definida en la Fase 2.
+
+**Orden sugerido de ejecución:** Fase 1 primero (es la base de seguridad y de las
+Fases 2 y 3). Fases 4 y 5 se pueden hacer en paralelo o antes, si se prefiere,
+porque no dependen de la migración de Auth. Fase 6 al final, cuando ya existan los
+datos de calificación y de suplidor que alimentan las métricas nuevas.
