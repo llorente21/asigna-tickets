@@ -72,6 +72,12 @@ input,select,textarea{font-family:'Inter',sans-serif;}
   opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease; pointer-events:none;
 }
 #auth-screen.show{opacity:1; transform:translateY(0); pointer-events:all;}
+#register-screen, #pending-screen{
+  display:none;
+  min-height:100vh; min-height:100dvh; flex-direction:column;
+  align-items:center; justify-content:center; padding:2rem 1.5rem; background:var(--bg);
+}
+#register-screen.show, #pending-screen.show{display:flex;}
 .auth-card{width:100%; max-width:380px;}
 .auth-logo{display:flex; flex-direction:column; align-items:center; margin-bottom:22px;}
 .auth-logo img{width:120px; height:120px; border-radius:18px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
@@ -437,7 +443,56 @@ main.view.active{display:block;}
       <input id="password-input" type="password" placeholder="••••••••" autocomplete="current-password">
     </div>
     <button class="btn btn-primary" id="auth-btn" style="width:100%;" onclick="handleAuth()">Ingresar →</button>
-    <p class="auth-hint">¿No tienes acceso? Solicítalo a la administración de tu locación para que te cree un usuario.</p>
+    <p class="auth-hint">¿Eres Locatario y no tienes cuenta? <a href="javascript:void(0)" onclick="showRegisterScreen()">Crea tu cuenta aquí</a>.</p>
+    <p class="auth-hint">¿No tienes acceso y no eres Locatario? Solicítalo a la administración de tu locación para que te cree un usuario.</p>
+  </div>
+</div>
+
+<!-- ===================== REGISTRO (auto-registro de Locatario, con aprobación) ===================== -->
+<div id="register-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="logo-hero.jpg" alt="ASIGNA">
+      <div class="t2">para Oficinas Felices</div>
+    </div>
+    <h1 class="auth-title">Crear cuenta</h1>
+    <p class="auth-desc">Cuenta para Locatarios. Un administrador debe aprobarla antes de que puedas usarla.</p>
+    <div id="register-error" class="auth-error"></div>
+    <div class="field">
+      <label>Nombre completo</label>
+      <input id="reg-name" type="text" placeholder="Tu nombre">
+    </div>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input id="reg-email" type="email" placeholder="tucorreo@empresa.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>Locación</label>
+      <select id="reg-locacion"></select>
+    </div>
+    <div class="field">
+      <label>Empresa</label>
+      <select id="reg-empresa"></select>
+    </div>
+    <button class="btn btn-primary" id="register-btn" style="width:100%;" onclick="handleRegister()">Crear cuenta →</button>
+    <p class="auth-hint">¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="showAuthScreen()">Inicia sesión</a>.</p>
+  </div>
+</div>
+
+<!-- ===================== CUENTA PENDIENTE DE APROBACIÓN ===================== -->
+<div id="pending-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="logo-hero.jpg" alt="ASIGNA">
+      <div class="t2">para Oficinas Felices</div>
+    </div>
+    <h1 class="auth-title">Cuenta pendiente</h1>
+    <p class="auth-desc">Tu cuenta fue creada y está esperando la aprobación de un administrador o empleado. Te avisaremos cuando puedas ingresar — intenta iniciar sesión de nuevo más tarde.</p>
+    <button class="btn btn-outline" style="width:100%;" onclick="logout()">Cerrar sesión</button>
   </div>
 </div>
 
@@ -737,6 +792,10 @@ main.view.active{display:block;}
     <div id="u-locatario-fields">
       <div class="field"><label>Locación</label><select id="u-locacion"></select></div>
       <div class="field"><label>Empresa (arrendataria)</label><select id="u-empresa"></select></div>
+    </div>
+    <div class="field" id="u-approve-field" style="display:none;">
+      <p style="font-size:13px; color:#856404; background:#fff3cd; padding:8px 10px; border-radius:8px; margin:0 0 8px;">Esta cuenta se registró sola y está pendiente de aprobación. No podrá ingresar hasta que la apruebes.</p>
+      <button type="button" class="btn btn-primary" style="width:100%;" onclick="approveUser()">Aprobar cuenta</button>
     </div>
     <div class="field-hint" id="u-readonly-hint" style="display:none; margin-bottom:10px;">Solo Administración puede modificar esta cuenta.</div>
     <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" id="u-save-btn" onclick="saveUser()">Guardar usuario</button>
@@ -1147,6 +1206,10 @@ async function handleAuth(){
 
   currentUser = { email:userDoc.email||email, name:userDoc.name, role:userDoc.role, locacion:userDoc.locacion||'', empresa:userDoc.empresa||'' };
   localStorage.setItem('of_user', JSON.stringify(currentUser));
+  // Cuentas creadas por Admin/Empleado no tienen el campo 'aprobado' — se
+  // consideran aprobadas por defecto. Solo el auto-registro (Fase 3) crea
+  // perfiles con aprobado:false explícito, que deben quedar en espera.
+  if(userDoc.aprobado === false){ showPendingScreen(); return; }
   await enterApp();
 }
 
@@ -1156,8 +1219,57 @@ function logout(){
   localStorage.removeItem('of_user');
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('email-input').value=''; document.getElementById('password-input').value='';
-  document.getElementById('auth-screen').style.display = 'flex';
-  requestAnimationFrame(()=>document.getElementById('auth-screen').classList.add('show'));
+  showAuthScreen();
+}
+
+async function handleRegister(){
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const password = document.getElementById('reg-password').value.trim();
+  const locacion = document.getElementById('reg-locacion').value;
+  const empresa = document.getElementById('reg-empresa').value.trim();
+  const btn = document.getElementById('register-btn');
+  const err = document.getElementById('register-error');
+  err.style.display = 'none';
+
+  if(!name || !email || !password){ err.textContent='Completa nombre, correo y contraseña.'; err.style.display='block'; return; }
+  if(password.length < 6){ err.textContent='La contraseña debe tener al menos 6 caracteres.'; err.style.display='block'; return; }
+  if(!empresa){ err.textContent='Selecciona tu empresa.'; err.style.display='block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+  try{
+    // firebaseSignUp también nos sirve para detectar correos duplicados: un
+    // usuario que aún no tiene sesión no puede leer Firestore para chequear
+    // si el correo ya existe, pero Firebase Authentication sí nos avisa
+    // (EMAIL_EXISTS) si la cuenta ya fue creada antes.
+    await firebaseSignUp(email, password);
+  }catch(signUpErr){
+    btn.disabled = false; btn.textContent = 'Crear cuenta →';
+    if(String(signUpErr.message).includes('EMAIL_EXISTS')){
+      err.textContent = 'Ya existe una cuenta con ese correo. Inicia sesión o restablece tu contraseña.';
+    } else {
+      err.textContent = 'No se pudo crear la cuenta: '+signUpErr.message;
+    }
+    err.style.display = 'block';
+    return;
+  }
+
+  const user = { email, name, role:'locatario', locacion, empresa, password:'', aprobado:false };
+  try{
+    await fbSet('usuarios', email, user);
+  }catch(setErr){
+    btn.disabled = false; btn.textContent = 'Crear cuenta →';
+    err.textContent = 'Tu acceso se creó, pero no se pudo guardar tu perfil. Contacta a administración.';
+    err.style.display = 'block';
+    console.warn('handleRegister fbSet', setErr);
+    return;
+  }
+
+  currentUser = { email, name, role:'locatario', locacion, empresa };
+  localStorage.setItem('of_user', JSON.stringify(currentUser));
+  crearNotif('staff', 'nuevo_registro', '', `${name} (${empresa}) solicitó una cuenta de Locatario.`);
+  btn.disabled = false; btn.textContent = 'Crear cuenta →';
+  showPendingScreen();
 }
 
 /* ======================================================================
@@ -1259,6 +1371,7 @@ function buildStaticSelects(){
   document.getElementById('u-locacion').innerHTML = locOpts;
   document.getElementById('f-locacion').innerHTML = locOpts;
   document.getElementById('e-locacion').innerHTML = '<option value="">— Sin especificar —</option>'+locOpts;
+  document.getElementById('reg-locacion').innerHTML = locOpts;
   document.getElementById('tmp-status').innerHTML = '<option value="todos">Todos</option>'+STATUS_FLOW.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
   buildEmpresaOptions();
 }
@@ -1881,7 +1994,7 @@ function renderNotifsDrawerContent(){
     </div>`).join('');
 }
 function notifTitle(tipo){
-  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto' }[tipo] || 'Notificación';
+  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto', nuevo_registro:'Solicitud de cuenta' }[tipo] || 'Notificación';
 }
 function onNotifClick(notifId, ticketId){
   const n = NOTIFS.find(x=>x.id===notifId);
@@ -1898,6 +2011,7 @@ openDrawer = function(name){ if(name==='notifs') renderNotifsDrawerContent(); _o
 
 const ROLE_ORDER = { admin:0, empleado:1, locatario:2 };
 function userCardHTML(u){
+  const pendienteTag = u.aprobado===false ? '<span class="role-tag" style="background:#fff3cd; color:#856404;">Pendiente</span>' : '';
   return `
     <div class="user-card" onclick="openUserForm('${esc(u.email)}')">
       <div class="avatar">${initials(u.name)}</div>
@@ -1905,6 +2019,7 @@ function userCardHTML(u){
         <div class="name">${esc(u.name)}</div>
         <div class="email">${esc(u.email)}${u.locacion?' · '+esc(u.locacion):''}${u.empresa?' · '+esc(u.empresa):''}</div>
       </div>
+      ${pendienteTag}
       <span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>
     </div>`;
 }
@@ -1914,7 +2029,7 @@ function usersTableHTML(list){
     <tr onclick="openUserForm('${esc(u.email)}')">
       <td><div class="name-cell"><div class="avatar">${initials(u.name)}</div>${esc(u.name)}</div></td>
       <td>${esc(u.email)}</td>
-      <td><span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span></td>
+      <td><span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>${u.aprobado===false ? ' <span class="role-tag" style="background:#fff3cd; color:#856404;">Pendiente</span>' : ''}</td>
       <td>${u.locacion ? esc(u.locacion) : '—'}</td>
       <td>${u.empresa ? esc(u.empresa) : '—'}</td>
     </tr>`).join('');
@@ -1945,6 +2060,7 @@ function buildEmpresaOptions(){
     EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e=>`<option value="${esc(e.nombre)}">${esc(e.nombre)}</option>`).join('');
   const fEmpresa = document.getElementById('f-empresa'); if(fEmpresa) fEmpresa.innerHTML = opts;
   const uEmpresa = document.getElementById('u-empresa'); if(uEmpresa) uEmpresa.innerHTML = opts;
+  const regEmpresa = document.getElementById('reg-empresa'); if(regEmpresa) regEmpresa.innerHTML = opts;
 }
 
 function empresaSubtitle(e){
@@ -2064,6 +2180,7 @@ function openUserForm(email, forcedRole){
   document.getElementById('u-readonly-hint').style.display = readOnly ? 'block' : 'none';
   document.getElementById('u-password-field').style.display = isNew ? 'block' : 'none';
   document.getElementById('u-reset-field').style.display = (!isNew && !readOnly) ? 'block' : 'none';
+  document.getElementById('u-approve-field').style.display = (!isNew && !readOnly && existing?.aprobado===false) ? 'block' : 'none';
 
   if(existing){
     document.getElementById('u-name').value = existing.name;
@@ -2104,6 +2221,19 @@ function onRoleFieldChange(){
     locatario: 'Inquilino que reporta incidencias y da seguimiento a sus propios tickets.'
   };
   document.getElementById('u-role-hint').textContent = hints[role] || '';
+}
+
+async function approveUser(){
+  if(!editingUserEmail) return;
+  const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
+  if(idx<0) return;
+  if(!puedeEditarUsuario(USERS_LIST[idx].role)){ showToast('No tienes permiso para aprobar esta cuenta'); return; }
+  USERS_LIST[idx] = { ...USERS_LIST[idx], aprobado:true };
+  localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
+  document.getElementById('u-approve-field').style.display = 'none';
+  renderUsersList();
+  showToast('Cuenta aprobada ✓');
+  try{ await fbSet('usuarios', editingUserEmail, USERS_LIST[idx]); }catch(e){ console.warn('approveUser fbSet', e); }
 }
 
 async function sendUserPasswordReset(){
@@ -2147,7 +2277,13 @@ async function saveUser(){
   }
 
   const prevDoc = !isNew ? USERS_LIST.find(u=>u.email===editingUserEmail) : null;
-  const user = { email, name, role, locacion, empresa, password: isNew ? password : (prevDoc?.password || '') };
+  // Preservar 'aprobado' explícitamente: fbSet/PATCH reemplaza el documento
+  // completo, así que si no lo incluimos aquí, guardar cualquier otro cambio
+  // en una cuenta pendiente la aprobaría por accidente (el campo ausente se
+  // trata como aprobado en toda la app). Solo queda en false si ya lo estaba
+  // y no se aprobó explícitamente con el botón "Aprobar cuenta".
+  const aprobado = isNew ? true : (prevDoc && prevDoc.aprobado === false ? false : true);
+  const user = { email, name, role, locacion, empresa, password: isNew ? password : (prevDoc?.password || ''), aprobado };
   if(!isNew){
     const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
     if(emailChanged) USERS_LIST.splice(idx,1); else USERS_LIST[idx] = user;
@@ -2451,6 +2587,13 @@ setTimeout(async ()=>{
       currentUser = JSON.parse(saved);
       const token = await getIdToken();
       if(!token) throw new Error('SESION_EXPIRADA');
+      // Volvemos a leer el perfil (no confiamos en el caché local) para que un
+      // usuario en espera de aprobación vea el estado correcto en cada carga
+      // -- y para que, una vez aprobado, entre a la app sin tener que borrar
+      // datos locales manualmente.
+      let freshDoc = null;
+      try{ freshDoc = await fbGetOne('usuarios', currentUser.email); }catch(e){ console.warn('perfil fetch failed (bootstrap)', e); }
+      if(freshDoc && freshDoc.aprobado === false){ showPendingScreen(); return; }
       enterApp();
       return;
     }catch(e){ console.warn('Sesión guardada inválida, se pide iniciar sesión de nuevo', e); }
@@ -2460,8 +2603,36 @@ setTimeout(async ()=>{
 }, 1400);
 
 function showAuthScreen(){
+  document.getElementById('register-screen').style.display = 'none';
+  document.getElementById('register-screen').classList.remove('show');
+  document.getElementById('pending-screen').style.display = 'none';
+  document.getElementById('pending-screen').classList.remove('show');
   document.getElementById('auth-screen').style.display = 'flex';
   requestAnimationFrame(()=>document.getElementById('auth-screen').classList.add('show'));
+}
+
+function showRegisterScreen(){
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('auth-screen').classList.remove('show');
+  document.getElementById('pending-screen').style.display = 'none';
+  document.getElementById('pending-screen').classList.remove('show');
+  document.getElementById('register-error').style.display = 'none';
+  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-password').value = '';
+  buildStaticSelects();
+  document.getElementById('reg-locacion').value = 'D1';
+  document.getElementById('register-screen').style.display = 'flex';
+  requestAnimationFrame(()=>document.getElementById('register-screen').classList.add('show'));
+}
+
+function showPendingScreen(){
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('auth-screen').classList.remove('show');
+  document.getElementById('register-screen').style.display = 'none';
+  document.getElementById('register-screen').classList.remove('show');
+  document.getElementById('pending-screen').style.display = 'flex';
+  requestAnimationFrame(()=>document.getElementById('pending-screen').classList.add('show'));
 }
 
 if('serviceWorker' in navigator){

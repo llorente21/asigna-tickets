@@ -55,11 +55,14 @@ deliberada: mantenerla es un requisito de diseño, no una limitación temporal.
   curl/REST inmediatamente antes de borrar — nunca reutilizar un ID visto antes en la
   conversación (puede haber cambiado).
 
-## Autenticación de usuarios (actualizado 2026-09, en migración)
+## Autenticación de usuarios (actualizado 2026-09)
 
-**Estado: código desplegado, reglas de Firestore nuevas aún pendientes de pegar por
-Jose.** Ver `Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md` para el plan completo y
-`README.md` sección 3 para el texto exacto de las reglas (viejas y nuevas).
+**Estado: Firebase Authentication y seguridad por fila (tickets/notificaciones) ya
+en producción, probadas con las 3 cuentas de rol. Fase 3 (auto-registro con
+aprobación) tiene el código listo pero sin publicar/probar todavía** — ver la
+sección propia más abajo. Plan completo en
+`Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`, texto exacto de las reglas en
+`README.md` sección 3.
 
 ASIGNA migró de comparar contraseñas en texto plano en Firestore a **Firebase
 Authentication** (REST, sin SDK — mismo criterio que el resto de la app), sin
@@ -111,19 +114,58 @@ backend propio y sin romper el acceso de las cuentas ya existentes:
   limpia la sesión guardada y se pide iniciar sesión de nuevo (evita una app que
   parece funcionar pero en realidad no puede leer nada por falta de token válido).
 
-**Seguridad por fila (2026-09, código listo — reglas pendientes de pegar):**
-para `tickets`/`notificaciones`, un Locatario ya no usa `fbGet` (lista TODA la
-colección) — usa `fbQuery(collection, campo, valor)`, que llama al endpoint de
-consultas estructuradas de Firestore (`:runQuery`) con un filtro de igualdad
+**Seguridad por fila (2026-09, en producción):** para `tickets`/`notificaciones`,
+un Locatario ya no usa `fbGet` (lista TODA la colección) — usa
+`fbQuery(collection, campo, valor)`, que llama al endpoint de consultas
+estructuradas de Firestore (`:runQuery`) con un filtro de igualdad
 (`empleado_email` en tickets — el campo que guarda, pese al nombre heredado, el
 correo de quien REPORTÓ el ticket, no el del responsable asignado — y `para` en
-notificaciones). Las reglas nuevas (README.md sección 3.2) separan `get`/`list` de
+notificaciones). Las reglas (README.md sección 3.1) separan `get`/`list` de
 `tickets`/`notificaciones` en `soyStaff() || resource.data.<campo> == miEmail()` —
 Firestore verifica que el `where` de la consulta coincida con esa condición antes de
 permitir el `list`; si el cliente pidiera la colección sin ese filtro, la regla la
 rechaza entera. Staff (admin/empleado) sigue usando `fbGet` sin filtrar, permitido
 por `soyStaff()`. Empresas y Categorías quedan fuera de este cambio (catálogos de
 referencia, no confidenciales por tenant).
+
+**Auto-registro con aprobación (Fase 3, 2026-09, código listo — reglas y prueba
+pendientes):** un Locatario puede crear su propia cuenta desde el login ("Crea tu
+cuenta aquí" → `#register-screen` → `handleRegister()`), sin que un Admin/Empleado
+la cree primero. El flujo:
+
+- `handleRegister()` llama primero a `firebaseSignUp(email, password)` — esto
+  también sirve para detectar correos duplicados (`EMAIL_EXISTS`), ya que quien se
+  registra todavía no tiene sesión con la que leer Firestore y comprobarlo antes.
+- Si el alta en Firebase Authentication funciona, guarda el perfil en
+  `usuarios/{email}` con `role:'locatario'` y **`aprobado:false`**, y crea una
+  notificación (`crearNotif('staff', 'nuevo_registro', ...)`) para que Admin/
+  Empleado se enteren.
+- Mientras `aprobado===false`, la persona ve `#pending-screen` ("Cuenta
+  pendiente") en vez de la app: tanto `handleAuth()` (login normal) como el
+  bootstrap de sesión al recargar la página revisan `userDoc.aprobado` (el
+  bootstrap vuelve a pedir el perfil fresco con `fbGetOne`, no confía en el
+  caché local, para que el cambio de estado se refleje sin tener que borrar datos
+  locales).
+- **Convención "aprobado por defecto":** el campo `aprobado` solo existe en
+  cuentas creadas por auto-registro. Cualquier cuenta sin ese campo (todas las
+  creadas por Admin/Empleado hasta ahora) se trata como aprobada — tanto en el
+  cliente (`userDoc.aprobado === false`, nunca `!userDoc.aprobado`) como en las
+  reglas de Firestore nuevas (`map.get('aprobado', true)`, ver README.md sección
+  3.2) — así no hace falta ninguna migración de datos.
+- **Aprobar una cuenta:** Admin (cualquier cuenta) o Empleado (solo Locatario) ve
+  un badge "Pendiente" en Usuarios y, al abrir esa cuenta, un botón "Aprobar
+  cuenta" (`approveUser()`) que pone `aprobado:true`. `saveUser()` se ajustó para
+  **preservar** el campo `aprobado` del documento anterior en cualquier otro
+  guardado — como `fbSet` (PATCH) reemplaza el documento completo, guardar un
+  cambio cualquiera sin incluir `aprobado` explícitamente habría aprobado la
+  cuenta por accidente.
+- **Reglas de Firestore nuevas** (README.md sección 3.2, aún sin pegar): agregan
+  `miPerfilAprobado()`/`autorizado()` y exigen `autorizado()` (no solo
+  `autenticado()`) para crear/leer `tickets`, de forma que una cuenta pendiente no
+  pueda tocar tickets de nadie aunque ya tenga sesión válida. `notificaciones`
+  queda con `create`/`update` en `autenticado()` a propósito, porque una persona
+  recién registrada (todavía sin aprobar) necesita poder crear la notificación que
+  avisa a `staff` de su propia solicitud.
 
 ## PWA
 - `manifest.json` + `sw.js`.

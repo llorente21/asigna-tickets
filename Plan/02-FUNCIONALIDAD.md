@@ -75,8 +75,12 @@ navegación inferior + botón +), sin estas secciones de panel.
 
 ### `usuarios/{email}`
 Claves requeridas: `email`, `name`, `password`, `role` (`admin` | `empleado` |
-`locatario`). Contraseña en texto plano (ver limitación de seguridad en
-`01-ARQUITECTURA.md`).
+`locatario`). El campo `password` es heredado de antes de Firebase Authentication
+(ver `01-ARQUITECTURA.md`, sección "Autenticación de usuarios") — la autenticación
+real ya no lo usa, solo queda como parte del esquema del documento. Campo opcional
+`aprobado` (`bool`): solo lo escriben las cuentas creadas por auto-registro
+(Fase 3) con `false`; si no existe, la cuenta se trata como aprobada. Ver
+"Auto-registro con aprobación" en `01-ARQUITECTURA.md`.
 
 ### `tickets/{ticketId}`
 Claves requeridas al crear: `id`, `numero`, `empleado_email`, `locacion`, `categoria`,

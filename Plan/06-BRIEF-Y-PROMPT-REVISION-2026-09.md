@@ -202,19 +202,19 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
 
 ## 6. Estado de implementación
 
-- **Fase 1 (Firebase Authentication) + Fase 2 (rol Empleado ampliado): código
-  listo** en `index.html`, rama `plan/revision-seguridad-ux-dashboard`. Detalle en
-  `01-ARQUITECTURA.md` ("Autenticación de usuarios") y `04-MILESTONES.md`.
-- **No probado contra el proyecto real de Firebase por el agente** — el entorno del
-  agente no tiene salida de red hacia `googleapis.com` (bloqueado por la política de
-  egress de la organización, confirmado tanto desde la VM del dispositivo como desde
-  el contenedor en la nube). **Jose debe probar esto en su propio navegador** con
-  `node _devserver.cjs` antes de que se suba a `main` o se peguen las reglas nuevas:
-  iniciar sesión con las 3 cuentas de rol (Admin, Empleado, Locatario) y confirmar
-  que cada una migra correctamente a Firebase Authentication y sigue funcionando.
-- Reglas de Firestore nuevas: escritas y documentadas en `README.md` sección 3.1,
-  **no aplicadas todavía** — depende de la prueba anterior.
-- Sub-parte B (seguridad por fila para tickets) — **no implementada**, es la
-  siguiente tarea de seguridad, ver `03-ROADMAP.md`.
-- Fases 3-6 (auto-registro, calificación, suplidor, dashboard ampliado) — **no
-  implementadas todavía**, siguen en el roadmap.
+- **Fase 1 (Firebase Authentication) + Fase 2 (rol Empleado ampliado) + seguridad
+  por fila de tickets/notificaciones: en producción**, probadas por Jose con las 3
+  cuentas de rol. Detalle en `01-ARQUITECTURA.md` ("Autenticación de usuarios") y
+  `04-MILESTONES.md`.
+- **Fase 3 (auto-registro con aprobación): código listo, sin probar ni publicar
+  reglas.** Rama `plan/auto-registro-aprobacion`. Detalle en `01-ARQUITECTURA.md`
+  ("Auto-registro con aprobación") y `04-MILESTONES.md`. **No probado contra el
+  proyecto real de Firebase por el agente** — mismo límite de red de siempre (sin
+  salida a `googleapis.com`). Jose debe probar en su navegador con
+  `node _devserver.cjs`: registrar una cuenta nueva, confirmar que queda en
+  "Cuenta pendiente", aprobarla desde Usuarios como Admin y como Empleado, y
+  confirmar que las 3 cuentas existentes (sin campo `aprobado`) siguen entrando
+  bien — antes de pegar las reglas nuevas (README.md sección 3.2) o subir a
+  `main`.
+- Fases 4-6 (calificación, suplidor, dashboard ampliado) — **no implementadas
+  todavía**, siguen en el roadmap.

@@ -80,24 +80,10 @@ const FIREBASE_CONFIG = {
 ### 3.1 — Reglas activas en producción (2026-09)
 
 **Estado: ya publicadas y probadas con las 3 cuentas de rol (Admin, Empleado,
-Locatario) en producción**, tras la migración a Firebase Authentication (ver
+Locatario) en producción**, incluida la seguridad por fila de `tickets`/
+`notificaciones` (un Locatario solo puede `list` sus propios documentos, no la
+colección completa), tras la migración a Firebase Authentication (ver
 `Plan/01-ARQUITECTURA.md`, sección "Autenticación de usuarios").
-
-### 3.2 — Reglas nuevas, pendientes de pegar (seguridad por fila de tickets/notificaciones)
-
-Añaden lo que las reglas de 3.1 (ya activas) todavía no resolvían: que un
-**Locatario** no pueda listar la colección completa de `tickets`/`notificaciones` —
-solo puede consultar (`list`) los documentos donde él es el dueño, y Firestore lo
-verifica comparando el `where` de la consulta contra la condición de la regla, no
-confiando en el cliente. El código de `index.html` ya usa `:runQuery` con ese
-filtro para el rol Locatario (`fbQuery`, ver `Plan/01-ARQUITECTURA.md`) — funciona
-igual con las reglas de 3.1 activas (porque ahí "leer" no distinguía `get`/`list`),
-así que **puedes probar el código nuevo antes de pegar estas reglas.**
-
-**No pegar todavía sin haber confirmado antes que las 3 cuentas de rol siguen
-funcionando bien con el código nuevo** (tickets, notificaciones, comentarios,
-reabrir) — igual que la vez anterior. Ver `Plan/03-ROADMAP.md` y
-`Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
 
 ```
 rules_version = '2';
@@ -183,12 +169,161 @@ service cloud.firestore {
 }
 ```
 
-**Lo que estas reglas nuevas (3.1.1) resuelven:** que un Locatario ya no puede
-listar/leer tickets o notificaciones de otras empresas/locatarios llamando a la API
-directo — Firestore rechaza cualquier consulta que no esté filtrada exactamente por
-su propio correo en `empleado_email`/`para`. Empresas y Categorías siguen abiertas a
+**Lo que estas reglas resuelven:** que un Locatario ya no puede listar/leer
+tickets o notificaciones de otras empresas/locatarios llamando a la API directo —
+Firestore rechaza cualquier consulta que no esté filtrada exactamente por su propio
+correo en `empleado_email`/`para`. Empresas y Categorías siguen abiertas a
 cualquier cuenta autenticada (son catálogos de referencia, no datos confidenciales
-por tenant) — eso sigue igual que en 3.1.
+por tenant).
+
+### 3.2 — Reglas nuevas, pendientes de pegar (auto-registro con aprobación, Fase 3)
+
+Añaden lo que 3.1 todavía no resolvía: dejar que un **Locatario se auto-registre**
+sin que un Admin/Empleado le cree la cuenta primero, pero **sin acceso real hasta
+que alguien lo apruebe**. El código de `index.html` ya crea el perfil con
+`aprobado:false` al auto-registrarse y bloquea la entrada a la app (pantalla
+"Cuenta pendiente") mientras ese campo siga en `false` — **puedes probar el flujo
+de registro/aprobación con las reglas de 3.1 activas primero**, porque de por sí
+esas reglas ya permiten que cualquier cuenta autenticada cree/edite su propio
+documento en `usuarios`; lo único que 3.1 no impide es que un Locatario sin
+aprobar cree o lea **tickets**, así que pruébalo con cuidado antes de confiar en
+el estado "pendiente" para bloquear el acceso a tickets.
+
+**No pegar todavía sin haber confirmado antes que:** (1) el registro nuevo crea la
+cuenta y la deja en pantalla de espera, (2) Admin/Empleado ven el badge
+"Pendiente" y el botón "Aprobar cuenta" en Usuarios, (3) tras aprobar, esa persona
+puede iniciar sesión y usar la app con normalidad, y (4) las 3 cuentas de rol
+existentes (que no tienen el campo `aprobado`) siguen entrando sin problema. Ver
+`Plan/03-ROADMAP.md` y `Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
+
+⚠️ **Importante sobre el accesor `.get('aprobado', true)`:** en las reglas de
+Firestore (CEL), leer `resource.data.aprobado` directamente **lanza un error** si
+el documento no tiene ese campo (todas las cuentas creadas antes de esta fase no
+lo tienen). Por eso las funciones de abajo usan siempre la forma de dos
+argumentos `map.get('aprobado', true)` — "si no existe, trátalo como `true`" — en
+vez de comparar el campo directamente.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function tieneClaves(d, claves) {
+      return d.keys().hasAll(claves);
+    }
+    function autenticado() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+    function miEmail() {
+      return request.auth.token.email.lower();
+    }
+    function miPerfilExiste() {
+      return exists(/databases/$(database)/documents/usuarios/$(miEmail()));
+    }
+    function miPerfil() {
+      return get(/databases/$(database)/documents/usuarios/$(miEmail())).data;
+    }
+    function soyStaff() {
+      return autenticado() && miPerfilExiste() && miPerfil().role in ['admin','empleado'];
+    }
+    function soyAdmin() {
+      return autenticado() && miPerfilExiste() && miPerfil().role == 'admin';
+    }
+    // Cuentas creadas por Admin/Empleado no tienen el campo 'aprobado' — se
+    // tratan como aprobadas (get con default true). Solo el auto-registro
+    // (Fase 3) escribe 'aprobado: false' explícito.
+    function miPerfilAprobado() {
+      return miPerfilExiste() && miPerfil().get('aprobado', true) != false;
+    }
+    function autorizado() {
+      return autenticado() && (soyStaff() || miPerfilAprobado());
+    }
+
+    match /usuarios/{email} {
+      allow get: if autenticado() && (miEmail() == email || soyStaff());
+      allow list: if soyStaff();
+      // Admin puede crear/editar cualquier cuenta. Empleado solo puede crear/editar
+      // cuentas de Locatario — nunca Admin/Empleado, ni para sí mismo ni para otros.
+      allow create: if tieneClaves(request.resource.data, ['email','name','password','role'])
+                   && request.resource.data.role in ['admin','empleado','locatario']
+                   && request.resource.data.email is string
+                   && request.resource.data.name is string
+                   && request.resource.data.password is string
+                   && (
+                        soyAdmin()
+                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
+                            && request.resource.data.role == 'locatario')
+                        // Auto-registro: una persona autenticada (recién creada en
+                        // Firebase Authentication) sin perfil todavía puede crear
+                        // SU PROPIO documento, únicamente como Locatario y
+                        // únicamente marcado como no aprobado.
+                        || (autenticado() && !miPerfilExiste() && miEmail() == email
+                            && request.resource.data.role == 'locatario'
+                            && request.resource.data.aprobado == false)
+                      );
+      allow update: if tieneClaves(request.resource.data, ['email','name','password','role'])
+                   && request.resource.data.role in ['admin','empleado','locatario']
+                   && request.resource.data.email is string
+                   && request.resource.data.name is string
+                   && request.resource.data.password is string
+                   && (
+                        soyAdmin()
+                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
+                            && request.resource.data.role == 'locatario')
+                      );
+      allow delete: if soyAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      // "empleado_email" guarda, pese al nombre heredado, el correo de quien
+      // REPORTÓ el ticket (el Locatario) — no el del responsable asignado.
+      // Se exige "autorizado()" (no solo "autenticado()") para que un Locatario
+      // pendiente de aprobación no pueda crear ni leer tickets todavía.
+      allow get: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow list: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow create: if autorizado() && tieneClaves(request.resource.data,
+                      ['id','numero','empleado_email','locacion','categoria','descripcion','status','historial'])
+                   && request.resource.data.status == 'nuevo';
+      allow update: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow delete: if soyAdmin();
+    }
+
+    match /notificaciones/{notifId} {
+      // "get"/"list" sí exigen estar aprobado (un pendiente no tiene pantalla de
+      // notificaciones). "create"/"update" se quedan en "autenticado()" a propósito:
+      // una persona recién auto-registrada (todavía sin aprobar) necesita poder
+      // crear la notificación que avisa a "staff" de su propia solicitud.
+      allow get: if soyStaff() || (autorizado() && resource.data.para == miEmail());
+      allow list: if soyStaff() || (autorizado() && resource.data.para == miEmail());
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','para','tipo','mensaje','fecha','leida']);
+      allow delete: if autenticado();
+    }
+
+    match /empresas/{empresaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /categorias/{categoriaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+**Lo que estas reglas nuevas resuelven:** permiten el auto-registro de
+Locatarios sin abrir ningún hueco de seguridad nuevo — una cuenta pendiente de
+aprobación queda con acceso de solo lectura a su propio perfil (para ver la
+pantalla de espera) y puede avisarle a staff que existe, pero no puede tocar
+tickets de nadie, ni siquiera crear uno propio, hasta que un Admin/Empleado la
+apruebe.
 
 ### 3.3 — Reglas históricas (reemplazadas por las de 3.1, antes de Firebase Authentication)
 

@@ -5,22 +5,24 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-- **Seguridad por fila (`tickets`/`notificaciones`): código listo, falta el paso
-  manual de Jose.** `index.html` ya usa `:runQuery` filtrado por `empleado_email`/
-  `para` para el rol Locatario en vez de listar la colección completa. **Falta:**
-  Jose confirme que las 3 cuentas siguen funcionando bien con este código (tickets,
-  notificaciones, comentarios, reabrir) y luego pegue las reglas nuevas de Firestore
-  (README.md sección 3.2) en la consola. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
+- **Fase 3 — Auto-registro con aprobación: código listo, falta probar y pegar
+  reglas.** `index.html` ya tiene pantalla de registro (`#register-screen`) y de
+  espera (`#pending-screen`), crea el perfil con `aprobado:false`, bloquea la
+  entrada hasta que Admin/Empleado lo apruebe desde Usuarios (badge "Pendiente" +
+  botón "Aprobar cuenta"), y notifica a staff del nuevo registro. **Falta:** Jose
+  pruebe el flujo completo (registrar → ver "Pendiente" → aprobar → poder entrar)
+  y confirme que las 3 cuentas existentes (sin campo `aprobado`) siguen entrando
+  bien, y luego pegue las reglas nuevas de Firestore (README.md sección 3.2) en la
+  consola. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
-- **Fase 1 (Firebase Authentication) y Fase 2 (rol Empleado ampliado)** — en
-  producción desde 2026-09-02, probadas con las 3 cuentas de rol. Ver
-  `04-MILESTONES.md`.
+- **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado) y seguridad
+  por fila de `tickets`/`notificaciones`** — en producción desde 2026-09-02,
+  probadas con las 3 cuentas de rol. Ver `04-MILESTONES.md`.
 
 ## Pendiente — prioridad alta
 - **Plan de ajustes 2026-09 — fases restantes.** Detalle completo en
   [`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md):
-  3. **Auto-registro con aprobación** para Locatario.
   4. **Calificación del servicio al cerrar ticket** (1-5 estrellas) — independiente,
      bajo riesgo, se puede hacer en paralelo.
   5. **"Suplidor" como catálogo** de responsables externos (sin cuenta propia) —

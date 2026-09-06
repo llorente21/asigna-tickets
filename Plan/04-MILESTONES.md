@@ -6,6 +6,38 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-06 — Fase 3 (auto-registro con aprobación): código listo, sin probar
+Rama `plan/auto-registro-aprobacion`. Se agregaron pantallas `#register-screen`
+("Crear cuenta", solo rol Locatario) y `#pending-screen` ("Cuenta pendiente"), y las
+funciones `showRegisterScreen()`/`showPendingScreen()`/`handleRegister()`.
+`handleRegister()` usa `firebaseSignUp()` primero (sirve también para detectar
+correos duplicados vía `EMAIL_EXISTS`, ya que quien se registra no tiene sesión
+todavía para leer Firestore) y luego guarda el perfil con `aprobado:false` y
+notifica a `staff`. `handleAuth()` y el bootstrap de sesión ahora revisan
+`userDoc.aprobado === false` y mandan a la pantalla de espera en vez de dejar
+entrar. En Usuarios, `userCardHTML`/`usersTableHTML` muestran un badge "Pendiente"
+y `openUserForm` agrega un botón "Aprobar cuenta" (`approveUser()`) visible para
+quien tenga permiso de editar esa cuenta (Admin siempre, Empleado solo si es
+Locatario). Se corrigió además un bug potencial en `saveUser()`: como `fbSet`
+(PATCH) reemplaza el documento completo, guardar cualquier cambio en una cuenta
+pendiente sin el campo `aprobado` explícito la habría aprobado por accidente —
+ahora `saveUser()` preserva `aprobado` del documento anterior salvo que se apruebe
+explícitamente con el botón nuevo. Reglas de Firestore nuevas escritas en
+README.md sección 3.2 (funciones `miPerfilAprobado()`/`autorizado()`, usando el
+accesor de dos argumentos `.get('aprobado', true)` para no romper con cuentas sin
+ese campo). Verificado: sintaxis (`node --check`) y que el archivo sirve en local
+(`node _devserver.cjs`). **No verificado contra Firebase real** por el mismo
+límite de red del agente (sin salida a `googleapis.com`) — pendiente de que Jose
+pruebe el flujo completo de registro/aprobación y las 3 cuentas existentes antes
+de pegar las reglas nuevas o subir a `main`.
+
+## 2026-09-02 — Seguridad por fila: publicada y confirmada en producción
+Jose probó las 3 cuentas de rol con el código de `fbQuery()` (commit `8fd98fb`, ya
+en `main`) y confirmó que todo funcionó bien (tickets, notificaciones, comentarios,
+reabrir) antes y después de pegar las reglas nuevas de Firestore (README.md,
+entonces sección 3.2, ahora consolidada en 3.1). Fase de "seguridad por fila para
+tickets/notificaciones" cerrada.
+
 ## 2026-09-02 — Primer push a `main` con Plan/ y CLAUDE.md (vía device login)
 Se hizo merge fast-forward de `plan/carpeta-planificacion` a `main` y push a
 `origin/main` (`84c88f2` → `d5eeee0`) por instrucción de Jose. El entorno no tenía
