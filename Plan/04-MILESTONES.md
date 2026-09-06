@@ -15,6 +15,28 @@ en `05-ESTANDARES.md`). Verificado en GitHub que `CLAUDE.md` y `Plan/` ya están
 `main` remoto (no hay nada que verificar en producción/GitHub Pages porque este
 cambio no toca `index.html`).
 
+## 2026-09-02 — Fase 1 (Firebase Authentication) y Fase 2 (rol Empleado ampliado): código listo
+Implementado en `index.html` (rama `plan/revision-seguridad-ux-dashboard`, sin
+desplegar todavía): login vía Firebase Authentication REST con migración perezosa
+(cada cuenta se migra sola, comparando contra su contraseña heredada en Firestore, la
+primera vez que inicia sesión con este código); todas las llamadas a Firestore ahora
+mandan `Authorization: Bearer <idToken>`; un Locatario ya no descarga la colección
+completa de `usuarios` (ni sus contraseñas); Empleado puede crear/editar cuentas de
+rol Locatario (nunca Admin/Empleado) y ve el Dashboard en solo lectura; el formulario
+de Usuarios reemplaza "fijar contraseña de otro" por "enviar enlace de
+restablecimiento" (limitación real de un cliente sin backend/Admin SDK). Reglas de
+Firestore nuevas escritas y documentadas (README.md sección 3.1), pendientes de que
+Jose confirme que las 3 cuentas de rol iniciaron sesión con este código y luego las
+pegue en la consola. Verificado: sintaxis del script sin errores (`node --check`) y
+el archivo sirve correctamente en local (`node _devserver.cjs`) — **falta la prueba
+real contra Firebase en un navegador de verdad**, porque el entorno del agente no
+tiene salida de red hacia `googleapis.com` (egress bloqueado por política de la
+organización); esa prueba la tiene que hacer Jose antes de pegar las reglas nuevas o
+subir a `main`. Queda pendiente, documentado como Sub-parte B en `03-ROADMAP.md`:
+seguridad por fila para que un Locatario no pueda listar tickets de otras empresas a
+nivel de base de datos (las reglas de Firestore `list` no filtran por documento con
+el endpoint REST simple que usa ASIGNA).
+
 ## 2026-09-02 — Carpeta `Plan/` y `CLAUDE.md` de referencia para agentes
 Se creó esta carpeta (`Plan/`) como fuente de verdad de planificación para cualquier
 agente que trabaje en el repo (código o diseño), y `CLAUDE.md` en la raíz para que

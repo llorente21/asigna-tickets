@@ -75,11 +75,122 @@ const FIREBASE_CONFIG = {
 };
 ```
 
-## 3. Reglas de Firestore (ya aplicadas)
+## 3. Reglas de Firestore
 
-Las reglas activas en el proyecto ya no están en modo prueba abierto — validan la forma
-de los datos y restringen la escritura a las 3 colecciones que usa la app (`usuarios`,
-`tickets`, `notificaciones`), bloqueando cualquier otra ruta:
+### 3.1 — Reglas nuevas (2026-09), pendientes de pegar en la consola
+
+ASIGNA migró el login a **Firebase Authentication** (ver `Plan/01-ARQUITECTURA.md`,
+sección "Autenticación de usuarios"). El código de `index.html` ya funciona con las
+reglas viejas (abajo, 3.2) porque migra cada cuenta a Firebase Authentication la
+primera vez que inicia sesión con el código nuevo — pero **la protección real de
+"cada quien ve solo lo suyo" no existe hasta que se peguen estas reglas nuevas.**
+
+**No pegar todavía sin haber confirmado antes que las 3 cuentas de rol (Admin,
+Empleado, Locatario) ya iniciaron sesión al menos una vez con el `index.html`
+desplegado que incluye Firebase Authentication** — si una cuenta no se ha migrado
+aún y estas reglas ya están activas, esa cuenta no podrá iniciar sesión (el
+`accounts:signUp` de migración funciona sin reglas nuevas, pero las reglas nuevas
+exigen ya tener un perfil autenticado para casi todo). Ver
+`Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md` para el detalle completo del plan.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function tieneClaves(d, claves) {
+      return d.keys().hasAll(claves);
+    }
+    function autenticado() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+    function miEmail() {
+      return request.auth.token.email.lower();
+    }
+    function miPerfilExiste() {
+      return exists(/databases/$(database)/documents/usuarios/$(miEmail()));
+    }
+    function miPerfil() {
+      return get(/databases/$(database)/documents/usuarios/$(miEmail())).data;
+    }
+    function soyStaff() {
+      return autenticado() && miPerfilExiste() && miPerfil().role in ['admin','empleado'];
+    }
+    function soyAdmin() {
+      return autenticado() && miPerfilExiste() && miPerfil().role == 'admin';
+    }
+
+    match /usuarios/{email} {
+      // Cada quien lee su propio perfil; Admin/Empleado leen y listan cualquiera.
+      allow get: if autenticado() && (miEmail() == email || soyStaff());
+      allow list: if soyStaff();
+      // Admin puede crear/editar cualquier cuenta. Empleado solo puede crear/editar
+      // cuentas de Locatario — nunca Admin/Empleado, ni para sí mismo ni para otros.
+      allow create, update: if tieneClaves(request.resource.data, ['email','name','password','role'])
+                   && request.resource.data.role in ['admin','empleado','locatario']
+                   && request.resource.data.email is string
+                   && request.resource.data.name is string
+                   && request.resource.data.password is string
+                   && (
+                        soyAdmin()
+                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
+                            && request.resource.data.role == 'locatario')
+                      );
+      allow delete: if soyAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      // NOTA (ver Plan/03-ROADMAP.md, "seguridad por fila"): esto exige estar
+      // autenticado, pero todavía NO restringe a un Locatario a ver solo sus
+      // propios tickets a nivel de base de datos — eso requiere reescribir el
+      // fetch de tickets a consultas estructuradas (:runQuery) y es la siguiente
+      // tarea de seguridad pendiente, no incluida en esta migración.
+      allow read: if autenticado();
+      allow create: if autenticado() && tieneClaves(request.resource.data,
+                      ['id','numero','empleado_email','locacion','categoria','descripcion','status','historial'])
+                   && request.resource.data.status == 'nuevo';
+      allow update: if autenticado() && request.resource.data.status in ['nuevo','en_proceso','cerrado'];
+      allow delete: if soyAdmin();
+    }
+
+    match /notificaciones/{notifId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','para','tipo','mensaje','fecha','leida']);
+      allow delete: if autenticado();
+    }
+
+    match /empresas/{empresaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /categorias/{categoriaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+**Lo que estas reglas nuevas sí resuelven:** ya nadie puede leer/escribir Firestore
+sin haber iniciado sesión con una cuenta real (antes, cualquiera con el `apiKey`
+público —visible en el código— podía leer toda la colección `usuarios`, contraseñas
+en texto plano incluidas, sin loguearse). También impiden que un Empleado se otorgue
+a sí mismo o a otro un rol de Admin/Empleado.
+
+**Lo que NO resuelven todavía:** que un Locatario solo vea *sus* tickets a nivel de
+base de datos (hoy sigue siendo, como antes, un filtro de interfaz — cualquier
+cuenta autenticada, incluida una de Locatario, puede listar la colección completa de
+`tickets`/`notificaciones` si llama a la API directo). Cerrar esa brecha es la
+siguiente tarea de seguridad — ver `Plan/03-ROADMAP.md`.
+
+### 3.2 — Reglas anteriores (activas en producción hasta que se peguen las de 3.1)
 
 ```
 rules_version = '2';
@@ -135,14 +246,10 @@ service cloud.firestore {
 }
 ```
 
-⚠️ **Límite real de estas reglas:** como el login de la app es "casero" (usuario/
-contraseña en Firestore, no Firebase Authentication), las reglas no pueden verificar
-*quién* hace la petición — solo validan la *forma* de los datos. Cualquiera con la
-`apiKey` (pública, va en el código) puede leer la lista de usuarios (incluidas las
-contraseñas en texto plano) y crear tickets con datos válidos. Es la misma limitación
-que tiene MANGA hoy y la misma tarea que sigue pendiente en `firestore.rules` de
-LogiTrack Pro. Protección real por rol requeriría agregar Firebase Authentication a la
-app — es una mejora aparte, no bloqueante para el uso normal interno.
+⚠️ **Límite real de estas reglas (las de 3.2, todavía activas):** como no verifican
+identidad, cualquiera con la `apiKey` (pública, va en el código) puede leer la lista
+de usuarios (incluidas las contraseñas en texto plano) y crear tickets con datos
+válidos. Esta es exactamente la brecha que cierran las reglas de 3.1.
 
 ## 4. Primer ingreso
 

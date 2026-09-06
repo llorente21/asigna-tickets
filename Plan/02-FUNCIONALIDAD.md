@@ -6,10 +6,13 @@ su primer despliegue, pero está pensada como producto con identidad propia.
 
 ## Roles (3)
 
-- **Administrador** — control total: tickets, usuarios, Dashboard.
+- **Administrador** — control total: tickets, usuarios (cualquier rol), Dashboard.
 - **Empleado** — staff interno que asiste a la administración; ve y gestiona todos los
   tickets (cualquier locación), comenta, actualiza estatus, crea tickets a nombre de un
-  locatario. No gestiona usuarios, no elimina tickets, no ve el Dashboard.
+  locatario. **Desde 2026-09:** ve el Dashboard en solo lectura, y puede crear/editar
+  cuentas de rol **Locatario** desde Usuarios (nunca cuentas Admin/Empleado, ni
+  otorgarse ni otorgar a otros un rol igual o superior al suyo). No elimina usuarios
+  ni tickets.
 - **Locatario** — inquilino que reporta incidencias de su oficina (D1–D4) y da
   seguimiento a sus propios tickets.
 

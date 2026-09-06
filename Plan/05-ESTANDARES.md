@@ -54,6 +54,32 @@
 
 ## Lecciones aprendidas
 
+- **Firestore `list` no puede filtrar por documento — solo por consulta
+  estructurada.** Una regla de seguridad para `list` se evalúa sobre la petición
+  completa (todo o nada); no puede restringir "dame solo mis documentos" si el
+  cliente pide la colección con el endpoint REST simple (`GET .../coleccion`), que es
+  lo que usa ASIGNA hoy (`fbGet`). Para lograr "cada quien ve solo lo suyo" a nivel de
+  base de datos hace falta que el cliente use consultas estructuradas (`:runQuery`)
+  con un `where`, y que la regla valide ese `where` — es una reescritura aparte, no
+  algo que las reglas solas puedan resolver. Ver `01-ARQUITECTURA.md` y
+  `03-ROADMAP.md` ("seguridad por fila").
+- **Sin backend propio, un Admin no puede resetear la contraseña de OTRA cuenta ni
+  borrar su cuenta de Firebase Authentication.** Ambas operaciones normalmente
+  requieren el Admin SDK con una service account (servidor), que esta app no tiene
+  (es 100% cliente + REST). Alternativas que sí funcionan sin backend: enviar un
+  correo de restablecimiento (`accounts:sendOobCode`, requestType `PASSWORD_RESET`)
+  para que la persona elija su propia contraseña; y, para "eliminar" un usuario,
+  borrar su documento de Firestore es suficiente para revocar su acceso a los datos
+  (todas las reglas dependen de que ese documento exista), aunque la cuenta de
+  Authentication quede huérfana sin acceso a nada.
+- **El API de Firebase Authentication puede devolver un error genérico
+  (`INVALID_LOGIN_CREDENTIALS`) tanto para "no existe la cuenta" como para
+  "contraseña incorrecta"**, según la protección contra enumeración de correos que
+  tenga activada el proyecto — no asumir un código de error específico
+  (`EMAIL_NOT_FOUND` / `INVALID_PASSWORD`) para distinguir esos dos casos. El patrón
+  de migración perezosa de ASIGNA evita depender de ese código: ante cualquier
+  fallo de `accounts:signInWithPassword`, compara contra la contraseña heredada en
+  Firestore antes de decidir si el login falla de verdad.
 - **Push a GitHub siempre vía device login, nunca pidiendo un token al usuario.**
   El entorno del agente no trae credenciales de git preconfiguradas. La primera vez
   que se necesitó, tardó varios intentos (un intento con proceso en segundo plano se

@@ -720,7 +720,12 @@ main.view.active{display:block;}
   <div class="drawer-body">
     <div class="field"><label>Nombre completo</label><input id="u-name" placeholder="Ej. María Pérez"></div>
     <div class="field"><label>Correo electrónico</label><input id="u-email" type="email" placeholder="correo@empresa.com"></div>
-    <div class="field"><label>Contraseña</label><input id="u-password" type="text" placeholder="Contraseña de acceso"></div>
+    <div class="field" id="u-password-field"><label>Contraseña</label><input id="u-password" type="text" placeholder="Contraseña de acceso"></div>
+    <div class="field" id="u-reset-field" style="display:none;">
+      <label>Contraseña</label>
+      <p style="font-size:13px; color:var(--text2); margin:0 0 8px;">Por seguridad, ya no se puede fijar ni ver la contraseña de una cuenta existente desde aquí. Envía un enlace para que la persona elija una nueva.</p>
+      <button type="button" class="btn btn-outline" style="width:100%;" onclick="sendUserPasswordReset()">Enviar enlace para restablecer contraseña</button>
+    </div>
     <div class="field"><label>Rol</label>
       <select id="u-role" onchange="onRoleFieldChange()">
         <option value="locatario">Locatario (inquilino)</option>
@@ -733,7 +738,8 @@ main.view.active{display:block;}
       <div class="field"><label>Locación</label><select id="u-locacion"></select></div>
       <div class="field"><label>Empresa (arrendataria)</label><select id="u-empresa"></select></div>
     </div>
-    <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveUser()">Guardar usuario</button>
+    <div class="field-hint" id="u-readonly-hint" style="display:none; margin-bottom:10px;">Solo Administración puede modificar esta cuenta.</div>
+    <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" id="u-save-btn" onclick="saveUser()">Guardar usuario</button>
     <button class="btn btn-danger" style="width:100%; display:none;" id="u-delete-btn" onclick="deleteUser()">Eliminar usuario</button>
   </div>
 </div>
@@ -807,6 +813,57 @@ const FIREBASE_CONFIG = {
 const FB_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents`;
 
 /* ======================================================================
+   Firebase Authentication (REST, sin SDK — mismo criterio que Firestore)
+   ====================================================================== */
+const AUTH_SIGNIN_URL  = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_CONFIG.apiKey}`;
+const AUTH_SIGNUP_URL  = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`;
+const AUTH_RESETPW_URL = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_CONFIG.apiKey}`;
+const AUTH_REFRESH_URL = `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`;
+
+let AUTH_TOKENS = null; // { idToken, refreshToken, expiresAt }
+function loadAuthTokensLocal(){ try{ const s=localStorage.getItem('of_auth'); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+function saveAuthTokensLocal(t){ AUTH_TOKENS = t; try{ t ? localStorage.setItem('of_auth', JSON.stringify(t)) : localStorage.removeItem('of_auth'); }catch(e){} }
+AUTH_TOKENS = loadAuthTokensLocal();
+
+async function authFetch(url, body, form){
+  const res = await fetch(url, form
+    ? { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body }
+    : { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data?.error?.message || 'AUTH_ERROR');
+  return data;
+}
+async function firebaseSignIn(email, password){
+  const data = await authFetch(AUTH_SIGNIN_URL, { email, password, returnSecureToken:true });
+  saveAuthTokensLocal({ idToken:data.idToken, refreshToken:data.refreshToken, expiresAt: Date.now() + (parseInt(data.expiresIn||'3600',10)*1000) - 60000 });
+  return data;
+}
+async function firebaseSignUp(email, password){
+  const data = await authFetch(AUTH_SIGNUP_URL, { email, password, returnSecureToken:true });
+  saveAuthTokensLocal({ idToken:data.idToken, refreshToken:data.refreshToken, expiresAt: Date.now() + (parseInt(data.expiresIn||'3600',10)*1000) - 60000 });
+  return data;
+}
+async function firebaseSendPasswordReset(email){
+  return authFetch(AUTH_RESETPW_URL, { requestType:'PASSWORD_RESET', email });
+}
+async function firebaseRefreshToken(){
+  if(!AUTH_TOKENS?.refreshToken) throw new Error('NO_REFRESH_TOKEN');
+  const data = await authFetch(AUTH_REFRESH_URL, `grant_type=refresh_token&refresh_token=${encodeURIComponent(AUTH_TOKENS.refreshToken)}`, true);
+  saveAuthTokensLocal({ idToken:data.id_token, refreshToken:data.refresh_token, expiresAt: Date.now() + (parseInt(data.expires_in||'3600',10)*1000) - 60000 });
+  return AUTH_TOKENS;
+}
+async function getIdToken(){
+  if(!AUTH_TOKENS) return null;
+  if(Date.now() >= AUTH_TOKENS.expiresAt){ try{ await firebaseRefreshToken(); }catch(e){ saveAuthTokensLocal(null); return null; } }
+  return AUTH_TOKENS.idToken;
+}
+function clearAuthTokens(){ saveAuthTokensLocal(null); }
+async function authHeaders(){
+  const token = await getIdToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+/* ======================================================================
    Constantes de negocio
    ====================================================================== */
 const DEFAULT_CATEGORIAS = [
@@ -869,21 +926,27 @@ const ICONS = {
    Firebase REST client
    ====================================================================== */
 async function fbGet(collection){
-  const res = await fetch(`${FB_URL}/${collection}?pageSize=1000&key=${FIREBASE_CONFIG.apiKey}`);
+  const res = await fetch(`${FB_URL}/${collection}?pageSize=1000&key=${FIREBASE_CONFIG.apiKey}`, { headers: await authHeaders() });
   if(!res.ok) throw new Error(await res.text());
   const data = await res.json();
   if(!data.documents) return [];
   return data.documents.map(fbDocToObj);
 }
+async function fbGetOne(collection, id){
+  const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`, { headers: await authHeaders() });
+  if(res.status===404) return null;
+  if(!res.ok) throw new Error(await res.text());
+  return fbDocToObj(await res.json());
+}
 async function fbSet(collection, id, obj){
   const fields = objToFbFields(obj);
   const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`,
-    { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fields}) });
+    { method:'PATCH', headers:{'Content-Type':'application/json', ...(await authHeaders())}, body:JSON.stringify({fields}) });
   if(!res.ok) throw new Error(await res.text());
   return res.json();
 }
 async function fbDelete(collection, id){
-  const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`, { method:'DELETE' });
+  const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`, { method:'DELETE', headers: await authHeaders() });
   if(!res.ok && res.status !== 404) throw new Error(await res.text());
 }
 function fbDocToObj(doc){
@@ -1003,6 +1066,11 @@ function findUser(email, pw){
   return USERS_LIST.find(u => u.email.toLowerCase().trim()===email.toLowerCase().trim() && String(u.password).trim()===pw.trim());
 }
 
+// Login real: Firebase Authentication. Mientras no todas las cuentas se hayan
+// migrado, si el login por Auth falla, se compara contra la contraseña heredada
+// en Firestore (usuarios/{email}.password) y, si coincide, se crea la cuenta de
+// Auth en ese momento (migración "perezosa", una vez por usuario, la primera vez
+// que inicia sesión con este código). Ver Plan/01-ARQUITECTURA.md.
 async function handleAuth(){
   const email = document.getElementById('email-input').value.trim().toLowerCase();
   const pw = document.getElementById('password-input').value.trim();
@@ -1012,24 +1080,59 @@ async function handleAuth(){
   if(!email || !pw){ err.textContent='Ingresa tu correo y contraseña.'; err.style.display='block'; return; }
   btn.disabled = true; btn.textContent = 'Verificando...';
 
+  let authOk = false;
   try{
-    const remote = await sb.getAll('usuarios');
-    if(Array.isArray(remote) && remote.length){ USERS_LIST = remote; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
-    else USERS_LIST = loadUsersLocal();
-  }catch(e){ USERS_LIST = loadUsersLocal(); }
+    await firebaseSignIn(email, pw);
+    authOk = true;
+  }catch(authErr){
+    // No autenticó por Firebase Auth (cuenta aún no migrada, o contraseña
+    // incorrecta) — verificamos contra el valor heredado en Firestore antes de
+    // rechazar, y si coincide, migramos la cuenta en este momento.
+    try{
+      const remote = await sb.getAll('usuarios');
+      if(Array.isArray(remote) && remote.length){ USERS_LIST = remote; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
+      else USERS_LIST = loadUsersLocal();
+    }catch(e){ USERS_LIST = loadUsersLocal(); }
 
-  const user = findUser(email, pw);
+    const legacyUser = findUser(email, pw);
+    if(!legacyUser){
+      btn.disabled = false; btn.textContent = 'Ingresar →';
+      err.textContent = 'Correo o contraseña incorrectos.'; err.style.display = 'block';
+      return;
+    }
+    try{
+      await firebaseSignUp(email, pw);
+      authOk = true;
+    }catch(signUpErr){
+      btn.disabled = false; btn.textContent = 'Ingresar →';
+      err.textContent = 'No se pudo verificar tu acceso. Intenta de nuevo o contacta a administración.';
+      err.style.display = 'block';
+      console.warn('Migración de cuenta a Firebase Authentication falló', signUpErr);
+      return;
+    }
+  }
+
+  if(!authOk){ btn.disabled = false; btn.textContent = 'Ingresar →'; return; }
+
+  let userDoc = null;
+  try{ userDoc = await fbGetOne('usuarios', email); }catch(e){ console.warn('perfil fetch failed', e); }
   btn.disabled = false; btn.textContent = 'Ingresar →';
 
-  if(!user){ err.textContent='Correo o contraseña incorrectos.'; err.style.display='block'; return; }
+  if(!userDoc){
+    clearAuthTokens();
+    err.textContent = 'Tu cuenta no está registrada en ASIGNA. Contacta a administración.';
+    err.style.display = 'block';
+    return;
+  }
 
-  currentUser = { email:user.email, name:user.name, role:user.role, locacion:user.locacion||'', empresa:user.empresa||'' };
+  currentUser = { email:userDoc.email||email, name:userDoc.name, role:userDoc.role, locacion:userDoc.locacion||'', empresa:userDoc.empresa||'' };
   localStorage.setItem('of_user', JSON.stringify(currentUser));
   await enterApp();
 }
 
 function logout(){
   currentUser = null;
+  clearAuthTokens();
   localStorage.removeItem('of_user');
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('email-input').value=''; document.getElementById('password-input').value='';
@@ -1050,8 +1153,14 @@ async function enterApp(){
   showLoading('Cargando datos...');
   tickets = []; NOTIFS = [];
   try{
+    // 'usuarios' completo solo lo necesita (y lo puede leer, según las reglas de
+    // Firestore) el staff (admin/empleado) — un Locatario ya trae su propio perfil
+    // en currentUser desde el login y no debe descargar la lista de todos los
+    // usuarios (ni sus contraseñas heredadas). Ver Plan/01-ARQUITECTURA.md.
     const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias] = await Promise.all([
-      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas'),
+      sb.getAll('tickets'),
+      isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
+      sb.getAll('notificaciones'), sb.getAll('empresas'),
       // 'categorias' es una colección nueva — si las reglas de Firestore todavía no la
       // incluyen, esto falla con 403. Se aísla con su propio catch para que ese fallo no
       // tumbe la sincronización de tickets/usuarios/empresas también.
@@ -1161,30 +1270,40 @@ const VIEW_SUBS = {
   configuracion:'Información general de la aplicación',
   perfil:''
 };
-const ADMIN_ONLY_VIEWS = ['dashboard','usuarios','empresas','areas','estados','prioridades','configuracion'];
+// Solo Administrador (nunca Empleado): catálogos que definen cómo opera ASIGNA.
+const ADMIN_ONLY_VIEWS = ['empresas','areas','estados','prioridades','configuracion'];
+// Administrador y Empleado (staff): Dashboard es de solo lectura para Empleado;
+// Usuarios permite a Empleado gestionar solo cuentas de Locatario (ver saveUser/
+// renderUsersList). Un Locatario nunca llega a estas vistas.
+const STAFF_VIEWS = ['dashboard','usuarios'];
 
 function buildNav(){
   const admin = isAdmin();
-  const tabs = admin
+  const staff = isStaff();
+  const tabs = staff
     ? [ ['tickets','Tickets',ICONS.ticket], ['dashboard','Dashboard',ICONS.chart], ['usuarios','Usuarios',ICONS.users], ['perfil','Perfil',ICONS.user] ]
     : [ ['tickets','Tickets',ICONS.ticket], ['perfil','Perfil',ICONS.user] ];
   document.getElementById('bottom-nav').innerHTML = tabs.map(([id,label,icon])=>
     `<button class="nav-btn" id="nav-${id}" onclick="switchView('${id}')">${icon}<span>${label}</span></button>`
   ).join('');
   document.getElementById('fab-btn').style.display = 'flex';
-  document.getElementById('header-sub').textContent = admin ? 'Panel de administración' : (isStaff() ? 'Panel de soporte' : 'Tickets');
+  document.getElementById('header-sub').textContent = admin ? 'Panel de administración' : (staff ? 'Panel de soporte' : 'Tickets');
   buildSidebarNav();
   updateSidebarUser();
 }
 
 function buildSidebarNav(){
   const admin = isAdmin();
+  const staff = isStaff();
   let html = `<button class="sidebar-link" id="side-tickets" onclick="switchView('tickets')">${ICONS.ticket}<span>Tickets</span></button>`;
-  if(admin){
+  if(staff){
     html = `<button class="sidebar-link" id="side-dashboard" onclick="switchView('dashboard')">${ICONS.chart}<span>Dashboard</span></button>` + html;
     html += `
-      <div class="sidebar-section">Administración</div>
-      <button class="sidebar-link" id="side-usuarios" onclick="switchView('usuarios')">${ICONS.users}<span>Usuarios</span></button>
+      <div class="sidebar-section">${admin ? 'Administración' : 'Gestión'}</div>
+      <button class="sidebar-link" id="side-usuarios" onclick="switchView('usuarios')">${ICONS.users}<span>Usuarios</span></button>`;
+  }
+  if(admin){
+    html += `
       <button class="sidebar-link" id="side-empresas" onclick="switchView('empresas')">${ICONS.building}<span>Empresas</span></button>
       <button class="sidebar-link" id="side-areas" onclick="switchView('areas')">${ICONS.grid}<span>Áreas</span></button>
       <button class="sidebar-link" id="side-estados" onclick="switchView('estados')">${ICONS.flag}<span>Estados</span></button>
@@ -1236,6 +1355,7 @@ window.addEventListener('resize', ()=>{ clearTimeout(_resizeTimer); _resizeTimer
 
 function switchView(name){
   if(ADMIN_ONLY_VIEWS.includes(name) && !isAdmin()) name = 'tickets';
+  if(STAFF_VIEWS.includes(name) && !isStaff()) name = 'tickets';
   currentView = name;
   document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
@@ -1279,7 +1399,9 @@ async function syncFromFirebase(){
   if(!currentUser) return;
   try{
     const [t,u,n,emp,cat] = await Promise.all([
-      sb.getAll('tickets'), sb.getAll('usuarios'), sb.getAll('notificaciones'), sb.getAll('empresas'),
+      sb.getAll('tickets'),
+      isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
+      sb.getAll('notificaciones'), sb.getAll('empresas'),
       sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; })
     ]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
@@ -1747,7 +1869,6 @@ openDrawer = function(name){ if(name==='notifs') renderNotifsDrawerContent(); _o
 /* ======================================================================
    Usuarios (admin)
    ====================================================================== */
-function saveUsersRemote(){ sb.upsertMany('usuarios', USERS_LIST, 'email').catch(e=>console.warn(e)); }
 
 const ROLE_ORDER = { admin:0, empleado:1, locatario:2 };
 function userCardHTML(u){
@@ -1896,26 +2017,55 @@ async function deleteEmpresaForm(){
   fbDelete('empresas', id).catch(err=>console.warn(err));
 }
 
+// Empleado solo puede crear/editar cuentas de Locatario — nunca Admin/Empleado,
+// ni para sí mismo ni para otros (ver Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md).
+function puedeEditarUsuario(targetRole){
+  if(isAdmin()) return true;
+  if(currentUser.role==='empleado') return (targetRole||'locatario')==='locatario';
+  return false;
+}
+
 function openUserForm(email, forcedRole){
   editingUserEmail = email || null;
+  const existing = email ? USERS_LIST.find(x=>x.email===email) : null;
+  const targetRole = existing ? existing.role : (forcedRole || 'locatario');
+  const readOnly = !puedeEditarUsuario(targetRole);
+  const isNew = !email;
+
   document.getElementById('userform-title').textContent = email ? 'Editar usuario' : 'Nuevo usuario';
-  document.getElementById('u-delete-btn').style.display = email ? 'block' : 'none';
-  if(email){
-    const u = USERS_LIST.find(x=>x.email===email);
-    document.getElementById('u-name').value = u.name;
-    document.getElementById('u-email').value = u.email;
-    document.getElementById('u-password').value = u.password;
-    document.getElementById('u-role').value = u.role;
-    document.getElementById('u-locacion').value = u.locacion || 'D1';
-    document.getElementById('u-empresa').value = u.empresa || '';
+  document.getElementById('u-delete-btn').style.display = (email && isAdmin()) ? 'block' : 'none';
+  document.getElementById('u-save-btn').style.display = readOnly ? 'none' : 'block';
+  document.getElementById('u-readonly-hint').style.display = readOnly ? 'block' : 'none';
+  document.getElementById('u-password-field').style.display = isNew ? 'block' : 'none';
+  document.getElementById('u-reset-field').style.display = (!isNew && !readOnly) ? 'block' : 'none';
+
+  if(existing){
+    document.getElementById('u-name').value = existing.name;
+    document.getElementById('u-email').value = existing.email;
+    document.getElementById('u-password').value = '';
+    document.getElementById('u-role').value = existing.role;
+    document.getElementById('u-locacion').value = existing.locacion || 'D1';
+    document.getElementById('u-empresa').value = existing.empresa || '';
   } else {
     document.getElementById('u-name').value = '';
     document.getElementById('u-email').value = '';
     document.getElementById('u-password').value = '';
-    document.getElementById('u-role').value = forcedRole || 'locatario';
+    document.getElementById('u-role').value = targetRole;
     document.getElementById('u-locacion').value = 'D1';
     document.getElementById('u-empresa').value = '';
   }
+
+  ['u-name','u-email','u-password','u-role','u-locacion','u-empresa'].forEach(id=>{
+    document.getElementById(id).disabled = readOnly;
+  });
+  // Un Empleado nunca puede elegir Admin/Empleado en el selector, ni para cuentas
+  // nuevas ni existentes (aunque esté viendo una en solo lectura).
+  const roleSelect = document.getElementById('u-role');
+  Array.from(roleSelect.options).forEach(opt=>{
+    opt.disabled = (currentUser.role==='empleado' && opt.value!=='locatario');
+  });
+  if(currentUser.role==='empleado' && !readOnly) roleSelect.value = 'locatario';
+
   onRoleFieldChange();
   openDrawer('userform');
 }
@@ -1924,45 +2074,76 @@ function onRoleFieldChange(){
   document.getElementById('u-locatario-fields').style.display = role==='locatario' ? 'block' : 'none';
   const hints = {
     admin: 'Controla toda la aplicación: tickets, usuarios y el Dashboard.',
-    empleado: 'Gestiona y responde tickets de todas las locaciones, igual que administración — pero sin acceso a Usuarios ni al Dashboard.',
+    empleado: 'Gestiona y responde tickets de todas las locaciones y ve el Dashboard en solo lectura; puede gestionar cuentas de Locatario, pero no cuentas de Admin/Empleado.',
     locatario: 'Inquilino que reporta incidencias y da seguimiento a sus propios tickets.'
   };
   document.getElementById('u-role-hint').textContent = hints[role] || '';
 }
 
+async function sendUserPasswordReset(){
+  if(!editingUserEmail) return;
+  try{
+    await firebaseSendPasswordReset(editingUserEmail);
+    showToast('Enlace de restablecimiento enviado ✓');
+  }catch(e){
+    console.warn('sendUserPasswordReset', e);
+    showToast('No se pudo enviar el enlace: '+e.message);
+  }
+}
+
 async function saveUser(){
   const name = document.getElementById('u-name').value.trim();
   const email = document.getElementById('u-email').value.trim().toLowerCase();
-  const password = document.getElementById('u-password').value.trim();
+  const isNew = !editingUserEmail;
+  const password = isNew ? document.getElementById('u-password').value.trim() : null;
   const role = document.getElementById('u-role').value;
   const locacion = role==='locatario' ? document.getElementById('u-locacion').value : '';
   const empresa = role==='locatario' ? document.getElementById('u-empresa').value.trim() : '';
 
-  if(!name || !email || !password){ showToast('Completa nombre, correo y contraseña'); return; }
-  if(!editingUserEmail && USERS_LIST.some(u=>u.email===email)){ showToast('Ya existe un usuario con ese correo'); return; }
+  if(!puedeEditarUsuario(role)){ showToast('No tienes permiso para guardar esta cuenta'); return; }
+  if(!name || !email || (isNew && !password)){ showToast('Completa nombre, correo y contraseña'); return; }
+  if(isNew && USERS_LIST.some(u=>u.email===email)){ showToast('Ya existe un usuario con ese correo'); return; }
 
-  const user = { email, name, password, role, locacion, empresa };
-  if(editingUserEmail){
-    const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
-    if(editingUserEmail !== email) USERS_LIST.splice(idx,1); else USERS_LIST[idx] = user;
-    if(editingUserEmail !== email) USERS_LIST.push(user);
-  } else {
-    USERS_LIST.push(user);
+  const emailChanged = !isNew && editingUserEmail !== email;
+  if(isNew || emailChanged){
+    // Cuenta nueva en Firebase Authentication (un cambio de correo, para efectos
+    // de login, también es una cuenta nueva).
+    try{
+      await firebaseSignUp(email, password || Math.random().toString(36).slice(2)+'Aa1!');
+    }catch(signUpErr){
+      if(!String(signUpErr.message).includes('EMAIL_EXISTS')){
+        showToast('No se pudo crear el acceso de esta cuenta: '+signUpErr.message);
+        return;
+      }
+      // Ya existía en Firebase Authentication (por ejemplo, se había migrado antes
+      // con esta misma contraseña heredada) — no es un error, seguimos.
+    }
   }
+
+  const prevDoc = !isNew ? USERS_LIST.find(u=>u.email===editingUserEmail) : null;
+  const user = { email, name, role, locacion, empresa, password: isNew ? password : (prevDoc?.password || '') };
+  if(!isNew){
+    const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
+    if(emailChanged) USERS_LIST.splice(idx,1); else USERS_LIST[idx] = user;
+  }
+  if(isNew || emailChanged) USERS_LIST.push(user);
+
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
   closeDrawer('userform');
   renderUsersList();
   showToast('Usuario guardado ✓');
-  saveUsersRemote();
+  fbSet('usuarios', user.email, user).catch(e=>console.warn('user sync', e));
+  if(emailChanged) fbDelete('usuarios', editingUserEmail).catch(e=>console.warn(e));
 }
 
 async function deleteUser(){
   if(!editingUserEmail) return;
+  if(!isAdmin()){ showToast('Solo Administración puede eliminar usuarios'); return; }
   if(editingUserEmail === currentUser.email){ showToast('No puedes eliminar tu propia cuenta'); return; }
   const admins = USERS_LIST.filter(u=>u.role==='admin');
   const target = USERS_LIST.find(u=>u.email===editingUserEmail);
   if(target?.role==='admin' && admins.length<=1){ showToast('Debe existir al menos un administrador'); return; }
-  if(!confirm('¿Eliminar este usuario?')) return;
+  if(!confirm('¿Eliminar este usuario? Su acceso quedará revocado de inmediato (aunque la cuenta de Firebase Authentication asociada no se puede borrar desde aquí, sin el perfil en Firestore no podrá usar ASIGNA).')) return;
 
   USERS_LIST = USERS_LIST.filter(u=>u.email!==editingUserEmail);
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
@@ -2236,15 +2417,20 @@ function exportTicketsCSV(){
 /* ======================================================================
    Arranque
    ====================================================================== */
-setTimeout(()=>{
+setTimeout(async ()=>{
   document.getElementById('splash-view').classList.add('hide');
   const saved = localStorage.getItem('of_user');
-  if(saved){
+  if(saved && AUTH_TOKENS?.refreshToken){
     try{
       currentUser = JSON.parse(saved);
+      const token = await getIdToken();
+      if(!token) throw new Error('SESION_EXPIRADA');
       enterApp();
-    }catch(e){ showAuthScreen(); }
-  } else { showAuthScreen(); }
+      return;
+    }catch(e){ console.warn('Sesión guardada inválida, se pide iniciar sesión de nuevo', e); }
+  }
+  currentUser = null; clearAuthTokens(); localStorage.removeItem('of_user');
+  showAuthScreen();
 }, 1400);
 
 function showAuthScreen(){

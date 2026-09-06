@@ -5,31 +5,39 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-_(vacío — ver "Pendiente — prioridad alta" para el plan de ajustes 2026-09 acordado
-con Jose; detalle completo en `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`)_
+- **Fase 1 (Firebase Authentication) y Fase 2 (rol Empleado ampliado): código listo,
+  falta el paso manual de Jose.** `index.html` ya migra cada cuenta a Firebase
+  Authentication la primera vez que inicia sesión ("migración perezosa"), ya manda
+  el token en cada llamada a Firestore, y ya permite a Empleado gestionar perfiles de
+  Locatario + ver el Dashboard en solo lectura. **Falta:** que Jose confirme que las 3
+  cuentas de rol iniciaron sesión al menos una vez con este código, y luego pegue las
+  reglas nuevas de Firestore (README.md sección 3.1) en la consola — ese paso es el
+  que activa la protección real. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
 
-## Pendiente — prioridad alta (plan de ajustes 2026-09, decidido con Jose)
-Detalle completo, justificación y orden sugerido en
-[`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md)
-(secciones 4 y 5). Resumen:
-
-1. **Migrar a Firebase Authentication** (reemplaza el ítem anterior de este roadmap).
-   Base de seguridad real: hoy las reglas de Firestore solo validan la forma de los
-   datos, no quién escribe — cualquiera con el `apiKey` público puede leer `usuarios`
-   (contraseñas en texto plano incluidas) o crear tickets válidos. Migración vía
-   Identity Toolkit REST (`accounts:signUp`) reutilizando las contraseñas actuales,
-   sin backend propio. Alto riesgo si se hace mal — probar las 3 cuentas de rol antes
-   de tocar producción.
-2. **Rol Empleado ampliado** (perfiles de Locatario + Dashboard de solo lectura) —
-   se implementa junto con la Fase 1 porque toca las mismas reglas de Firestore.
-3. **Auto-registro con aprobación** para Locatario — depende de la Fase 1.
-4. **Calificación del servicio al cerrar ticket** (1-5 estrellas) — independiente,
-   bajo riesgo, se puede hacer en paralelo.
-5. **"Suplidor" como catálogo** de responsables externos (sin cuenta propia) —
-   independiente, bajo riesgo.
-6. **Dashboard ampliado** (carga por responsable, vencidos en tiempo real, tasa de
-   reapertura, tiempo de primera respuesta, promedio de calificación) — al final,
-   depende de datos que generan las Fases 2 y 4.
+## Pendiente — prioridad alta
+- **Seguridad por fila para `tickets`/`notificaciones` (Sub-parte B de la Fase 1).**
+  Aun con las reglas nuevas de la sección 3.1, cualquier cuenta autenticada (incluida
+  una de Locatario) puede listar la colección completa de tickets/notificaciones vía
+  el endpoint REST simple de "listar documentos" — las reglas de `list` de Firestore
+  no pueden filtrar por documento salvo con consultas estructuradas (`:runQuery`) con
+  un `where` que la regla valide, y el cliente de ASIGNA hoy no las usa. Esto importa
+  especialmente porque distintas empresas (Locatarios) no deberían poder ver los
+  tickets de otras. Requiere: reescribir el fetch de tickets para el rol Locatario a
+  `:runQuery` filtrado por `empleado_email` (el campo que en realidad guarda el email
+  de quien reportó el ticket, pese al nombre heredado), y una regla de `list` que
+  valide ese filtro. No se hizo junto con la Fase 1 para no mezclar dos reescrituras
+  riesgosas en un mismo cambio — se prueba y se despliega aparte.
+- **Plan de ajustes 2026-09 — fases restantes.** Detalle completo en
+  [`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md):
+  3. **Auto-registro con aprobación** para Locatario — depende de que la Fase 1 ya
+     esté con las reglas nuevas activas.
+  4. **Calificación del servicio al cerrar ticket** (1-5 estrellas) — independiente,
+     bajo riesgo, se puede hacer en paralelo.
+  5. **"Suplidor" como catálogo** de responsables externos (sin cuenta propia) —
+     independiente, bajo riesgo.
+  6. **Dashboard ampliado** (carga por responsable, vencidos en tiempo real, tasa de
+     reapertura, tiempo de primera respuesta, promedio de calificación) — al final,
+     depende de datos que generan las fases 2 y 4.
 
 ## Pendiente — prioridad media
 - **Estados y Prioridades como catálogos editables.** Hoy son de solo lectura en el

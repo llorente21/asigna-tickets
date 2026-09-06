@@ -199,3 +199,22 @@ definida en la Fase 2.
 Fases 2 y 3). Fases 4 y 5 se pueden hacer en paralelo o antes, si se prefiere,
 porque no dependen de la migración de Auth. Fase 6 al final, cuando ya existan los
 datos de calificación y de suplidor que alimentan las métricas nuevas.
+
+## 6. Estado de implementación
+
+- **Fase 1 (Firebase Authentication) + Fase 2 (rol Empleado ampliado): código
+  listo** en `index.html`, rama `plan/revision-seguridad-ux-dashboard`. Detalle en
+  `01-ARQUITECTURA.md` ("Autenticación de usuarios") y `04-MILESTONES.md`.
+- **No probado contra el proyecto real de Firebase por el agente** — el entorno del
+  agente no tiene salida de red hacia `googleapis.com` (bloqueado por la política de
+  egress de la organización, confirmado tanto desde la VM del dispositivo como desde
+  el contenedor en la nube). **Jose debe probar esto en su propio navegador** con
+  `node _devserver.cjs` antes de que se suba a `main` o se peguen las reglas nuevas:
+  iniciar sesión con las 3 cuentas de rol (Admin, Empleado, Locatario) y confirmar
+  que cada una migra correctamente a Firebase Authentication y sigue funcionando.
+- Reglas de Firestore nuevas: escritas y documentadas en `README.md` sección 3.1,
+  **no aplicadas todavía** — depende de la prueba anterior.
+- Sub-parte B (seguridad por fila para tickets) — **no implementada**, es la
+  siguiente tarea de seguridad, ver `03-ROADMAP.md`.
+- Fases 3-6 (auto-registro, calificación, suplidor, dashboard ampliado) — **no
+  implementadas todavía**, siguen en el roadmap.

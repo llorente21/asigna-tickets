@@ -55,10 +55,72 @@ deliberada: mantenerla es un requisito de diseño, no una limitación temporal.
   curl/REST inmediatamente antes de borrar — nunca reutilizar un ID visto antes en la
   conversación (puede haber cambiado).
 
-## Login
-Email + contraseña guardados en texto plano en Firestore (colección `usuarios`). No
-hay auto-registro: el acceso siempre lo otorga la administración desde la sección
-**Usuarios**.
+## Autenticación de usuarios (actualizado 2026-09, en migración)
+
+**Estado: código desplegado, reglas de Firestore nuevas aún pendientes de pegar por
+Jose.** Ver `Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md` para el plan completo y
+`README.md` sección 3 para el texto exacto de las reglas (viejas y nuevas).
+
+ASIGNA migró de comparar contraseñas en texto plano en Firestore a **Firebase
+Authentication** (REST, sin SDK — mismo criterio que el resto de la app), sin
+backend propio y sin romper el acceso de las cuentas ya existentes:
+
+- **Login:** `index.html` llama a `accounts:signInWithPassword` (Identity Toolkit
+  REST). Si falla (cuenta aún no migrada, o contraseña incorrecta), compara contra
+  el campo `password` heredado en el doc `usuarios/{email}` de Firestore — si
+  coincide, crea la cuenta en Firebase Authentication en ese momento con
+  `accounts:signUp` ("migración perezosa": cada cuenta se migra sola, una sola vez,
+  la primera vez que inicia sesión con este código). Si ninguna de las dos
+  coincide, se rechaza el login.
+- **Token de sesión:** tras autenticar, se guarda `idToken`/`refreshToken` en
+  `localStorage` (`of_auth`) y se renueva automáticamente contra
+  `securetoken.googleapis.com` cuando está por expirar. Todas las llamadas REST a
+  Firestore (`fbGet`/`fbGetOne`/`fbSet`/`fbDelete`) mandan
+  `Authorization: Bearer <idToken>` — esto es lo que permite que las reglas de
+  Firestore nuevas (sección 3.1 del README) verifiquen *quién* hace la petición,
+  no solo la forma de los datos.
+- **Perfil (rol, nombre, locación, empresa):** ya no se descarga la colección
+  `usuarios` completa para hacer login ni para que un Locatario use la app — se lee
+  un solo documento (`fbGetOne('usuarios', email)`). Solo Admin/Empleado (staff)
+  siguen descargando la colección completa, porque la necesitan para la sección
+  Usuarios y para el selector de "reportado por" al crear un ticket a nombre de un
+  Locatario.
+- **Alta de usuarios:** al crear un usuario nuevo desde **Usuarios**, además de
+  guardar el documento en Firestore se crea su cuenta en Firebase Authentication
+  (`accounts:signUp`) con la contraseña ingresada en el formulario.
+- **Cambiar la contraseña de un usuario existente:** ya NO se puede fijar
+  directamente desde el formulario de Usuarios (fijar la contraseña de *otra*
+  persona sin conocer la actual requiere privilegios de administrador de Firebase
+  que esta app no tiene, al no correr un backend/Admin SDK). En su lugar, el
+  formulario ofrece "Enviar enlace para restablecer contraseña"
+  (`accounts:sendOobCode`), que manda un correo de Firebase para que la persona
+  elija su propia contraseña nueva.
+- **Eliminar un usuario:** borra el documento de Firestore (revoca el acceso a la
+  app de inmediato, porque todas las reglas dependen de que ese documento exista),
+  pero **no** puede borrar la cuenta de Firebase Authentication asociada (misma
+  limitación de privilegios) — queda huérfana, sin ningún acceso a datos, ya que
+  ninguna regla se satisface sin el documento de perfil. Aceptado como residual, no
+  es un hueco de seguridad.
+- **Empleado gestionando perfiles de Locatario:** el formulario de Usuarios permite
+  a un Empleado crear/editar cuentas de rol `locatario` únicamente — el selector de
+  rol bloquea `admin`/`empleado` para ese caso, y cualquier cuenta que no sea
+  Locatario se muestra en modo solo lectura si un Empleado la abre. Reforzado
+  también en las reglas de Firestore (sección 3.1 del README), no solo en la UI.
+- **Restaurar sesión al recargar la página:** antes de reingresar automáticamente
+  con la sesión guardada, se valida que el token siga siendo renovable — si no, se
+  limpia la sesión guardada y se pide iniciar sesión de nuevo (evita una app que
+  parece funcionar pero en realidad no puede leer nada por falta de token válido).
+
+**Pendiente, NO resuelto por esta migración (ver `Plan/03-ROADMAP.md`):**
+seguridad por fila para `tickets`/`notificaciones` — hoy cualquier cuenta
+autenticada (incluida una de Locatario) puede listar la colección completa vía la
+API REST simple de "listar documentos", porque las reglas de `list` de Firestore no
+pueden filtrar por documento salvo usando consultas estructuradas (`:runQuery`) con
+un `where` que la regla valide — el cliente de ASIGNA hoy usa el endpoint simple de
+listado, no consultas estructuradas. Cerrar esto requiere reescribir cómo se piden
+los tickets para el rol Locatario y las reglas correspondientes, y probarlo con
+cuidado — se dejó fuera de este cambio a propósito para no mezclar una reescritura
+más grande y riesgosa con la migración de login.
 
 ## PWA
 - `manifest.json` + `sw.js`.
