@@ -5,8 +5,11 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-- **Fase 4 — Calificación del servicio (1-5 estrellas) al cerrar ticket.** Recién
-  empezada. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
+- **Fase 4 — Calificación del servicio: código listo, falta que Jose lo pruebe.**
+  Al cerrar un ticket, el Locatario que lo reportó puede calificar 1-5 estrellas
+  desde el detalle del ticket; queda visible (solo lectura) para todos después. No
+  necesita reglas de Firestore nuevas. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`
+  y `02-FUNCIONALIDAD.md` ("Calificación del servicio").
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad

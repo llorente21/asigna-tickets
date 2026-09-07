@@ -207,6 +207,13 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
   producción**, probadas por Jose con las 3 cuentas de rol y con cuentas nuevas
   auto-registradas. Detalle en `01-ARQUITECTURA.md` ("Autenticación de usuarios")
   y `04-MILESTONES.md`.
-- **Fase 4 (calificación del servicio, 1-5 estrellas): en progreso.**
+- **Fase 4 (calificación del servicio, 1-5 estrellas): código listo, sin
+  probar.** Rama `plan/calificacion-servicio`. El Locatario que reportó un
+  ticket cerrado puede calificarlo (1-5 estrellas) desde su detalle; queda
+  visible para todos después. No requiere reglas de Firestore nuevas. **No
+  probado contra el proyecto real de Firebase por el agente** — mismo límite de
+  red de siempre. Jose debe probar en su navegador: cerrar un ticket como
+  staff, calificarlo como el Locatario que lo reportó, y confirmar que la
+  calificación se ve correctamente para todos los roles.
 - Fases 5-6 (suplidor, dashboard ampliado) — **no implementadas todavía**, siguen
   en el roadmap.

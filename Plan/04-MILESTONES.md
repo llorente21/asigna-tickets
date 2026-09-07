@@ -6,6 +6,21 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-07 — Fase 4 (calificación del servicio): código listo, sin probar
+Rama `plan/calificacion-servicio`. Al cerrar un ticket, `renderDetailBody()`
+muestra 5 estrellas clicables solo al Locatario que lo reportó (`calificarTicket()`
+guarda `calificacion` 1-5 y `calificacion_fecha`, agrega un renglón al historial y
+notifica a `staff`); una vez calificado, cualquiera que abra el ticket ve las
+estrellas de solo lectura (`starsHTML()`). No hizo falta ninguna regla de
+Firestore nueva — la regla vigente de `allow update` para `tickets` ya deja que el
+dueño del ticket edite su propio documento sin restringir campos. Se agregó
+también una columna "Calificacion" a la exportación CSV. De paso se corrigió una
+nota desactualizada en `02-FUNCIONALIDAD.md` que hablaba de una restricción de
+estatus en las reglas de `tickets` que ya no existe desde la Fase 3. Verificado:
+sintaxis (`node --check`) y que el archivo sirve en local. **No verificado contra
+Firebase real** (mismo límite de red de siempre) — pendiente de que Jose pruebe
+cerrar un ticket y calificarlo antes de subir a `main`.
+
 ## 2026-09-07 — Fase 3 (auto-registro con aprobación): publicada y confirmada
 Jose probó el flujo completo en producción: registró una cuenta nueva desde
 "Crea tu cuenta aquí", confirmó que quedó en "Cuenta pendiente", la aprobó desde

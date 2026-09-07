@@ -36,15 +36,29 @@ su primer despliegue, pero está pensada como producto con identidad propia.
 
 ## Flujo de estatus (simplificado desde 2026-09-01)
 
-**Nuevo → En proceso → Cerrado** (3 pasos). Se quitaron "En revisión" y "Resuelto", y
-con ellos la evaluación de conformidad del locatario (1-5 estrellas) — ya no existe ese
-paso ni esa métrica. Reabrir un ticket cerrado lo regresa directamente a "En proceso"
-(antes iba a "En revisión").
+**Nuevo → En proceso → Cerrado** (3 pasos). Se quitaron "En revisión" y "Resuelto".
+Reabrir un ticket cerrado lo regresa directamente a "En proceso" (antes iba a "En
+revisión"). La evaluación de conformidad del locatario (1-5 estrellas), quitada en
+este cambio, volvió en la Fase 4 (2026-09) — ver "Calificación del servicio" más
+abajo.
 
-⚠️ Nota técnica: las reglas de Firestore (`tickets/{ticketId}` → `allow update`) todavía
-listan los 5 estatus antiguos (`'nuevo','en_revision','en_proceso','resuelto','cerrado'`)
-por compatibilidad — no bloquean nada, pero si se hace limpieza de reglas conviene
-alinearlas al flujo de 3 pasos.
+Nota técnica ya no aplica: las reglas de Firestore vigentes (README.md sección 3.1,
+desde la Fase 3) no restringen `tickets` → `allow update` a una lista de estatus —
+solo la creación exige `status == 'nuevo'`. La lista de 5 estatus antiguos solo
+aparece en las reglas históricas (README.md sección 3.2), ya reemplazadas.
+
+## Calificación del servicio (Fase 4, 2026-09)
+
+Cuando un ticket queda **cerrado**, el Locatario que lo reportó (y solo él, no
+staff ni otros Locatarios) ve en el detalle del ticket una pregunta con 5
+estrellas para calificar el servicio recibido. Al elegir una calificación (no se
+puede cambiar después) se guarda `calificacion` (1-5) y `calificacion_fecha` en el
+ticket, se le avisa a `staff` con una notificación, y desde ese momento cualquiera
+que abra el ticket ve las estrellas ya asignadas (de solo lectura). No requirió
+reglas de Firestore nuevas: la regla vigente de `allow update` para `tickets` ya
+deja que el dueño del ticket (`resource.data.empleado_email == miEmail()`) edite
+su propio documento sin restringir qué campos toca. También se agregó una columna
+"Calificacion" a la exportación CSV.
 
 ## SLA e indicador de "Vencido"
 Por prioridad: alta 2 días / media 5 días / baja 10 días. KPI visible en el Dashboard.
@@ -84,7 +98,9 @@ real ya no lo usa, solo queda como parte del esquema del documento. Campo opcion
 
 ### `tickets/{ticketId}`
 Claves requeridas al crear: `id`, `numero`, `empleado_email`, `locacion`, `categoria`,
-`descripcion`, `status`, `historial`. Status inicial: `nuevo`.
+`descripcion`, `status`, `historial`. Status inicial: `nuevo`. Campos opcionales
+`calificacion` (`1`-`5`) y `calificacion_fecha`: los pone el propio Locatario que
+reportó el ticket, una vez cerrado — ver "Calificación del servicio" más abajo.
 
 ### `notificaciones/{notifId}`
 Claves requeridas: `id`, `para`, `tipo`, `mensaje`, `fecha`, `leida`.

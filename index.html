@@ -251,6 +251,13 @@ main.view.active{display:block;}
 
 .action-box{background:var(--accent-light); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:14px; margin-top:6px; margin-bottom:6px;}
 .action-box .t{font-size:13.5px; font-weight:700; margin-bottom:8px;}
+.stars-input{display:flex; gap:6px; font-size:30px; line-height:1;}
+.stars-input .star-btn{cursor:pointer; color:#d8d8d8; transition:transform .1s ease;}
+.stars-input .star-btn:hover{color:var(--accent); transform:scale(1.15);}
+.stars-display{display:flex; align-items:center; gap:2px; font-size:22px; line-height:1;}
+.stars-display .star{color:#d8d8d8;}
+.stars-display .star.filled{color:var(--accent);}
+.stars-display .stars-num{font-size:12.5px; color:var(--text2); margin-left:6px;}
 
 .vencido-badge{font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px; background:var(--danger-bg); color:var(--danger); text-transform:uppercase; letter-spacing:.3px;}
 
@@ -1360,6 +1367,7 @@ function sanitizeTicket(t){
     status: STATUS_FLOW.includes(t.status) ? t.status : 'nuevo',
     creado_por_nombre: t.creado_por_nombre || t.empleado_nombre || '',
     creado_por_rol: t.creado_por_rol || 'empleado',
+    calificacion: [1,2,3,4,5].includes(Number(t.calificacion)) ? Number(t.calificacion) : null,
   };
 }
 function isVencido(t){
@@ -1833,6 +1841,27 @@ function renderDetailBody(t){
     </div>` : '';
   }
 
+  // Calificación del servicio: solo el Locatario que reportó el ticket puede
+  // calificarlo, y solo una vez que está cerrado. Una vez calificado, cualquiera
+  // que vea el ticket (staff incluido) ve las estrellas ya asignadas.
+  let calificacionBox = '';
+  if(t.status === 'cerrado'){
+    const esReportante = !isStaff() && t.empleado_email === currentUser.email;
+    if(t.calificacion){
+      calificacionBox = `
+      <div class="action-box">
+        <div class="t">Calificación del servicio</div>
+        <div class="stars-display">${starsHTML(t.calificacion)}</div>
+      </div>`;
+    } else if(esReportante){
+      calificacionBox = `
+      <div class="action-box">
+        <div class="t">¿Cómo calificarías el servicio recibido?</div>
+        <div class="stars-input" id="stars-input-${t.id}">${[1,2,3,4,5].map(n=>`<span class="star-btn" onclick="calificarTicket('${t.id}',${n})" aria-label="${n} estrellas">★</span>`).join('')}</div>
+      </div>`;
+    }
+  }
+
   const comentarios = (t.comentarios||[]).map(c => `
     <div class="comment-item">
       <div class="who">${esc(c.autor)}<span class="tag">${ROLE_TAG[c.rol]||esc(c.rol)}</span></div>
@@ -1860,6 +1889,7 @@ function renderDetailBody(t){
       ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
     </div>
     ${actionBox}
+    ${calificacionBox}
     <div class="section-title">Historial</div>
     <div class="timeline">${timeline}</div>
     <div class="section-title">Comentarios</div>
@@ -1897,6 +1927,29 @@ async function updateTicketStatus(id){
     crearNotif(t.empleado_email, 'cambio_estado', id, `Tu ticket ${t.numero} cambió a estatus "${STATUS_LABELS[newStatus]}".`);
   }
   fbSet('tickets', id, t).catch(e=>console.warn('update ticket sync', e));
+}
+
+function starsHTML(n){
+  return [1,2,3,4,5].map(i => `<span class="star ${i<=n?'filled':''}">★</span>`).join('') + ` <span class="stars-num">(${n}/5)</span>`;
+}
+
+async function calificarTicket(id, estrellas){
+  const t = tickets.find(x=>x.id===id);
+  if(!t) return;
+  if(isStaff() || t.empleado_email !== currentUser.email){ showToast('Solo quien reportó el ticket puede calificarlo'); return; }
+  if(t.status !== 'cerrado' || t.calificacion){ return; }
+  estrellas = Math.max(1, Math.min(5, Number(estrellas)||0));
+  const ts = nowISO();
+  t.calificacion = estrellas;
+  t.calificacion_fecha = ts;
+  t.historial.push({ status:t.status, fecha:ts, nota:`Calificó el servicio: ${estrellas}/5 estrellas`, usuario:currentUser.name });
+
+  saveTicketsLocal();
+  openTicketDetail(id); // re-renderiza el detalle ya con la calificación puesta
+  showToast('¡Gracias por tu calificación! ✓');
+
+  crearNotif('staff', 'calificacion', id, `${t.empleado_nombre} calificó el ticket ${t.numero} con ${estrellas}/5 estrellas.`);
+  fbSet('tickets', id, t).catch(e=>console.warn('calificarTicket fbSet', e));
 }
 
 function deleteTicket(id){
@@ -2011,7 +2064,7 @@ function renderNotifsDrawerContent(){
     </div>`).join('');
 }
 function notifTitle(tipo){
-  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto', nuevo_registro:'Solicitud de cuenta' }[tipo] || 'Notificación';
+  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto', nuevo_registro:'Solicitud de cuenta', calificacion:'Calificación del servicio' }[tipo] || 'Notificación';
 }
 function onNotifClick(notifId, ticketId){
   const n = NOTIFS.find(x=>x.id===notifId);
@@ -2585,12 +2638,13 @@ function exportTicketsCSV(){
   if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion'];
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
     PRIORIDAD_LABELS[t.prioridad]||t.prioridad, STATUS_LABELS[t.status]||t.status, isVencido(t)?'Sí':'No',
     fmtDate(t.fecha_creacion), fmtDate(t.fecha_actualizacion), t.fecha_resolucion?fmtDate(t.fecha_resolucion):'',
-    t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : ''
+    t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
+    t.calificacion ? `${t.calificacion}/5` : ''
   ]);
   const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
