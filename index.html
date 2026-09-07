@@ -530,8 +530,10 @@ main.view.active{display:block;}
 <div id="app-screen">
   <!-- ---------- Chrome móvil (Locatario, y Admin/Empleado en pantallas angostas) ---------- -->
   <div class="header">
-    <img src="icon-192.png" alt="">
-    <div class="brand">ASIGNA<small id="header-sub">Tickets</small></div>
+    <button class="header-home-btn" onclick="goHome()" aria-label="Ir al inicio" style="display:flex; align-items:center; gap:10px; background:none; border:none; padding:0; flex:1; text-align:left; cursor:pointer; font:inherit; color:inherit;">
+      <img src="icon-192.png" alt="">
+      <div class="brand">ASIGNA<small id="header-sub">Tickets</small></div>
+    </button>
     <button class="icon-btn" onclick="openDrawer('notifs')" aria-label="Notificaciones">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span class="badge-dot" id="bell-badge" style="display:none">0</span>
@@ -549,7 +551,7 @@ main.view.active{display:block;}
   <!-- ---------- Chrome de escritorio (Admin/Empleado en pantallas anchas) ---------- -->
   <div id="desktop-shell">
     <aside class="sidebar">
-      <div class="sidebar-brand"><img src="icon-192.png" alt=""><span>ASIGNA</span></div>
+      <button class="sidebar-brand" onclick="goHome()" aria-label="Ir al inicio" style="border:none; background:none; cursor:pointer; width:100%; text-align:left; font:inherit;"><img src="icon-192.png" alt=""><span>ASIGNA</span></button>
       <nav class="sidebar-nav" id="sidebar-nav"></nav>
       <button class="sidebar-user" id="sidebar-user" onclick="switchView('perfil')">
         <div class="avatar" id="sidebar-avatar">?</div>
@@ -1475,7 +1477,7 @@ async function enterApp(){
   }
   hideLoading();
 
-  currentView = 'tickets';
+  currentView = isStaff() ? 'dashboard' : 'tickets';
   applyLayoutMode();
   renderAll();
 }
@@ -1652,6 +1654,7 @@ function applyLayoutMode(){
 let _resizeTimer;
 window.addEventListener('resize', ()=>{ clearTimeout(_resizeTimer); _resizeTimer = setTimeout(applyLayoutMode, 200); });
 
+function goHome(){ switchView(isStaff() ? 'dashboard' : 'tickets'); }
 function switchView(name){
   if(ADMIN_ONLY_VIEWS.includes(name) && !isAdmin()) name = 'tickets';
   if(STAFF_VIEWS.includes(name) && !isStaff()) name = 'tickets';
