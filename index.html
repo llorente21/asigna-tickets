@@ -859,6 +859,7 @@ main.view.active{display:block;}
     <div class="field"><label>Nombre de la empresa</label><input id="e-nombre" placeholder="Ej. 8LOGOS, SRL"></div>
     <div class="field"><label>Oficina / Locación</label><select id="e-locacion"></select></div>
     <div class="field"><label>Teléfono</label><input id="e-telefono" type="tel" placeholder="Ej. 809-555-1234"></div>
+    <div class="field"><label>Correo</label><input id="e-correo" type="email" placeholder="Ej. contacto@empresa.com"></div>
     <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveEmpresa()">Guardar empresa</button>
     <button class="btn btn-danger" style="width:100%; display:none;" id="e-delete-btn" onclick="deleteEmpresaForm()">Eliminar empresa</button>
   </div>
@@ -2272,6 +2273,7 @@ function empresaSubtitle(e){
   const parts = [];
   if(e.locacion) parts.push(e.locacion + (LOCACIONES[e.locacion] ? ' — '+LOCACIONES[e.locacion] : ''));
   if(e.telefono) parts.push(e.telefono);
+  if(e.correo) parts.push(e.correo);
   return parts.length ? esc(parts.join(' · ')) : 'Sin datos adicionales';
 }
 
@@ -2292,9 +2294,10 @@ function empresasTableHTML(list){
       <td><div class="name-cell"><div class="avatar">${initials(e.nombre)}</div>${esc(e.nombre)}</div></td>
       <td>${e.locacion ? esc(e.locacion) : '—'}</td>
       <td>${e.telefono ? esc(e.telefono) : '—'}</td>
+      <td>${e.correo ? esc(e.correo) : '—'}</td>
     </tr>`).join('');
   return `<div style="overflow-x:auto;"><table class="data-table">
-    <thead><tr><th>Nombre</th><th>Locación</th><th>Teléfono</th></tr></thead>
+    <thead><tr><th>Nombre</th><th>Locación</th><th>Teléfono</th><th>Correo</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -2318,10 +2321,12 @@ function openEmpresaForm(id){
     document.getElementById('e-nombre').value = e.nombre;
     document.getElementById('e-locacion').value = e.locacion || '';
     document.getElementById('e-telefono').value = e.telefono || '';
+    document.getElementById('e-correo').value = e.correo || '';
   } else {
     document.getElementById('e-nombre').value = '';
     document.getElementById('e-locacion').value = '';
     document.getElementById('e-telefono').value = '';
+    document.getElementById('e-correo').value = '';
   }
   openDrawer('empresaform');
 }
@@ -2330,7 +2335,9 @@ async function saveEmpresa(){
   const nombre = document.getElementById('e-nombre').value.trim();
   const locacion = document.getElementById('e-locacion').value;
   const telefono = document.getElementById('e-telefono').value.trim();
+  const correo = document.getElementById('e-correo').value.trim();
   if(!nombre){ showToast('Escribe el nombre de la empresa'); return; }
+  if(correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ showToast('Correo inválido'); return; }
   if(EMPRESAS.some(x=>x.nombre.toLowerCase()===nombre.toLowerCase() && x.id!==editingEmpresaId)){
     showToast('Esa empresa ya está registrada'); return;
   }
@@ -2338,9 +2345,9 @@ async function saveEmpresa(){
   let e;
   if(editingEmpresaId){
     e = EMPRESAS.find(x=>x.id===editingEmpresaId);
-    e.nombre = nombre; e.locacion = locacion; e.telefono = telefono;
+    e.nombre = nombre; e.locacion = locacion; e.telefono = telefono; e.correo = correo;
   } else {
-    e = { id: String(Date.now()), nombre, locacion, telefono };
+    e = { id: String(Date.now()), nombre, locacion, telefono, correo };
     EMPRESAS.push(e);
   }
   saveEmpresasLocal();
