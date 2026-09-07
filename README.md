@@ -80,133 +80,9 @@ const FIREBASE_CONFIG = {
 ### 3.1 — Reglas activas en producción (2026-09)
 
 **Estado: ya publicadas y probadas con las 3 cuentas de rol (Admin, Empleado,
-Locatario) en producción**, incluida la seguridad por fila de `tickets`/
-`notificaciones` (un Locatario solo puede `list` sus propios documentos, no la
-colección completa), tras la migración a Firebase Authentication (ver
-`Plan/01-ARQUITECTURA.md`, sección "Autenticación de usuarios").
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    function tieneClaves(d, claves) {
-      return d.keys().hasAll(claves);
-    }
-    function autenticado() {
-      return request.auth != null && request.auth.token.email != null;
-    }
-    function miEmail() {
-      return request.auth.token.email.lower();
-    }
-    function miPerfilExiste() {
-      return exists(/databases/$(database)/documents/usuarios/$(miEmail()));
-    }
-    function miPerfil() {
-      return get(/databases/$(database)/documents/usuarios/$(miEmail())).data;
-    }
-    function soyStaff() {
-      return autenticado() && miPerfilExiste() && miPerfil().role in ['admin','empleado'];
-    }
-    function soyAdmin() {
-      return autenticado() && miPerfilExiste() && miPerfil().role == 'admin';
-    }
-
-    match /usuarios/{email} {
-      // Cada quien lee su propio perfil; Admin/Empleado leen y listan cualquiera.
-      allow get: if autenticado() && (miEmail() == email || soyStaff());
-      allow list: if soyStaff();
-      // Admin puede crear/editar cualquier cuenta. Empleado solo puede crear/editar
-      // cuentas de Locatario — nunca Admin/Empleado, ni para sí mismo ni para otros.
-      allow create, update: if tieneClaves(request.resource.data, ['email','name','password','role'])
-                   && request.resource.data.role in ['admin','empleado','locatario']
-                   && request.resource.data.email is string
-                   && request.resource.data.name is string
-                   && request.resource.data.password is string
-                   && (
-                        soyAdmin()
-                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
-                            && request.resource.data.role == 'locatario')
-                      );
-      allow delete: if soyAdmin();
-    }
-
-    match /tickets/{ticketId} {
-      // "empleado_email" guarda, pese al nombre heredado, el correo de quien
-      // REPORTÓ el ticket (el Locatario) — no el del responsable asignado.
-      allow get: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
-      allow list: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
-      allow create: if autenticado() && tieneClaves(request.resource.data,
-                      ['id','numero','empleado_email','locacion','categoria','descripcion','status','historial'])
-                   && request.resource.data.status == 'nuevo';
-      allow update: if soyStaff() || (autenticado() && resource.data.empleado_email == miEmail());
-      allow delete: if soyAdmin();
-    }
-
-    match /notificaciones/{notifId} {
-      allow get: if soyStaff() || (autenticado() && resource.data.para == miEmail());
-      allow list: if soyStaff() || (autenticado() && resource.data.para == miEmail());
-      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','para','tipo','mensaje','fecha','leida']);
-      allow delete: if autenticado();
-    }
-
-    match /empresas/{empresaId} {
-      allow read: if autenticado();
-      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
-      allow delete: if soyAdmin();
-    }
-
-    match /categorias/{categoriaId} {
-      allow read: if autenticado();
-      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
-      allow delete: if soyAdmin();
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-```
-
-**Lo que estas reglas resuelven:** que un Locatario ya no puede listar/leer
-tickets o notificaciones de otras empresas/locatarios llamando a la API directo —
-Firestore rechaza cualquier consulta que no esté filtrada exactamente por su propio
-correo en `empleado_email`/`para`. Empresas y Categorías siguen abiertas a
-cualquier cuenta autenticada (son catálogos de referencia, no datos confidenciales
-por tenant).
-
-### 3.2 — Reglas nuevas, necesarias para que el auto-registro funcione (Fase 3)
-
-Añaden lo que 3.1 todavía no resolvía: dejar que un **Locatario se auto-registre**
-sin que un Admin/Empleado le cree la cuenta primero, pero **sin acceso real hasta
-que alguien lo apruebe**. El código de `index.html` ya crea el perfil con
-`aprobado:false` al auto-registrarse y bloquea la entrada a la app (pantalla
-"Cuenta pendiente") mientras ese campo siga en `false`.
-
-⚠️ **A diferencia de la Fase anterior, aquí SÍ hace falta pegar estas reglas antes
-de poder probar el flujo completo.** Las reglas activas hoy (3.1) exigen
-`soyAdmin()` o (Empleado creando un Locatario) para crear un documento en
-`usuarios` — una persona recién auto-registrada no cumple ninguna de las dos
-(todavía no tiene perfil ni rol de staff), así que Firestore rechaza la escritura
-de su propio perfil con "permiso denegado" hasta que se agregue el permiso de
-auto-registro de abajo.
-
-**Antes de pegar, confirma que el código no rompe nada con las reglas actuales**
-probando el login normal de las 3 cuentas existentes (eso sí funciona igual con
-3.1). Después de pegar estas reglas nuevas, confirma: (1) el registro nuevo crea
-la cuenta y la deja en pantalla de espera, (2) Admin/Empleado ven el badge
-"Pendiente" y el botón "Aprobar cuenta" en Usuarios, (3) tras aprobar, esa persona
-puede iniciar sesión y usar la app con normalidad, y (4) las 3 cuentas de rol
-existentes (que no tienen el campo `aprobado`) siguen entrando sin problema. Ver
-`Plan/03-ROADMAP.md` y `Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`.
-
-⚠️ **Importante sobre el accesor `.get('aprobado', true)`:** en las reglas de
-Firestore (CEL), leer `resource.data.aprobado` directamente **lanza un error** si
-el documento no tiene ese campo (todas las cuentas creadas antes de esta fase no
-lo tienen). Por eso las funciones de abajo usan siempre la forma de dos
-argumentos `map.get('aprobado', true)` — "si no existe, trátalo como `true`" — en
-vez de comparar el campo directamente.
+Locatario) en producción**, incluyendo seguridad por fila de `tickets`/
+`notificaciones` y auto-registro de Locatario con aprobación (Fase 3). Ver
+`Plan/01-ARQUITECTURA.md` para el detalle de cada mecanismo.
 
 ```
 rules_version = '2';
@@ -330,7 +206,7 @@ pantalla de espera) y puede avisarle a staff que existe, pero no puede tocar
 tickets de nadie, ni siquiera crear uno propio, hasta que un Admin/Empleado la
 apruebe.
 
-### 3.3 — Reglas históricas (reemplazadas por las de 3.1, antes de Firebase Authentication)
+### 3.2 — Reglas históricas (reemplazadas por las de 3.1, antes de Firebase Authentication)
 
 ```
 rules_version = '2';

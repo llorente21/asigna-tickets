@@ -6,6 +6,22 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-07 — Fase 3 (auto-registro con aprobación): publicada y confirmada
+Jose probó el flujo completo en producción: registró una cuenta nueva desde
+"Crea tu cuenta aquí", confirmó que quedó en "Cuenta pendiente", la aprobó desde
+Usuarios y esa cuenta pudo entrar con normalidad; las 3 cuentas de rol existentes
+siguieron funcionando igual. En el camino se encontraron y corrigieron dos cosas:
+(1) el README documentaba mal que las reglas activas (entonces 3.1) ya permitían
+el auto-registro — no era cierto, hacía falta pegar las reglas nuevas (entonces
+3.2) para que el guardado del perfil no fallara por permisos; y (2) al aprobar
+una cuenta, la notificación de "nuevo_registro" que avisó a staff se quedaba sin
+marcar como leída — `approveUser()` ahora la marca leída usando el correo
+(guardado en `ticket_id`) para encontrarla. Con las reglas nuevas ya pegadas y
+confirmadas, se consolidó README.md: la sección 3.1 ahora es directamente el
+ruleset con auto-registro (ya no hay una sección 3.2 "pendiente" aparte), y las
+reglas históricas pre-Firebase-Auth pasaron a ser la 3.2. Merge fast-forward de
+`plan/auto-registro-aprobacion` a `main` y push (`8fd98fb` → `52abd77`).
+
 ## 2026-09-06 — Fase 3 (auto-registro con aprobación): código listo, sin probar
 Rama `plan/auto-registro-aprobacion`. Se agregaron pantallas `#register-screen`
 ("Crear cuenta", solo rol Locatario) y `#pending-screen` ("Cuenta pendiente"), y las

@@ -203,18 +203,10 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
 ## 6. Estado de implementación
 
 - **Fase 1 (Firebase Authentication) + Fase 2 (rol Empleado ampliado) + seguridad
-  por fila de tickets/notificaciones: en producción**, probadas por Jose con las 3
-  cuentas de rol. Detalle en `01-ARQUITECTURA.md` ("Autenticación de usuarios") y
-  `04-MILESTONES.md`.
-- **Fase 3 (auto-registro con aprobación): código listo, sin probar ni publicar
-  reglas.** Rama `plan/auto-registro-aprobacion`. Detalle en `01-ARQUITECTURA.md`
-  ("Auto-registro con aprobación") y `04-MILESTONES.md`. **No probado contra el
-  proyecto real de Firebase por el agente** — mismo límite de red de siempre (sin
-  salida a `googleapis.com`). Jose debe probar en su navegador con
-  `node _devserver.cjs`: registrar una cuenta nueva, confirmar que queda en
-  "Cuenta pendiente", aprobarla desde Usuarios como Admin y como Empleado, y
-  confirmar que las 3 cuentas existentes (sin campo `aprobado`) siguen entrando
-  bien — antes de pegar las reglas nuevas (README.md sección 3.2) o subir a
-  `main`.
-- Fases 4-6 (calificación, suplidor, dashboard ampliado) — **no implementadas
-  todavía**, siguen en el roadmap.
+  por fila de tickets/notificaciones + Fase 3 (auto-registro con aprobación): en
+  producción**, probadas por Jose con las 3 cuentas de rol y con cuentas nuevas
+  auto-registradas. Detalle en `01-ARQUITECTURA.md` ("Autenticación de usuarios")
+  y `04-MILESTONES.md`.
+- **Fase 4 (calificación del servicio, 1-5 estrellas): en progreso.**
+- Fases 5-6 (suplidor, dashboard ampliado) — **no implementadas todavía**, siguen
+  en el roadmap.

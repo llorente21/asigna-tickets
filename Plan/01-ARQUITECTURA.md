@@ -57,10 +57,9 @@ deliberada: mantenerla es un requisito de diseño, no una limitación temporal.
 
 ## Autenticación de usuarios (actualizado 2026-09)
 
-**Estado: Firebase Authentication y seguridad por fila (tickets/notificaciones) ya
-en producción, probadas con las 3 cuentas de rol. Fase 3 (auto-registro con
-aprobación) tiene el código listo pero sin publicar/probar todavía** — ver la
-sección propia más abajo. Plan completo en
+**Estado: Firebase Authentication, seguridad por fila (tickets/notificaciones) y
+auto-registro con aprobación (Fase 3) ya en producción**, probados por Jose. Ver
+la sección propia más abajo. Plan completo en
 `Plan/06-BRIEF-Y-PROMPT-REVISION-2026-09.md`, texto exacto de las reglas en
 `README.md` sección 3.
 
@@ -128,10 +127,10 @@ rechaza entera. Staff (admin/empleado) sigue usando `fbGet` sin filtrar, permiti
 por `soyStaff()`. Empresas y Categorías quedan fuera de este cambio (catálogos de
 referencia, no confidenciales por tenant).
 
-**Auto-registro con aprobación (Fase 3, 2026-09, código listo — reglas y prueba
-pendientes):** un Locatario puede crear su propia cuenta desde el login ("Crea tu
-cuenta aquí" → `#register-screen` → `handleRegister()`), sin que un Admin/Empleado
-la cree primero. El flujo:
+**Auto-registro con aprobación (Fase 3, 2026-09, en producción):** un Locatario
+puede crear su propia cuenta desde el login ("Crea tu cuenta aquí" →
+`#register-screen` → `handleRegister()`), sin que un Admin/Empleado la cree
+primero. El flujo:
 
 - `handleRegister()` llama primero a `firebaseSignUp(email, password)` — esto
   también sirve para detectar correos duplicados (`EMAIL_EXISTS`), ya que quien se
@@ -163,7 +162,7 @@ la cree primero. El flujo:
   campo `ticket_id` de la notificación pese al nombre — no es un ticket real),
   para que la alerta de la campanita desaparezca al aprobar en vez de quedar
   pendiente para siempre.
-- **Reglas de Firestore nuevas** (README.md sección 3.2, aún sin pegar): agregan
+- **Reglas de Firestore** (README.md sección 3.1, en producción): agregan
   `miPerfilAprobado()`/`autorizado()` y exigen `autorizado()` (no solo
   `autenticado()`) para crear/leer `tickets`, de forma que una cuenta pendiente no
   pueda tocar tickets de nadie aunque ya tenga sesión válida. `notificaciones`
