@@ -6,6 +6,38 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-07 — Fase 4 (calificación del servicio): confirmada por Jose
+Probada en producción: cerrar un ticket como staff y calificarlo (1-5
+estrellas) como el Locatario que lo reportó funcionó correctamente. Fase 4
+cerrada.
+
+## 2026-09-07 — Fase 5 ("Suplidor" como catálogo): código listo, sin probar
+Rama `plan/suplidores`. Nueva colección `suplidores` (id, nombre, especialidad,
+teléfono, email opcional) con su propia sección de administración (solo Admin,
+mismo patrón que Empresas: `suplidorCardHTML`/`suplidoresTableHTML`/
+`renderSuplidoresList`/`openSuplidorForm`/`saveSuplidor`/`deleteSuplidorForm`).
+Al actualizar un ticket, el campo "Asignado a" pasó de un input de texto libre
+a un selector de 3 tipos (`onAsignadoTipoChange()`): **Personal interno**
+(cualquier Admin/Empleado, guarda su correo en `asignado_id`), **Suplidor
+externo** (del catálogo nuevo, guarda su id) u **Otro** (texto libre, para no
+romper tickets viejos que ya tenían `asignado_a` como texto plano — se migran
+solos a tipo `'manual'` vía `sanitizeTicket`). El nombre elegido se sigue
+guardando en `asignado_a` como antes (compatibilidad), y ahora también se
+muestra en el detalle del ticket para cualquiera que lo vea (antes no se
+mostraba en ningún lado fuera del formulario de staff). Se agregaron columnas
+"Responsable"/"Tipo_responsable" a la exportación CSV. `SUPLIDORES_LIST` se
+sincroniza para todo staff (no solo Admin), porque Empleado también asigna
+tickets, aunque la vista de administración del catálogo sigue siendo solo de
+Admin.
+
+Reglas de Firestore nuevas escritas en README.md sección 3.2: `suplidores`
+solo lo lee/escribe staff, solo Admin lo borra — un Locatario no necesita
+acceso al catálogo porque el nombre del responsable ya viene en su propio
+ticket. Verificado: sintaxis (`node --check`) y que el archivo sirve en local.
+**No verificado contra Firebase real** (mismo límite de red de siempre) —
+pendiente de que Jose pegue las reglas nuevas y pruebe crear/asignar un
+suplidor antes de subir a `main`.
+
 ## 2026-09-07 — Fase 4 (calificación del servicio): código listo, sin probar
 Rama `plan/calificacion-servicio`. Al cerrar un ticket, `renderDetailBody()`
 muestra 5 estrellas clicables solo al Locatario que lo reportó (`calificarTicket()`

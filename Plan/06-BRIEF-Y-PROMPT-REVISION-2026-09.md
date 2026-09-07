@@ -207,13 +207,18 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
   producción**, probadas por Jose con las 3 cuentas de rol y con cuentas nuevas
   auto-registradas. Detalle en `01-ARQUITECTURA.md` ("Autenticación de usuarios")
   y `04-MILESTONES.md`.
-- **Fase 4 (calificación del servicio, 1-5 estrellas): código listo, sin
-  probar.** Rama `plan/calificacion-servicio`. El Locatario que reportó un
-  ticket cerrado puede calificarlo (1-5 estrellas) desde su detalle; queda
-  visible para todos después. No requiere reglas de Firestore nuevas. **No
-  probado contra el proyecto real de Firebase por el agente** — mismo límite de
-  red de siempre. Jose debe probar en su navegador: cerrar un ticket como
-  staff, calificarlo como el Locatario que lo reportó, y confirmar que la
-  calificación se ve correctamente para todos los roles.
-- Fases 5-6 (suplidor, dashboard ampliado) — **no implementadas todavía**, siguen
-  en el roadmap.
+- **Fase 4 (calificación del servicio, 1-5 estrellas): en producción**, probada
+  por Jose.
+- **Fase 5 ("Suplidor" como catálogo): código listo, sin probar ni publicar
+  reglas.** Rama `plan/suplidores`. Nueva sección "Suplidores" (solo Admin);
+  al actualizar un ticket, staff elige responsable entre Personal interno,
+  Suplidor externo (del catálogo) u Otro (texto libre) — se guarda en el
+  propio ticket, visible para cualquiera que lo vea. **Necesita reglas de
+  Firestore nuevas** (README.md sección 3.2) para la colección `suplidores` —
+  sin pegarlas, la sección de Suplidores no podrá guardar ni leer datos. **No
+  probado contra el proyecto real de Firebase por el agente** — mismo límite
+  de red de siempre. Jose debe probar en su navegador: crear un suplidor,
+  asignarlo a un ticket, y confirmar que el nombre aparece correctamente en el
+  detalle del ticket para todos los roles.
+- Fase 6 (dashboard ampliado) — **no implementada todavía**, sigue en el
+  roadmap.

@@ -34,17 +34,12 @@ deliberada: mantenerla es un requisito de diseño, no una limitación temporal.
   };
   ```
 - Colecciones activas: `tickets`, `usuarios`, `notificaciones`, `empresas`,
-  `categorias`.
+  `categorias`, `suplidores` (Fase 5, 2026-09).
 - **Reglas de Firestore** (ver detalle completo en `README.md` raíz, sección 3):
-  validan la *forma* de los datos por colección, restringen escritura a las 5
-  colecciones en uso, bloquean cualquier otra ruta (`{document=**}` → false).
-  - **Limitación conocida y aceptada:** el login es "casero" (usuario/contraseña en
-    Firestore, colección `usuarios`), **no usa Firebase Authentication** — por lo
-    tanto las reglas no pueden verificar *quién* hace la petición, solo la forma de
-    los datos. Cualquiera con el `apiKey` (público, va en el código) puede leer la
-    lista de usuarios (incluidas contraseñas en texto plano) y crear tickets válidos.
-    Protección real por rol requeriría agregar Firebase Authentication — mejora
-    aparte, no bloqueante para uso interno.
+  desde la migración a Firebase Authentication (2026-09) verifican identidad real
+  vía `request.auth.token.email`, no solo la forma de los datos — ver
+  "Autenticación de usuarios" más abajo. Bloquean cualquier ruta fuera de las
+  colecciones en uso (`{document=**}` → false).
 - **Colección nueva:** si una tarea necesita una colección nueva, sus
   lecturas/escrituras estarán bloqueadas por las reglas hasta que el usuario las
   publique manualmente en la consola de Firebase (el agente no tiene acceso a esa

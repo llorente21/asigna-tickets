@@ -5,23 +5,23 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-- **Fase 4 — Calificación del servicio: código listo, falta que Jose lo pruebe.**
-  Al cerrar un ticket, el Locatario que lo reportó puede calificar 1-5 estrellas
-  desde el detalle del ticket; queda visible (solo lectura) para todos después. No
-  necesita reglas de Firestore nuevas. Ver `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`
-  y `02-FUNCIONALIDAD.md` ("Calificación del servicio").
+- **Fase 5 — "Suplidor" como catálogo: código listo, falta pegar reglas y
+  probar.** Nueva sección "Suplidores" (solo Admin) para el catálogo; al
+  actualizar un ticket, staff elige responsable entre Personal interno,
+  Suplidor externo (del catálogo) u Otro (texto libre). Necesita reglas de
+  Firestore nuevas (README.md sección 3.2) para la colección `suplidores`. Ver
+  `06-BRIEF-Y-PROMPT-REVISION-2026-09.md` y `02-FUNCIONALIDAD.md`
+  ("Suplidores como catálogo de responsables").
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad
-  por fila de `tickets`/`notificaciones` y Fase 3 (auto-registro con aprobación
-  de Locatario)** — en producción desde 2026-09-02/07, probadas con las 3 cuentas
-  de rol. Ver `04-MILESTONES.md`.
+  por fila de `tickets`/`notificaciones`, Fase 3 (auto-registro con aprobación
+  de Locatario) y Fase 4 (calificación del servicio, 1-5 estrellas)** — en
+  producción desde 2026-09-02/07, probadas por Jose. Ver `04-MILESTONES.md`.
 
 ## Pendiente — prioridad alta
 - **Plan de ajustes 2026-09 — fases restantes.** Detalle completo en
   [`06-BRIEF-Y-PROMPT-REVISION-2026-09.md`](06-BRIEF-Y-PROMPT-REVISION-2026-09.md):
-  5. **"Suplidor" como catálogo** de responsables externos (sin cuenta propia) —
-     independiente, bajo riesgo.
   6. **Dashboard ampliado** (carga por responsable, vencidos en tiempo real, tasa de
      reapertura, tiempo de primera respuesta, promedio de calificación) — al final,
      depende de datos que generan las fases 2 y 4.

@@ -635,6 +635,18 @@ main.view.active{display:block;}
     <div id="empresas-list"></div>
   </main>
 
+  <!-- ---------- Suplidores (admin) ---------- -->
+  <main class="view" id="view-suplidores">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <h1 class="page-title" style="margin-bottom:0;">Suplidores</h1>
+        <p class="page-sub">Proveedores externos que dan seguimiento a incidencias — no tienen cuenta propia en ASIGNA, el equipo interno les da seguimiento</p>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="openSuplidorForm()">+ Nuevo</button>
+    </div>
+    <div id="suplidores-list"></div>
+  </main>
+
   <!-- ---------- Áreas (admin) ---------- -->
   <main class="view" id="view-areas">
     <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -825,6 +837,22 @@ main.view.active{display:block;}
   </div>
 </div>
 
+<!-- Suplidores -->
+<div class="drawer" id="drawer-suplidorform">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head"><h3 id="suplidorform-title">Nuevo suplidor</h3>
+    <button class="drawer-close" onclick="closeDrawer('suplidorform')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="field"><label>Nombre del suplidor</label><input id="s-nombre" placeholder="Ej. Refrigeración Dominicana, SRL"></div>
+    <div class="field"><label>Especialidad</label><input id="s-especialidad" placeholder="Ej. Aire acondicionado, Plomería, Electricidad"></div>
+    <div class="field"><label>Teléfono</label><input id="s-telefono" type="tel" placeholder="Ej. 809-555-1234"></div>
+    <div class="field"><label>Correo (opcional)</label><input id="s-email" type="email" placeholder="contacto@suplidor.com"></div>
+    <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveSuplidor()">Guardar suplidor</button>
+    <button class="btn btn-danger" style="width:100%; display:none;" id="s-delete-btn" onclick="deleteSuplidorForm()">Eliminar suplidor</button>
+  </div>
+</div>
+
 <!-- Áreas (categorías de incidencia) -->
 <div class="drawer" id="drawer-categoriaform">
   <div class="drawer-handle"></div>
@@ -985,7 +1013,8 @@ const ICONS = {
   flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4a1 1 0 0 1 1-1h13.5a.5.5 0 0 1 .4.8L15 9l3.9 5.2a.5.5 0 0 1-.4.8H5"/></svg>',
   gauge:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M12 4a9 9 0 0 0-8.6 11.7M12 4a9 9 0 0 1 8.6 11.7M14 13l3-4"/></svg>',
   settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
-  building:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 6h.01M9 10h.01M9 14h.01M15 6h.01M15 10h.01M15 14h.01"/></svg>'
+  building:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 6h.01M9 10h.01M9 14h.01M15 6h.01M15 10h.01M15 14h.01"/></svg>',
+  wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L2 19l3 3 7.1-7.1a4 4 0 0 0 5.6-5.6l-2.5 2.5-2.5-.5-.5-2.5 2.5-2.5Z"/></svg>'
 };
 
 /* ======================================================================
@@ -1080,6 +1109,7 @@ let NOTIFS = [];
 let editingUserEmail = null;
 let editingEmpresaId = null;
 let editingCategoriaId = null;
+let editingSuplidorId = null;
 let currentDetailId = null;
 let currentReabrirId = null;
 let currentView = 'tickets';
@@ -1147,6 +1177,13 @@ function loadEmpresasLocal(){
 }
 function saveEmpresasLocal(){ localStorage.setItem('of_empresas', JSON.stringify(EMPRESAS)); }
 let EMPRESAS = loadEmpresasLocal();
+
+function loadSuplidoresLocal(){
+  try{ const s = localStorage.getItem('of_suplidores'); if(s){ const p=JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
+function saveSuplidoresLocal(){ localStorage.setItem('of_suplidores', JSON.stringify(SUPLIDORES_LIST)); }
+let SUPLIDORES_LIST = loadSuplidoresLocal();
 
 function findUser(email, pw){
   return USERS_LIST.find(u => u.email.toLowerCase().trim()===email.toLowerCase().trim() && String(u.password).trim()===pw.trim());
@@ -1317,7 +1354,7 @@ async function enterApp(){
     // notificaciones — las reglas de Firestore solo permiten un `list` filtrado a
     // sus propios documentos (:runQuery), nunca la colección completa. Staff sí
     // puede listar todo. Ver Plan/01-ARQUITECTURA.md, "seguridad por fila".
-    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias] = await Promise.all([
+    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias, remoteSuplidores] = await Promise.all([
       isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
       isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
@@ -1325,12 +1362,17 @@ async function enterApp(){
       // 'categorias' es una colección nueva — si las reglas de Firestore todavía no la
       // incluyen, esto falla con 403. Se aísla con su propio catch para que ese fallo no
       // tumbe la sincronización de tickets/usuarios/empresas también.
-      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed (¿reglas de Firestore actualizadas?)', e); return null; })
+      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }),
+      // 'suplidores' (Fase 5) solo lo necesita staff (para asignar tickets); es
+      // colección nueva, así que se aísla con su propio catch por si las reglas de
+      // Firestore todavía no la incluyen.
+      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }) : Promise.resolve(null)
     ]);
     tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket);
     if(Array.isArray(remoteUsers) && remoteUsers.length){ USERS_LIST = remoteUsers; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     NOTIFS = Array.isArray(remoteNotifs) ? remoteNotifs : [];
     EMPRESAS = Array.isArray(remoteEmpresas) ? remoteEmpresas : [];
+    if(Array.isArray(remoteSuplidores)) SUPLIDORES_LIST = remoteSuplidores;
     if(Array.isArray(remoteCategorias) && remoteCategorias.length){
       CATEGORIAS_LIST = remoteCategorias;
     } else {
@@ -1339,7 +1381,7 @@ async function enterApp(){
       CATEGORIAS_LIST = DEFAULT_CATEGORIAS.slice();
       sb.upsertMany('categorias', CATEGORIAS_LIST, 'id').catch(e=>console.warn('seed categorias', e));
     }
-    saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal(); saveCategoriasLocal();
+    saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal(); saveCategoriasLocal(); saveSuplidoresLocal();
     rebuildCategorias();
     buildEmpresaOptions();
     buildCategoriaSelects();
@@ -1368,6 +1410,10 @@ function sanitizeTicket(t){
     creado_por_nombre: t.creado_por_nombre || t.empleado_nombre || '',
     creado_por_rol: t.creado_por_rol || 'empleado',
     calificacion: [1,2,3,4,5].includes(Number(t.calificacion)) ? Number(t.calificacion) : null,
+    // 'manual' cubre tickets de antes de la Fase 5, que solo tenían asignado_a
+    // como texto libre sin tipo — se preserva tal cual, solo sin selects nuevos.
+    asignado_tipo: ['interno','suplidor','manual'].includes(t.asignado_tipo) ? t.asignado_tipo : (t.asignado_a ? 'manual' : ''),
+    asignado_id: t.asignado_id || '',
   };
 }
 function isVencido(t){
@@ -1421,12 +1467,13 @@ function onCategoriaChange(){
   } else { wrap.style.display = 'none'; }
 }
 
-const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
+const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
 const VIEW_SUBS = {
   tickets:'Todos los tickets entrantes de la red',
   dashboard:'Métricas del sistema de tickets — Oficinas Felices',
   usuarios:'Todas las cuentas de acceso: Administración, Empleados y Locatarios',
   empresas:'Compañías clientes de la red',
+  suplidores:'Proveedores externos que dan seguimiento a incidencias — no tienen cuenta propia en ASIGNA',
   areas:'Categorías de incidencia que puede reportar un locatario',
   estados:'Flujo de estatus por el que pasa un ticket',
   prioridades:'Nivel de urgencia y SLA de solución esperado',
@@ -1434,7 +1481,7 @@ const VIEW_SUBS = {
   perfil:''
 };
 // Solo Administrador (nunca Empleado): catálogos que definen cómo opera ASIGNA.
-const ADMIN_ONLY_VIEWS = ['empresas','areas','estados','prioridades','configuracion'];
+const ADMIN_ONLY_VIEWS = ['empresas','suplidores','areas','estados','prioridades','configuracion'];
 // Administrador y Empleado (staff): Dashboard es de solo lectura para Empleado;
 // Usuarios permite a Empleado gestionar solo cuentas de Locatario (ver saveUser/
 // renderUsersList). Un Locatario nunca llega a estas vistas.
@@ -1468,6 +1515,7 @@ function buildSidebarNav(){
   if(admin){
     html += `
       <button class="sidebar-link" id="side-empresas" onclick="switchView('empresas')">${ICONS.building}<span>Empresas</span></button>
+      <button class="sidebar-link" id="side-suplidores" onclick="switchView('suplidores')">${ICONS.wrench}<span>Suplidores</span></button>
       <button class="sidebar-link" id="side-areas" onclick="switchView('areas')">${ICONS.grid}<span>Áreas</span></button>
       <button class="sidebar-link" id="side-estados" onclick="switchView('estados')">${ICONS.flag}<span>Estados</span></button>
       <button class="sidebar-link" id="side-prioridades" onclick="switchView('prioridades')">${ICONS.gauge}<span>Prioridades</span></button>
@@ -1485,7 +1533,7 @@ function updateSidebarUser(){
 
 function isDesktopLayout(){ return isStaff() && window.innerWidth >= 1024; }
 
-const LIST_CAPABLE_VIEWS = ['tickets','usuarios','empresas'];
+const LIST_CAPABLE_VIEWS = ['tickets','usuarios','empresas','suplidores'];
 function toggleViewMode(){
   listViewMode = listViewMode === 'cards' ? 'list' : 'cards';
   localStorage.setItem('of_view_mode', listViewMode);
@@ -1493,6 +1541,7 @@ function toggleViewMode(){
   if(currentView==='tickets') renderTicketsList();
   if(currentView==='usuarios') renderUsersList();
   if(currentView==='empresas') renderEmpresasList();
+  if(currentView==='suplidores') renderSuplidoresList();
 }
 function updateViewToggleBtn(){
   const btn = document.getElementById('view-toggle-btn');
@@ -1540,6 +1589,7 @@ function switchView(name){
   if(name==='estados') renderEstadosView();
   if(name==='prioridades') renderPrioridadesView();
   if(name==='configuracion') renderConfiguracionView();
+  if(name==='suplidores') renderSuplidoresView();
   if(name==='perfil') renderProfile();
   if(name==='tickets') renderTicketsView();
 }
@@ -1551,6 +1601,7 @@ function renderAll(){
   if(currentView==='dashboard') renderDashboard();
   if(currentView==='usuarios') renderUsersList();
   if(currentView==='empresas') renderEmpresasView();
+  if(currentView==='suplidores') renderSuplidoresView();
   if(currentView==='areas') renderAreasView();
   if(currentView==='estados') renderEstadosView();
   if(currentView==='prioridades') renderPrioridadesView();
@@ -1561,18 +1612,20 @@ function renderAll(){
 async function syncFromFirebase(){
   if(!currentUser) return;
   try{
-    const [t,u,n,emp,cat] = await Promise.all([
+    const [t,u,n,emp,cat,sup] = await Promise.all([
       isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
       isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
       sb.getAll('empresas'),
-      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; })
+      sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; }),
+      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed', e); return null; }) : Promise.resolve(null)
     ]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
     if(Array.isArray(u) && u.length){ USERS_LIST = u; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     if(Array.isArray(n)){ NOTIFS = n; saveNotifsLocal(); }
     if(Array.isArray(emp)){ EMPRESAS = emp; saveEmpresasLocal(); buildEmpresaOptions(); }
     if(Array.isArray(cat) && cat.length){ CATEGORIAS_LIST = cat; saveCategoriasLocal(); rebuildCategorias(); buildCategoriaSelects(); }
+    if(Array.isArray(sup)){ SUPLIDORES_LIST = sup; saveSuplidoresLocal(); if(currentView==='suplidores') renderSuplidoresList(); }
     renderAll();
   }catch(e){ console.warn('Sync failed:', e); }
 }
@@ -1830,7 +1883,26 @@ function renderDetailBody(t){
           ${['baja','media','alta'].map(p=>`<option value="${p}" ${p===t.prioridad?'selected':''}>${PRIORIDAD_LABELS[p]}</option>`).join('')}
         </select>
       </div>
-      <div class="field"><label>Asignado a</label><input id="d-asignado" value="${esc(t.asignado_a||'')}" placeholder="Ej. Mantenimiento / IT"></div>
+      <div class="field"><label>Asignado a</label>
+        <select id="d-asignado-tipo" onchange="onAsignadoTipoChange()">
+          <option value="" ${!t.asignado_tipo?'selected':''}>Sin asignar</option>
+          <option value="interno" ${t.asignado_tipo==='interno'?'selected':''}>Personal interno (Admin/Empleado)</option>
+          <option value="suplidor" ${t.asignado_tipo==='suplidor'?'selected':''}>Suplidor externo</option>
+          <option value="manual" ${t.asignado_tipo==='manual'?'selected':''}>Otro (escribir)</option>
+        </select>
+      </div>
+      <div class="field" id="d-asignado-interno-field" style="display:${t.asignado_tipo==='interno'?'block':'none'};">
+        <label>Persona</label>
+        <select id="d-asignado-interno">${USERS_LIST.filter(u=>u.role==='admin'||u.role==='empleado').map(u=>`<option value="${esc(u.email)}" ${t.asignado_tipo==='interno'&&t.asignado_id===u.email?'selected':''}>${esc(u.name)}</option>`).join('') || '<option value="">— Sin personal interno registrado —</option>'}</select>
+      </div>
+      <div class="field" id="d-asignado-suplidor-field" style="display:${t.asignado_tipo==='suplidor'?'block':'none'};">
+        <label>Suplidor</label>
+        <select id="d-asignado-suplidor">${SUPLIDORES_LIST.map(s=>`<option value="${esc(s.id)}" ${t.asignado_tipo==='suplidor'&&t.asignado_id===s.id?'selected':''}>${esc(s.nombre)}${s.especialidad?' — '+esc(s.especialidad):''}</option>`).join('') || '<option value="">— Sin suplidores registrados —</option>'}</select>
+      </div>
+      <div class="field" id="d-asignado-manual-field" style="display:${t.asignado_tipo==='manual'?'block':'none'};">
+        <label>Descripción</label>
+        <input id="d-asignado-manual" value="${t.asignado_tipo==='manual'?esc(t.asignado_a||''):''}" placeholder="Ej. Mantenimiento / IT">
+      </div>
       <div class="field"><label>Nota (opcional)</label><textarea id="d-nota" placeholder="Detalle del avance..."></textarea></div>
       <button class="btn btn-primary" style="width:100%;" onclick="updateTicketStatus('${t.id}')">Actualizar ticket</button>
     </div>`;
@@ -1892,6 +1964,7 @@ function renderDetailBody(t){
       ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
       <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
       <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
+      ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' (suplidor)':''}</div></div>` : ''}
     </div>
     <div class="detail-desc">${esc(t.descripcion)}
       ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
@@ -1908,17 +1981,38 @@ function renderDetailBody(t){
   `;
 }
 
+function onAsignadoTipoChange(){
+  const tipo = document.getElementById('d-asignado-tipo').value;
+  document.getElementById('d-asignado-interno-field').style.display = tipo==='interno' ? 'block' : 'none';
+  document.getElementById('d-asignado-suplidor-field').style.display = tipo==='suplidor' ? 'block' : 'none';
+  document.getElementById('d-asignado-manual-field').style.display = tipo==='manual' ? 'block' : 'none';
+}
+
 async function updateTicketStatus(id){
   const t = tickets.find(x=>x.id===id);
   if(!t) return;
   const newStatus = document.getElementById('d-status').value;
   const prioridad = document.getElementById('d-prioridad').value;
-  const asignado_a = document.getElementById('d-asignado').value.trim();
+  const asignadoTipo = document.getElementById('d-asignado-tipo').value;
+  let asignado_a = '', asignado_id = '';
+  if(asignadoTipo === 'interno'){
+    asignado_id = document.getElementById('d-asignado-interno').value;
+    const u = USERS_LIST.find(x=>x.email===asignado_id);
+    asignado_a = u ? u.name : '';
+  } else if(asignadoTipo === 'suplidor'){
+    asignado_id = document.getElementById('d-asignado-suplidor').value;
+    const s = SUPLIDORES_LIST.find(x=>x.id===asignado_id);
+    asignado_a = s ? s.nombre : '';
+  } else if(asignadoTipo === 'manual'){
+    asignado_a = document.getElementById('d-asignado-manual').value.trim();
+  }
   const nota = document.getElementById('d-nota').value.trim();
   const ts = nowISO();
 
   const statusChanged = newStatus !== t.status;
-  t.status = newStatus; t.prioridad = prioridad; t.asignado_a = asignado_a; t.fecha_actualizacion = ts;
+  t.status = newStatus; t.prioridad = prioridad;
+  t.asignado_tipo = asignadoTipo; t.asignado_id = asignado_id; t.asignado_a = asignado_a;
+  t.fecha_actualizacion = ts;
   if(newStatus === 'cerrado' && !t.fecha_resolucion) t.fecha_resolucion = ts;
   if(statusChanged){
     t.historial.push({ status:newStatus, fecha:ts, nota: nota || `Estatus actualizado a "${STATUS_LABELS[newStatus]}"`, usuario:currentUser.name });
@@ -2235,6 +2329,110 @@ async function deleteEmpresaForm(){
   buildEmpresaOptions();
   showToast('Empresa eliminada');
   fbDelete('empresas', id).catch(err=>console.warn(err));
+}
+
+/* ======================================================================
+   Suplidores (admin) — proveedores externos, sin cuenta propia en ASIGNA
+   ====================================================================== */
+function suplidorSubtitle(s){
+  const parts = [];
+  if(s.especialidad) parts.push(s.especialidad);
+  if(s.telefono) parts.push(s.telefono);
+  return parts.length ? esc(parts.join(' · ')) : 'Sin datos adicionales';
+}
+
+function suplidorCardHTML(s){
+  return `
+    <div class="user-card" onclick="openSuplidorForm('${esc(s.id)}')">
+      <div class="avatar">${initials(s.nombre)}</div>
+      <div class="info">
+        <div class="name">${esc(s.nombre)}</div>
+        <div class="email">${suplidorSubtitle(s)}</div>
+      </div>
+    </div>`;
+}
+
+function suplidoresTableHTML(list){
+  const rows = list.map(s => `
+    <tr onclick="openSuplidorForm('${esc(s.id)}')">
+      <td><div class="name-cell"><div class="avatar">${initials(s.nombre)}</div>${esc(s.nombre)}</div></td>
+      <td>${s.especialidad ? esc(s.especialidad) : '—'}</td>
+      <td>${s.telefono ? esc(s.telefono) : '—'}</td>
+    </tr>`).join('');
+  return `<div style="overflow-x:auto;"><table class="data-table">
+    <thead><tr><th>Nombre</th><th>Especialidad</th><th>Teléfono</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function renderSuplidoresList(){
+  const el = document.getElementById('suplidores-list');
+  if(!el) return;
+  const sorted = SUPLIDORES_LIST.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const tableMode = listViewMode==='list' && isDesktopLayout();
+  el.classList.toggle('table-mode', tableMode);
+  if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.wrench}<div class="t">Sin suplidores registrados todavía</div></div>`; return; }
+  el.innerHTML = tableMode ? suplidoresTableHTML(sorted) : sorted.map(suplidorCardHTML).join('');
+}
+
+function renderSuplidoresView(){
+  renderSuplidoresList();
+}
+
+function openSuplidorForm(id){
+  editingSuplidorId = id || null;
+  document.getElementById('suplidorform-title').textContent = id ? 'Editar suplidor' : 'Nuevo suplidor';
+  document.getElementById('s-delete-btn').style.display = id ? 'block' : 'none';
+  if(id){
+    const s = SUPLIDORES_LIST.find(x=>x.id===id);
+    document.getElementById('s-nombre').value = s.nombre;
+    document.getElementById('s-especialidad').value = s.especialidad || '';
+    document.getElementById('s-telefono').value = s.telefono || '';
+    document.getElementById('s-email').value = s.email || '';
+  } else {
+    document.getElementById('s-nombre').value = '';
+    document.getElementById('s-especialidad').value = '';
+    document.getElementById('s-telefono').value = '';
+    document.getElementById('s-email').value = '';
+  }
+  openDrawer('suplidorform');
+}
+
+async function saveSuplidor(){
+  const nombre = document.getElementById('s-nombre').value.trim();
+  const especialidad = document.getElementById('s-especialidad').value.trim();
+  const telefono = document.getElementById('s-telefono').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  if(!nombre){ showToast('Escribe el nombre del suplidor'); return; }
+  if(SUPLIDORES_LIST.some(x=>x.nombre.toLowerCase()===nombre.toLowerCase() && x.id!==editingSuplidorId)){
+    showToast('Ese suplidor ya está registrado'); return;
+  }
+
+  let s;
+  if(editingSuplidorId){
+    s = SUPLIDORES_LIST.find(x=>x.id===editingSuplidorId);
+    s.nombre = nombre; s.especialidad = especialidad; s.telefono = telefono; s.email = email;
+  } else {
+    s = { id: String(Date.now()), nombre, especialidad, telefono, email };
+    SUPLIDORES_LIST.push(s);
+  }
+  saveSuplidoresLocal();
+  closeDrawer('suplidorform');
+  renderSuplidoresList();
+  showToast('Suplidor guardado ✓');
+  fbSet('suplidores', s.id, s).catch(err=>console.warn('suplidor sync', err));
+}
+
+async function deleteSuplidorForm(){
+  if(!editingSuplidorId) return;
+  if(!confirm('¿Eliminar este suplidor de la lista? Los tickets que ya se le asignaron no cambian.')) return;
+  const id = editingSuplidorId;
+  SUPLIDORES_LIST = SUPLIDORES_LIST.filter(s=>s.id!==id);
+  saveSuplidoresLocal();
+  closeDrawer('suplidorform');
+  renderSuplidoresList();
+  showToast('Suplidor eliminado');
+  fbDelete('suplidores', id).catch(err=>console.warn(err));
 }
 
 // Empleado solo puede crear/editar cuentas de Locatario — nunca Admin/Empleado,
@@ -2646,13 +2844,15 @@ function exportTicketsCSV(){
   if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable','Tipo_responsable'];
+  const RESP_LABELS = { interno:'Personal interno', suplidor:'Suplidor', manual:'Otro' };
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
     PRIORIDAD_LABELS[t.prioridad]||t.prioridad, STATUS_LABELS[t.status]||t.status, isVencido(t)?'Sí':'No',
     fmtDate(t.fecha_creacion), fmtDate(t.fecha_actualizacion), t.fecha_resolucion?fmtDate(t.fecha_resolucion):'',
     t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
-    t.calificacion ? `${t.calificacion}/5` : ''
+    t.calificacion ? `${t.calificacion}/5` : '',
+    t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || ''
   ]);
   const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
