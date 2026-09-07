@@ -1282,7 +1282,9 @@ async function handleRegister(){
 
   currentUser = { email, name, role:'locatario', locacion, empresa };
   localStorage.setItem('of_user', JSON.stringify(currentUser));
-  crearNotif('staff', 'nuevo_registro', '', `${name} (${empresa}) solicitó una cuenta de Locatario.`);
+  // Usamos el correo como "ticket_id" de esta notificación (no es un ticket real)
+  // para poder ubicarla y marcarla leída en cuanto alguien apruebe la cuenta.
+  crearNotif('staff', 'nuevo_registro', email, `${name} (${empresa}) solicitó una cuenta de Locatario.`);
   btn.disabled = false; btn.textContent = 'Crear cuenta →';
   showPendingScreen();
 }
@@ -2249,6 +2251,18 @@ async function approveUser(){
   renderUsersList();
   showToast('Cuenta aprobada ✓');
   try{ await fbSet('usuarios', editingUserEmail, USERS_LIST[idx]); }catch(e){ console.warn('approveUser fbSet', e); }
+
+  // La notificación de "nuevo_registro" de esta persona (ticket_id guarda su
+  // correo, ver handleRegister) ya no necesita seguir mostrando la alerta en
+  // la campanita una vez que se aprueba la cuenta que la generó.
+  const pendingNotifs = NOTIFS.filter(n=>n.tipo==='nuevo_registro' && n.ticket_id===editingUserEmail && !n.leida);
+  if(pendingNotifs.length){
+    pendingNotifs.forEach(n=> n.leida = true);
+    saveNotifsLocal();
+    updateBellBadge();
+    renderNotifsDrawerContent();
+    pendingNotifs.forEach(n=> fbSet('notificaciones', n.id, n).catch(e=>console.warn('approveUser notif sync', e)));
+  }
 }
 
 async function sendUserPasswordReset(){

@@ -158,7 +158,11 @@ la cree primero. El flujo:
   **preservar** el campo `aprobado` del documento anterior en cualquier otro
   guardado — como `fbSet` (PATCH) reemplaza el documento completo, guardar un
   cambio cualquiera sin incluir `aprobado` explícitamente habría aprobado la
-  cuenta por accidente.
+  cuenta por accidente. `approveUser()` también marca como leída la notificación
+  de "nuevo_registro" de esa persona (correlacionada por correo, guardado en el
+  campo `ticket_id` de la notificación pese al nombre — no es un ticket real),
+  para que la alerta de la campanita desaparezca al aprobar en vez de quedar
+  pendiente para siempre.
 - **Reglas de Firestore nuevas** (README.md sección 3.2, aún sin pegar): agregan
   `miPerfilAprobado()`/`autorizado()` y exigen `autorizado()` (no solo
   `autenticado()`) para crear/leer `tickets`, de forma que una cuenta pendiente no
