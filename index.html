@@ -1859,6 +1859,14 @@ function renderDetailBody(t){
         <div class="t">¿Cómo calificarías el servicio recibido?</div>
         <div class="stars-input" id="stars-input-${t.id}">${[1,2,3,4,5].map(n=>`<span class="star-btn" onclick="calificarTicket('${t.id}',${n})" aria-label="${n} estrellas">★</span>`).join('')}</div>
       </div>`;
+    } else if(isStaff()){
+      // Staff no puede calificar (solo el Locatario que reportó), pero conviene
+      // que vea que todavía está pendiente en vez de no mostrar nada.
+      calificacionBox = `
+      <div class="action-box">
+        <div class="t">Calificación del servicio</div>
+        <p style="font-size:12.5px; color:var(--text2); margin:0;">Pendiente — todavía no la califica ${esc(t.empleado_nombre)}.</p>
+      </div>`;
     }
   }
 
