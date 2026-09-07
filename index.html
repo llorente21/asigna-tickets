@@ -652,12 +652,17 @@ main.view.active{display:block;}
 
   <!-- ---------- Empresas (admin) ---------- -->
   <main class="view" id="view-empresas">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
       <div>
         <h1 class="page-title" style="margin-bottom:0;">Empresas</h1>
         <p class="page-sub">Compañías clientes de la red — no confundir con las personas que reportan (eso vive en Usuarios)</p>
       </div>
-      <button class="btn btn-dark btn-sm" onclick="openEmpresaForm()">+ Nueva</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="downloadEmpresasCSVTemplate()">Plantilla CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('empresas-csv-input').click()">Importar CSV</button>
+        <input type="file" id="empresas-csv-input" accept=".csv" style="display:none" onchange="handleEmpresasCSVImport(event)">
+        <button class="btn btn-dark btn-sm" onclick="openEmpresaForm()">+ Nueva</button>
+      </div>
     </div>
     <div id="empresas-list"></div>
   </main>
@@ -2369,6 +2374,96 @@ async function deleteEmpresaForm(){
   buildEmpresaOptions();
   showToast('Empresa eliminada');
   fbDelete('empresas', id).catch(err=>console.warn(err));
+}
+
+/* ---------- Importación masiva de Empresas por CSV ---------- */
+function downloadEmpresasCSVTemplate(){
+  const csv = '\ufeff' + ['nombre,locacion,telefono,correo', '8LOGOS SRL,D1,809-555-1234,contacto@8logos.com'].join('\r\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'plantilla_empresas.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function parseCSVText(text){
+  // Parser simple de CSV con soporte de comillas y comas dentro de campos.
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  const t = text.replace(/^\ufeff/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  for(let i=0; i<t.length; i++){
+    const c = t[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(t[i+1] === '"'){ field += '"'; i++; } else { inQuotes = false; }
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(f => f.trim() !== ''));
+}
+
+async function handleEmpresasCSVImport(event){
+  const file = event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  const text = await file.text();
+  const rows = parseCSVText(text);
+  if(!rows.length){ showToast('El archivo está vacío'); return; }
+
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const idxNombre = header.findIndex(h => ['nombre','empresa'].includes(h));
+  const idxLocacion = header.findIndex(h => ['locacion','locación','oficina'].includes(h));
+  const idxTelefono = header.findIndex(h => ['telefono','teléfono','tel'].includes(h));
+  const idxCorreo = header.findIndex(h => ['correo','email','e-mail'].includes(h));
+  if(idxNombre === -1){ showToast('El CSV debe tener una columna "nombre"'); return; }
+
+  const dataRows = rows.slice(1);
+  let creadas = 0, actualizadas = 0, omitidas = 0;
+  const errores = [];
+  const cambios = [];
+
+  dataRows.forEach((r, i) => {
+    const nombre = (r[idxNombre] || '').trim();
+    if(!nombre){ omitidas++; errores.push(`Fila ${i+2}: sin nombre`); return; }
+    let locacion = idxLocacion !== -1 ? (r[idxLocacion] || '').trim().toUpperCase() : '';
+    if(locacion && !LOCACIONES[locacion]){ errores.push(`Fila ${i+2}: locación "${locacion}" no existe, se dejó vacía`); locacion = ''; }
+    const telefono = idxTelefono !== -1 ? (r[idxTelefono] || '').trim() : '';
+    const correo = idxCorreo !== -1 ? (r[idxCorreo] || '').trim() : '';
+    if(correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ errores.push(`Fila ${i+2}: correo "${correo}" inválido, se dejó vacío`); }
+    const correoFinal = (correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) ? correo : '';
+
+    const existente = EMPRESAS.find(x => x.nombre.toLowerCase() === nombre.toLowerCase());
+    if(existente){
+      existente.locacion = locacion; existente.telefono = telefono; existente.correo = correoFinal;
+      cambios.push(existente);
+      actualizadas++;
+    } else {
+      const nueva = { id: String(Date.now()) + '_' + i, nombre, locacion, telefono, correo: correoFinal };
+      EMPRESAS.push(nueva);
+      cambios.push(nueva);
+      creadas++;
+    }
+  });
+
+  if(!cambios.length){
+    showToast('No se importó ninguna fila válida');
+    if(errores.length) console.warn('Importación de empresas — errores:', errores);
+    return;
+  }
+
+  saveEmpresasLocal();
+  renderEmpresasList();
+  buildEmpresaOptions();
+  showToast(`Importadas: ${creadas} nuevas, ${actualizadas} actualizadas${omitidas?`, ${omitidas} omitidas`:''} ✓`);
+  if(errores.length) console.warn('Importación de empresas — avisos:', errores);
+
+  cambios.forEach(e => fbSet('empresas', e.id, e).catch(err=>console.warn('empresa import sync', err)));
 }
 
 /* ======================================================================
