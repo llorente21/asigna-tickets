@@ -262,3 +262,13 @@ originales D1-D4 si la colección está vacía) y SLA pasa a un doc único
 mientras tanto la app sigue funcionando con los valores locales/por defecto,
 pero no persiste los cambios que se guarden ahí. Código listo, sin probar por
 Jose todavía.
+
+## 2026-09-07 — Rediseño visual y mejoras de Tickets/Empresas subidas a main
+Fusionado `diseno/refinado-visual-direccion-a` → `main` (commit `32f09ac`):
+pulido visual Dirección A (tarjetas, botones, dashboard), reordenamiento de
+columnas en la tabla de Tickets (Empresa/Locación junto al código, "Asignado
+a" en vez de "Locatario"), campo de correo + importación CSV en Empresas,
+Locaciones y SLA editables desde Configuración, y fix del bug donde el
+Dashboard quedaba visible detrás de otras vistas en escritorio. El cambio de
+logo se intentó y se revirtió a pedido de Jose (no le gustó el resultado).
+En producción vía GitHub Pages.
