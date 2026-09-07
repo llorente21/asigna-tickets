@@ -272,3 +272,13 @@ Locaciones y SLA editables desde Configuración, y fix del bug donde el
 Dashboard quedaba visible detrás de otras vistas en escritorio. El cambio de
 logo se intentó y se revirtió a pedido de Jose (no le gustó el resultado).
 En producción vía GitHub Pages.
+
+## 2026-09-07 — Logo clicable vuelve al inicio + ajuste de alineación topbar
+Fusionado `feat/logo-va-al-dashboard` → `main` (commit `bd284b0`): el logo/marca
+(sidebar en escritorio, header en móvil) ahora es un botón que llama a
+`goHome()`, regresando a Tickets (locatario) o Dashboard (staff) — Dashboard
+pasa a ser la página de inicio para staff. Se corrigió también el desalineado
+visual entre el logo y el título de sección en el topbar de escritorio
+(`margin-top` ajustado y verificado con captura/medición real vía Playwright).
+Verificado en viewport móvil (375×700) que el nuevo botón envolvente no rompe
+el header. En producción vía GitHub Pages.
