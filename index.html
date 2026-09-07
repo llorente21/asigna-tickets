@@ -1254,6 +1254,21 @@ async function handleRegister(){
     return;
   }
 
+  // Ya autenticados como esta persona, podemos consultar (get) su propio
+  // documento aunque todavía no exista ninguno — la regla de "get" de usuarios
+  // solo exige miEmail()==email, no que el perfil ya exista. Si ya hay un
+  // documento (por ejemplo, una cuenta creada por Admin/Empleado hace tiempo
+  // que nunca llegó a iniciar sesión), no es un registro nuevo: es una cuenta
+  // existente con la que debe iniciar sesión, no auto-registrarse de nuevo.
+  let existingDoc = null;
+  try{ existingDoc = await fbGetOne('usuarios', email); }catch(e){ console.warn('handleRegister fbGetOne', e); }
+  if(existingDoc){
+    btn.disabled = false; btn.textContent = 'Crear cuenta →';
+    err.textContent = 'Ya existe una cuenta con este correo. Intenta iniciar sesión o contacta a administración para restablecer tu contraseña.';
+    err.style.display = 'block';
+    return;
+  }
+
   const user = { email, name, role:'locatario', locacion, empresa, password:'', aprobado:false };
   try{
     await fbSet('usuarios', email, user);

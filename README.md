@@ -176,21 +176,26 @@ correo en `empleado_email`/`para`. Empresas y Categorías siguen abiertas a
 cualquier cuenta autenticada (son catálogos de referencia, no datos confidenciales
 por tenant).
 
-### 3.2 — Reglas nuevas, pendientes de pegar (auto-registro con aprobación, Fase 3)
+### 3.2 — Reglas nuevas, necesarias para que el auto-registro funcione (Fase 3)
 
 Añaden lo que 3.1 todavía no resolvía: dejar que un **Locatario se auto-registre**
 sin que un Admin/Empleado le cree la cuenta primero, pero **sin acceso real hasta
 que alguien lo apruebe**. El código de `index.html` ya crea el perfil con
 `aprobado:false` al auto-registrarse y bloquea la entrada a la app (pantalla
-"Cuenta pendiente") mientras ese campo siga en `false` — **puedes probar el flujo
-de registro/aprobación con las reglas de 3.1 activas primero**, porque de por sí
-esas reglas ya permiten que cualquier cuenta autenticada cree/edite su propio
-documento en `usuarios`; lo único que 3.1 no impide es que un Locatario sin
-aprobar cree o lea **tickets**, así que pruébalo con cuidado antes de confiar en
-el estado "pendiente" para bloquear el acceso a tickets.
+"Cuenta pendiente") mientras ese campo siga en `false`.
 
-**No pegar todavía sin haber confirmado antes que:** (1) el registro nuevo crea la
-cuenta y la deja en pantalla de espera, (2) Admin/Empleado ven el badge
+⚠️ **A diferencia de la Fase anterior, aquí SÍ hace falta pegar estas reglas antes
+de poder probar el flujo completo.** Las reglas activas hoy (3.1) exigen
+`soyAdmin()` o (Empleado creando un Locatario) para crear un documento en
+`usuarios` — una persona recién auto-registrada no cumple ninguna de las dos
+(todavía no tiene perfil ni rol de staff), así que Firestore rechaza la escritura
+de su propio perfil con "permiso denegado" hasta que se agregue el permiso de
+auto-registro de abajo.
+
+**Antes de pegar, confirma que el código no rompe nada con las reglas actuales**
+probando el login normal de las 3 cuentas existentes (eso sí funciona igual con
+3.1). Después de pegar estas reglas nuevas, confirma: (1) el registro nuevo crea
+la cuenta y la deja en pantalla de espera, (2) Admin/Empleado ven el badge
 "Pendiente" y el botón "Aprobar cuenta" en Usuarios, (3) tras aprobar, esa persona
 puede iniciar sesión y usar la app con normalidad, y (4) las 3 cuentas de rol
 existentes (que no tienen el campo `aprobado`) siguen entrando sin problema. Ver
