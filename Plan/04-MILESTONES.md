@@ -6,6 +6,34 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-07 — Fase 5 ("Suplidor" como catálogo): confirmada por Jose
+Probada en producción: crear un suplidor y asignarlo a un ticket funcionó
+correctamente. Fase 5 cerrada.
+
+## 2026-09-07 — Fase 6 (Dashboard ampliado): código listo, sin probar
+Rama `plan/dashboard-ampliado`. `renderDashboard()` gana 3 KPIs y un gráfico
+nuevo, todos calculados en el cliente a partir de los tickets ya sincronizados
+(sin colecciones ni reglas de Firestore nuevas): tasa de reapertura (nuevo
+campo `reaperturas` en el ticket, incrementado en `reabrirTicket()` —
+tickets viejos empiezan en 0), tiempo promedio de primera respuesta
+(aproximado: primer historial después de la creación o primer comentario de
+staff, lo que ocurra antes — no había un timestamp dedicado para esto),
+calificación promedio (Fase 4, solo entre tickets ya calificados), y un
+gráfico de barras "Carga por responsable" con tickets **abiertos** agrupados
+por `asignado_a` (Fase 5, personal interno o suplidor). "Vencidos" ya era en
+tiempo real desde antes de esta fase (se recalcula en cada render, no
+depende de un valor guardado) — se documentó explícitamente para dejar
+claro que no hacía falta ningún cambio ahí. Verificado: sintaxis
+(`node --check`) y que el archivo sirve en local. **No verificado contra
+Firebase real** (mismo límite de red de siempre) — pendiente de que Jose
+confirme que el Dashboard carga bien y que los números nuevos cuadran con
+los tickets reales antes de subir a `main`.
+
+Con esta fase queda completo el plan de ajustes 2026-09 (las 6 fases del
+brief original en `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`). Próximo paso
+decidido con Jose: rediseño visual completo de la app con Claude Design, en
+un solo pase, una vez confirmada esta fase.
+
 ## 2026-09-07 — Fase 4 (calificación del servicio): confirmada por Jose
 Probada en producción: cerrar un ticket como staff y calificarlo (1-5
 estrellas) como el Locatario que lo reportó funcionó correctamente. Fase 4

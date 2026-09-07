@@ -30,9 +30,13 @@ su primer despliegue, pero está pensada como producto con identidad propia.
    fecha, y se notifica al locatario en cada cambio de estatus.
 5. Si el problema persiste, Admin/Empleado o el locatario dueño del ticket pueden
    reabrir un ticket cerrado — vuelve a "En proceso" y administración lo retoma.
-6. El Dashboard (solo Administrador) muestra: tickets por categoría, por locación,
-   distribución por estatus, promedio de días de solución (general y por categoría) y
-   tendencia mensual.
+6. El Dashboard (Administrador con control total; Empleado en solo lectura desde la
+   Fase 2) muestra: tickets por categoría, por locación, distribución por estatus,
+   promedio de días de solución (general y por categoría), tendencia mensual, y
+   desde la Fase 6: vencidos en tiempo real, tasa de reapertura, tiempo promedio de
+   primera respuesta, calificación promedio del servicio, y carga de tickets
+   abiertos por responsable (personal interno o suplidor) — ver "Dashboard
+   ampliado" más abajo.
 
 ## Flujo de estatus (simplificado desde 2026-09-01)
 
@@ -73,6 +77,34 @@ reglas de Firestore nuevas: la regla vigente de `allow update` para `tickets` ya
 deja que el dueño del ticket (`resource.data.empleado_email == miEmail()`) edite
 su propio documento sin restringir qué campos toca. También se agregó una columna
 "Calificacion" a la exportación CSV.
+
+## Dashboard ampliado (Fase 6, 2026-09)
+
+Se agregaron 3 KPIs y un gráfico nuevo al Dashboard existente, todos calculados
+en el cliente a partir de los tickets ya sincronizados (sin colecciones ni
+reglas de Firestore nuevas):
+
+- **Vencidos (fuera de SLA)** ya era en tiempo real desde antes de esta fase —
+  `isVencido()` se recalcula contra la fecha actual en cada render, no depende
+  de un valor guardado.
+- **Tasa de reapertura**: de los tickets que llegaron a cerrarse alguna vez
+  (tienen `fecha_resolucion`, o ya se reabrieron), qué porcentaje se reabrió al
+  menos una vez. Se agregó el campo `reaperturas` (contador) al ticket,
+  incrementado en `reabrirTicket()` — los tickets de antes de esta fase
+  simplemente empiezan en 0 (no se puede reconstruir con certeza a partir del
+  texto libre del historial viejo).
+- **Tiempo promedio de primera respuesta** (aproximado): no existía un
+  timestamp dedicado para "cuándo lo tocó staff por primera vez", así que se
+  aproxima con el primer dato disponible entre el segundo registro del
+  historial (el primero es la creación) y el primer comentario de un rol
+  staff, lo que ocurra antes. Documentado como aproximación a propósito: es
+  mejor que nada, pero no es un dato capturado explícitamente.
+- **Calificación promedio**: promedio de `calificacion` (Fase 4) solo entre
+  tickets ya calificados, con el conteo entre paréntesis.
+- **Carga por responsable**: gráfico de barras con tickets **abiertos**
+  (mide carga de trabajo actual, no historial completo) agrupados por
+  `asignado_a` — personal interno o suplidor (Fase 5); tickets sin asignar
+  quedan fuera a propósito.
 
 ## SLA e indicador de "Vencido"
 Por prioridad: alta 2 días / media 5 días / baja 10 días. KPI visible en el Dashboard.

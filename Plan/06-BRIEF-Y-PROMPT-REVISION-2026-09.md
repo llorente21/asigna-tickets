@@ -209,16 +209,17 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
   y `04-MILESTONES.md`.
 - **Fase 4 (calificación del servicio, 1-5 estrellas): en producción**, probada
   por Jose.
-- **Fase 5 ("Suplidor" como catálogo): código listo, sin probar ni publicar
-  reglas.** Rama `plan/suplidores`. Nueva sección "Suplidores" (solo Admin);
-  al actualizar un ticket, staff elige responsable entre Personal interno,
-  Suplidor externo (del catálogo) u Otro (texto libre) — se guarda en el
-  propio ticket, visible para cualquiera que lo vea. **Necesita reglas de
-  Firestore nuevas** (README.md sección 3.2) para la colección `suplidores` —
-  sin pegarlas, la sección de Suplidores no podrá guardar ni leer datos. **No
-  probado contra el proyecto real de Firebase por el agente** — mismo límite
-  de red de siempre. Jose debe probar en su navegador: crear un suplidor,
-  asignarlo a un ticket, y confirmar que el nombre aparece correctamente en el
-  detalle del ticket para todos los roles.
-- Fase 6 (dashboard ampliado) — **no implementada todavía**, sigue en el
-  roadmap.
+- **Fase 5 ("Suplidor" como catálogo): en producción**, probada por Jose.
+- **Fase 6 (dashboard ampliado): código listo, sin probar.** Rama
+  `plan/dashboard-ampliado`. 3 KPIs nuevos (tasa de reapertura, tiempo
+  promedio de primera respuesta, calificación promedio) y un gráfico nuevo
+  (carga de tickets abiertos por responsable, interno o suplidor). No
+  requiere reglas de Firestore nuevas. **No probado contra el proyecto real
+  de Firebase por el agente** — mismo límite de red de siempre. Jose debe
+  probar en su navegador que el Dashboard carga sin errores y que los números
+  nuevos tienen sentido con los tickets reales.
+
+Con esto queda completo el plan de ajustes 2026-09 (las 6 fases del brief
+original). El siguiente paso, ya decidido con Jose (2026-09-07), es un
+rediseño visual completo de la app con Claude Design, hecho en un solo pase
+sobre la app funcionalmente terminada.

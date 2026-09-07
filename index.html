@@ -609,6 +609,10 @@ main.view.active{display:block;}
         <tbody id="solved-table-body"></tbody>
       </table>
     </div>
+    <div class="chart-card">
+      <h4>Carga por responsable (tickets abiertos)</h4>
+      <div id="chart-responsable"></div>
+    </div>
   </main>
 
   <!-- ---------- Usuarios (admin) ---------- -->
@@ -1414,6 +1418,11 @@ function sanitizeTicket(t){
     // como texto libre sin tipo — se preserva tal cual, solo sin selects nuevos.
     asignado_tipo: ['interno','suplidor','manual'].includes(t.asignado_tipo) ? t.asignado_tipo : (t.asignado_a ? 'manual' : ''),
     asignado_id: t.asignado_id || '',
+    // Cuántas veces se reabrió este ticket ya cerrado — usado en el Dashboard
+    // para la tasa de reapertura (Fase 6). Tickets de antes de este campo
+    // simplemente empiezan en 0 (no se puede reconstruir con certeza del
+    // historial de texto libre).
+    reaperturas: Number.isInteger(t.reaperturas) ? t.reaperturas : 0,
   };
 }
 function isVencido(t){
@@ -2118,6 +2127,7 @@ async function reabrirTicket(){
   t.status = 'en_proceso';
   t.fecha_actualizacion = ts;
   t.fecha_resolucion = '';
+  t.reaperturas = (t.reaperturas||0) + 1;
   t.historial.push({ status:'en_proceso', fecha:ts, nota:`Reabierto por ${currentUser.name}: ${motivo}`, usuario:currentUser.name });
 
   saveTicketsLocal();
@@ -2794,7 +2804,45 @@ function renderDashboard(){
   const promDias = resueltosConFecha.length
     ? (resueltosConFecha.reduce((s,x)=>s+diffDays(x.fecha_creacion,x.fecha_resolucion),0)/resueltosConFecha.length).toFixed(1)
     : '—';
+  // "Vencidos" ya es en tiempo real: isVencido() se calcula contra la fecha
+  // actual en cada render del Dashboard, no contra un valor guardado.
   const vencidos = t.filter(isVencido).length;
+
+  // Tasa de reapertura (Fase 6): de los tickets que llegaron a estar cerrados
+  // alguna vez (tienen fecha_resolucion, o ya se reabrieron), ¿qué porcentaje
+  // se reabrió al menos una vez?
+  const tocaronCerrado = t.filter(x=>x.fecha_resolucion || x.reaperturas>0);
+  const reabiertos = t.filter(x=>x.reaperturas>0);
+  const tasaReapertura = tocaronCerrado.length ? (reabiertos.length/tocaronCerrado.length*100).toFixed(0) : null;
+
+  // Tiempo de primera respuesta (Fase 6, aproximado): tiempo entre la creación
+  // del ticket y la primera señal de que staff lo tocó — el primer cambio de
+  // historial después de la creación, o el primer comentario de staff, lo que
+  // ocurra antes. No es un timestamp dedicado (no existía antes de esta fase),
+  // así que es una aproximación a partir de datos que ya se guardaban.
+  const primeraRespuestaHoras = t.map(x=>{
+    const candidatos = [];
+    if(Array.isArray(x.historial) && x.historial.length>1) candidatos.push(new Date(x.historial[1].fecha));
+    const primerComentarioStaff = (x.comentarios||[]).find(c=>c.rol==='admin'||c.rol==='empleado');
+    if(primerComentarioStaff) candidatos.push(new Date(primerComentarioStaff.fecha));
+    if(!candidatos.length) return null;
+    const primera = new Date(Math.min(...candidatos));
+    const creacion = new Date(x.fecha_creacion);
+    if(isNaN(primera) || isNaN(creacion) || primera < creacion) return null;
+    return (primera - creacion) / 3600000;
+  }).filter(h=>h!=null);
+  const promPrimeraRespuesta = primeraRespuestaHoras.length
+    ? (primeraRespuestaHoras.reduce((s,h)=>s+h,0)/primeraRespuestaHoras.length)
+    : null;
+  const primeraRespuestaLabel = promPrimeraRespuesta==null ? '—'
+    : promPrimeraRespuesta < 48 ? `${promPrimeraRespuesta.toFixed(1)}h`
+    : `${(promPrimeraRespuesta/24).toFixed(1)}d`;
+
+  // Calificación promedio (Fase 4/6): solo cuenta tickets ya calificados.
+  const calificados = t.filter(x=>x.calificacion);
+  const promCalificacion = calificados.length
+    ? (calificados.reduce((s,x)=>s+x.calificacion,0)/calificados.length).toFixed(1)
+    : null;
 
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi-card"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
@@ -2802,6 +2850,9 @@ function renderDashboard(){
     <div class="kpi-card"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
     <div class="kpi-card"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
     <div class="kpi-card"><div class="v">${promDias}${promDias!=='—'?'d':''}</div><div class="l">Prom. días de solución</div></div>
+    <div class="kpi-card"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
+    <div class="kpi-card"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
+    <div class="kpi-card"><div class="v">${promCalificacion==null?'—':promCalificacion+' ★'}</div><div class="l">Calificación promedio${calificados.length?' ('+calificados.length+')':''}</div></div>
   `;
 
   const porCategoria = Object.keys(CATEGORIAS).map((c,i)=>({label:c, value:t.filter(x=>x.categoria===c).length, color:CHART_COLORS[i%CHART_COLORS.length]})).sort((a,b)=>b.value-a.value);
@@ -2830,6 +2881,21 @@ function renderDashboard(){
     return `<tr><td>${esc(c)}</td><td>${resueltos.length}</td><td>${prom}${prom!=='—'?' d':''}</td></tr>`;
   }).join('');
   document.getElementById('solved-table-body').innerHTML = rows;
+
+  // Carga por responsable (Fase 6): solo tickets ABIERTOS (mide carga de trabajo
+  // actual, no historial completo), agrupados por a quién quedaron asignados —
+  // personal interno o suplidor. Sin asignar queda fuera del gráfico a propósito.
+  const cargaMap = new Map();
+  t.filter(x=>x.status!=='cerrado' && x.asignado_a).forEach(x=>{
+    const key = x.asignado_a + (x.asignado_tipo==='suplidor' ? ' (suplidor)' : '');
+    cargaMap.set(key, (cargaMap.get(key)||0) + 1);
+  });
+  const porResponsable = Array.from(cargaMap.entries())
+    .map(([label,value],i)=>({label, value, color:CHART_COLORS[i%CHART_COLORS.length]}))
+    .sort((a,b)=>b.value-a.value);
+  document.getElementById('chart-responsable').innerHTML = porResponsable.length
+    ? barRows(porResponsable)
+    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto tiene responsable asignado todavía</div></div>`;
 }
 function statusVar(s){ return { nuevo:'--info', en_proceso:'--purple', cerrado:'--success' }[s]; }
 
