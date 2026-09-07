@@ -5,23 +5,15 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-- **Fase 6 — Dashboard ampliado: código listo, falta que Jose lo pruebe.** 3
-  KPIs nuevos (tasa de reapertura, tiempo promedio de primera respuesta,
-  calificación promedio) y un gráfico nuevo (carga de tickets abiertos por
-  responsable). No necesita reglas de Firestore nuevas. Ver
-  `06-BRIEF-Y-PROMPT-REVISION-2026-09.md` y `02-FUNCIONALIDAD.md` ("Dashboard
-  ampliado"). **Esta es la última fase del plan de ajustes 2026-09** — al
-  confirmarse, sigue el rediseño visual completo de la app (decisión de Jose,
-  2026-09-07: primero cerrar el roadmap funcional, después un solo pase de
-  diseño con Claude Design sobre la app ya completa, para no construir los
-  widgets del Dashboard dos veces).
+(nada por ahora — el plan de ajustes 2026-09 quedó completo con la Fase 6)
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad
   por fila de `tickets`/`notificaciones`, Fase 3 (auto-registro con aprobación
-  de Locatario), Fase 4 (calificación del servicio) y Fase 5 (catálogo de
-  Suplidores)** — en producción desde 2026-09-02/07, probadas por Jose. Ver
-  `04-MILESTONES.md`.
+  de Locatario), Fase 4 (calificación del servicio), Fase 5 (catálogo de
+  Suplidores) y Fase 6 (Dashboard ampliado)** — en producción desde
+  2026-09-02/07, probadas por Jose. Con la Fase 6 se cierra el plan de 6 fases
+  de `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`. Ver `04-MILESTONES.md`.
 
 ## Pendiente — prioridad alta
 - **Rediseño visual con Claude Design.** Tras confirmar la Fase 6: un pase de

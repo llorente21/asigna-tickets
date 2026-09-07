@@ -210,14 +210,11 @@ datos de calificación y de suplidor que alimentan las métricas nuevas.
 - **Fase 4 (calificación del servicio, 1-5 estrellas): en producción**, probada
   por Jose.
 - **Fase 5 ("Suplidor" como catálogo): en producción**, probada por Jose.
-- **Fase 6 (dashboard ampliado): código listo, sin probar.** Rama
-  `plan/dashboard-ampliado`. 3 KPIs nuevos (tasa de reapertura, tiempo
-  promedio de primera respuesta, calificación promedio) y un gráfico nuevo
-  (carga de tickets abiertos por responsable, interno o suplidor). No
-  requiere reglas de Firestore nuevas. **No probado contra el proyecto real
-  de Firebase por el agente** — mismo límite de red de siempre. Jose debe
-  probar en su navegador que el Dashboard carga sin errores y que los números
-  nuevos tienen sentido con los tickets reales.
+- **Fase 6 (dashboard ampliado): en producción**, probada y confirmada por
+  Jose (2026-09-07), fusionada a `main`. 3 KPIs nuevos (tasa de reapertura,
+  tiempo promedio de primera respuesta, calificación promedio) y un gráfico
+  nuevo (carga de tickets abiertos por responsable, interno o suplidor). No
+  requirió reglas de Firestore nuevas.
 
 Con esto queda completo el plan de ajustes 2026-09 (las 6 fases del brief
 original). El siguiente paso, ya decidido con Jose (2026-09-07), es un
