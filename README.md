@@ -324,6 +324,133 @@ service cloud.firestore {
 }
 ```
 
+### 3.4 — Reglas nuevas, necesarias para Locaciones y SLA editables (2026-09)
+
+Agrega la colección `locaciones` (antes era una lista fija en el código) y la
+colección `configuracion` (un solo documento, `sla`, con los días esperados de
+solución por prioridad). Ambas solo las edita Admin desde la pantalla
+Configuración — el resto de la app solo necesita leerlas.
+
+⚠️ **Sin estas reglas pegadas, Configuración → Locaciones/SLA se ve pero falla
+al guardar** (permiso denegado) — mismo síntoma que en fases anteriores: la UI
+funciona, pero el guardado real contra Firestore necesita este permiso primero.
+Mientras tanto la app sigue funcionando con los valores por defecto/locales.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function tieneClaves(d, claves) {
+      return d.keys().hasAll(claves);
+    }
+    function autenticado() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+    function miEmail() {
+      return request.auth.token.email.lower();
+    }
+    function miPerfilExiste() {
+      return exists(/databases/$(database)/documents/usuarios/$(miEmail()));
+    }
+    function miPerfil() {
+      return get(/databases/$(database)/documents/usuarios/$(miEmail())).data;
+    }
+    function soyStaff() {
+      return autenticado() && miPerfilExiste() && miPerfil().role in ['admin','empleado'];
+    }
+    function soyAdmin() {
+      return autenticado() && miPerfilExiste() && miPerfil().role == 'admin';
+    }
+    function miPerfilAprobado() {
+      return miPerfilExiste() && miPerfil().get('aprobado', true) != false;
+    }
+    function autorizado() {
+      return autenticado() && (soyStaff() || miPerfilAprobado());
+    }
+
+    match /usuarios/{email} {
+      allow get: if autenticado() && (miEmail() == email || soyStaff());
+      allow list: if soyStaff();
+      allow create: if tieneClaves(request.resource.data, ['email','name','password','role'])
+                   && request.resource.data.role in ['admin','empleado','locatario']
+                   && request.resource.data.email is string
+                   && request.resource.data.name is string
+                   && request.resource.data.password is string
+                   && (
+                        soyAdmin()
+                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
+                            && request.resource.data.role == 'locatario')
+                        || (autenticado() && !miPerfilExiste() && miEmail() == email
+                            && request.resource.data.role == 'locatario'
+                            && request.resource.data.aprobado == false)
+                      );
+      allow update: if tieneClaves(request.resource.data, ['email','name','password','role'])
+                   && request.resource.data.role in ['admin','empleado','locatario']
+                   && request.resource.data.email is string
+                   && request.resource.data.name is string
+                   && request.resource.data.password is string
+                   && (
+                        soyAdmin()
+                        || (autenticado() && miPerfilExiste() && miPerfil().role == 'empleado'
+                            && request.resource.data.role == 'locatario')
+                      );
+      allow delete: if soyAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      allow get: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow list: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow create: if autorizado() && tieneClaves(request.resource.data,
+                      ['id','numero','empleado_email','locacion','categoria','descripcion','status','historial'])
+                   && request.resource.data.status == 'nuevo';
+      allow update: if soyStaff() || (autorizado() && resource.data.empleado_email == miEmail());
+      allow delete: if soyAdmin();
+    }
+
+    match /notificaciones/{notifId} {
+      allow get: if soyStaff() || (autorizado() && resource.data.para == miEmail());
+      allow list: if soyStaff() || (autorizado() && resource.data.para == miEmail());
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','para','tipo','mensaje','fecha','leida']);
+      allow delete: if autenticado();
+    }
+
+    match /empresas/{empresaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /categorias/{categoriaId} {
+      allow read: if autenticado();
+      allow create, update: if autenticado() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /suplidores/{suplidorId} {
+      allow read: if soyStaff();
+      allow create, update: if soyStaff() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /locaciones/{locacionId} {
+      allow read: if autenticado();
+      allow create, update: if soyAdmin() && tieneClaves(request.resource.data, ['id','nombre']);
+      allow delete: if soyAdmin();
+    }
+
+    match /configuracion/{docId} {
+      allow read: if autenticado();
+      allow write: if soyAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
 ### 3.3 — Reglas históricas (reemplazadas por las de 3.1, antes de Firebase Authentication)
 
 ```

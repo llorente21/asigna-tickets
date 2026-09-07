@@ -1013,15 +1013,56 @@ function categoriasAsObject(){
   return obj;
 }
 function rebuildCategorias(){ CATEGORIAS = categoriasAsObject(); }
+function applyRemoteLocaciones(remoteList){
+  if(Array.isArray(remoteList) && remoteList.length){
+    const obj = {};
+    remoteList.forEach(l => { if(l && l.id) obj[l.id] = l.nombre || l.id; });
+    if(Object.keys(obj).length){ LOCACIONES = obj; saveLocacionesLocal(); return true; }
+  }
+  return false;
+}
+function seedLocacionesIfEmpty(remoteList){
+  if(!Array.isArray(remoteList) || !remoteList.length){
+    Object.entries(DEFAULT_LOCACIONES).forEach(([id,nombre]) => fbSet('locaciones', id, {id, nombre}).catch(e=>console.warn('seed locaciones', e)));
+  }
+}
+function applyRemoteSla(remoteDoc){
+  if(remoteDoc && Number(remoteDoc.baja)>0 && Number(remoteDoc.media)>0 && Number(remoteDoc.alta)>0){
+    SLA_DIAS = { baja:Number(remoteDoc.baja), media:Number(remoteDoc.media), alta:Number(remoteDoc.alta) };
+    saveSlaLocal();
+    return true;
+  }
+  return false;
+}
+function seedSlaIfEmpty(remoteDoc){
+  if(!remoteDoc) fbSet('configuracion', 'sla', SLA_DIAS).catch(e=>console.warn('seed sla', e));
+}
 let CATEGORIAS_LIST = loadCategoriasLocal();
 // Objeto derivado {nombre: [subcategorías]} — se mantiene por compatibilidad con el
 // resto del código, que sigue leyendo CATEGORIAS[cat] / Object.keys(CATEGORIAS).
 let CATEGORIAS = categoriasAsObject();
-const LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D3: "DIX Business Center 3", D4: "DIX Business Center 4" };
+const DEFAULT_LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D3: "DIX Business Center 3", D4: "DIX Business Center 4" };
+function loadLocacionesLocal(){
+  try{ const s=localStorage.getItem('of_locaciones'); if(s){ const p=JSON.parse(s); if(p && Object.keys(p).length) return p; } }catch(e){}
+  return Object.assign({}, DEFAULT_LOCACIONES);
+}
+function saveLocacionesLocal(){ localStorage.setItem('of_locaciones', JSON.stringify(LOCACIONES)); }
+// Editable desde Configuración (solo Admin) — se guarda en Firestore, colección
+// 'locaciones' (un doc por código). LOCACIONES sigue siendo el lookup {codigo:
+// nombre} que usa el resto del código sin cambios (Object.entries/LOCACIONES[x]).
+let LOCACIONES = loadLocacionesLocal();
 const STATUS_FLOW = ['nuevo','en_proceso','cerrado'];
 const STATUS_LABELS = { nuevo:'Nuevo', en_proceso:'En proceso', cerrado:'Cerrado' };
 const PRIORIDAD_LABELS = { baja:'Baja', media:'Media', alta:'Alta' };
-const SLA_DIAS = { baja:10, media:5, alta:2 }; // días esperados de solución según prioridad
+const DEFAULT_SLA_DIAS = { baja:10, media:5, alta:2 };
+function loadSlaLocal(){
+  try{ const s=localStorage.getItem('of_sla'); if(s){ const p=JSON.parse(s); if(p && p.baja && p.media && p.alta) return p; } }catch(e){}
+  return Object.assign({}, DEFAULT_SLA_DIAS);
+}
+function saveSlaLocal(){ localStorage.setItem('of_sla', JSON.stringify(SLA_DIAS)); }
+// Editable desde Configuración (solo Admin) — se guarda en Firestore como un
+// único documento, colección 'configuracion', doc 'sla'.
+let SLA_DIAS = loadSlaLocal(); // días esperados de solución según prioridad
 const ROLE_LABELS = { admin:'Administración', empleado:'Empleado', locatario:'Locatario' };
 const ROLE_TAG = { admin:'Admin', empleado:'Empleado', locatario:'Locatario' };
 const DEFAULT_USERS = [
@@ -1387,7 +1428,7 @@ async function enterApp(){
     // notificaciones — las reglas de Firestore solo permiten un `list` filtrado a
     // sus propios documentos (:runQuery), nunca la colección completa. Staff sí
     // puede listar todo. Ver Plan/01-ARQUITECTURA.md, "seguridad por fila".
-    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias, remoteSuplidores] = await Promise.all([
+    const [remoteTickets, remoteUsers, remoteNotifs, remoteEmpresas, remoteCategorias, remoteSuplidores, remoteLocaciones, remoteSla] = await Promise.all([
       isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
       isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
@@ -1399,7 +1440,12 @@ async function enterApp(){
       // 'suplidores' (Fase 5) solo lo necesita staff (para asignar tickets); es
       // colección nueva, así que se aísla con su propio catch por si las reglas de
       // Firestore todavía no la incluyen.
-      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }) : Promise.resolve(null)
+      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }) : Promise.resolve(null),
+      // 'locaciones' y 'configuracion/sla' (Locaciones y SLA editables) — colecciones
+      // nuevas, aisladas con su propio catch por si las reglas de Firestore todavía
+      // no las incluyen; mientras tanto se usan los valores por defecto/locales.
+      sb.getAll('locaciones').catch(e=>{ console.warn('locaciones fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }),
+      fbGetOne('configuracion','sla').catch(e=>{ console.warn('sla fetch failed (¿reglas de Firestore actualizadas?)', e); return null; })
     ]);
     tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket);
     if(Array.isArray(remoteUsers) && remoteUsers.length){ USERS_LIST = remoteUsers; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
@@ -1414,10 +1460,13 @@ async function enterApp(){
       CATEGORIAS_LIST = DEFAULT_CATEGORIAS.slice();
       sb.upsertMany('categorias', CATEGORIAS_LIST, 'id').catch(e=>console.warn('seed categorias', e));
     }
+    if(remoteLocaciones !== null){ if(!applyRemoteLocaciones(remoteLocaciones)) seedLocacionesIfEmpty(remoteLocaciones); }
+    if(remoteSla !== null){ if(!applyRemoteSla(remoteSla)) seedSlaIfEmpty(remoteSla); }
     saveTicketsLocal(); saveNotifsLocal(); saveEmpresasLocal(); saveCategoriasLocal(); saveSuplidoresLocal();
     rebuildCategorias();
     buildEmpresaOptions();
     buildCategoriaSelects();
+    buildStaticSelects();
   }catch(e){
     console.warn('enterApp sync failed', e);
     tickets = loadTicketsLocal().map(sanitizeTicket);
@@ -1643,6 +1692,7 @@ function renderAll(){
   if(currentView==='areas') renderAreasView();
   if(currentView==='estados') renderEstadosView();
   if(currentView==='prioridades') renderPrioridadesView();
+  if(currentView==='configuracion') renderConfiguracionView();
   if(currentView==='perfil') renderProfile();
 }
 
@@ -1650,13 +1700,15 @@ function renderAll(){
 async function syncFromFirebase(){
   if(!currentUser) return;
   try{
-    const [t,u,n,emp,cat,sup] = await Promise.all([
+    const [t,u,n,emp,cat,sup,loc,sla] = await Promise.all([
       isStaff() ? sb.getAll('tickets') : fbQuery('tickets', 'empleado_email', currentUser.email),
       isStaff() ? sb.getAll('usuarios') : Promise.resolve(null),
       isStaff() ? sb.getAll('notificaciones') : fbQuery('notificaciones', 'para', currentUser.email),
       sb.getAll('empresas'),
       sb.getAll('categorias').catch(e=>{ console.warn('categorias fetch failed', e); return null; }),
-      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed', e); return null; }) : Promise.resolve(null)
+      isStaff() ? sb.getAll('suplidores').catch(e=>{ console.warn('suplidores fetch failed', e); return null; }) : Promise.resolve(null),
+      sb.getAll('locaciones').catch(e=>{ console.warn('locaciones fetch failed', e); return null; }),
+      fbGetOne('configuracion','sla').catch(e=>{ console.warn('sla fetch failed', e); return null; })
     ]);
     if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
     if(Array.isArray(u) && u.length){ USERS_LIST = u; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
@@ -1664,6 +1716,8 @@ async function syncFromFirebase(){
     if(Array.isArray(emp)){ EMPRESAS = emp; saveEmpresasLocal(); buildEmpresaOptions(); }
     if(Array.isArray(cat) && cat.length){ CATEGORIAS_LIST = cat; saveCategoriasLocal(); rebuildCategorias(); buildCategoriaSelects(); }
     if(Array.isArray(sup)){ SUPLIDORES_LIST = sup; saveSuplidoresLocal(); if(currentView==='suplidores') renderSuplidoresList(); }
+    if(loc !== null && applyRemoteLocaciones(loc)) buildStaticSelects();
+    if(sla !== null) applyRemoteSla(sla);
     renderAll();
   }catch(e){ console.warn('Sync failed:', e); }
 }
@@ -2851,17 +2905,88 @@ function renderPrioridadesView(){
   document.getElementById('prioridades-grid').innerHTML = html;
 }
 
+function locRowHTML(codigo, nombre){
+  return `
+    <div class="settings-row" style="align-items:center; gap:8px; flex-wrap:nowrap;">
+      <input class="loc-code-input mono" value="${esc(codigo)}" placeholder="COD" style="width:64px; flex:0 0 64px; padding:7px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; text-transform:uppercase; font-family:'Roboto Mono',monospace;">
+      <input class="loc-name-input" value="${esc(nombre)}" placeholder="Nombre de la locación" style="flex:1; min-width:0; padding:7px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px;">
+      <button class="icon-btn-light" style="width:32px; height:32px; flex:0 0 auto;" onclick="this.closest('.settings-row').remove()" aria-label="Eliminar locación">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>`;
+}
+function addLocacionRow(){
+  document.getElementById('loc-edit-rows').insertAdjacentHTML('beforeend', locRowHTML('', ''));
+}
+async function saveLocacionesConfig(){
+  const rows = Array.from(document.querySelectorAll('#loc-edit-rows .settings-row'));
+  const nuevos = {}; const seen = new Set(); let error = '';
+  rows.forEach(row=>{
+    const codigo = row.querySelector('.loc-code-input').value.trim().toUpperCase();
+    const nombre = row.querySelector('.loc-name-input').value.trim();
+    if(!codigo && !nombre) return;
+    if(error) return;
+    if(!codigo || !nombre){ error = 'Cada locación necesita código y nombre'; return; }
+    if(seen.has(codigo)){ error = `Código repetido: ${codigo}`; return; }
+    seen.add(codigo);
+    nuevos[codigo] = nombre;
+  });
+  if(error){ showToast(error); return; }
+  if(!Object.keys(nuevos).length){ showToast('Debe haber al menos una locación'); return; }
+
+  const eliminados = Object.keys(LOCACIONES).filter(k => !nuevos[k]);
+  LOCACIONES = nuevos;
+  saveLocacionesLocal();
+  buildStaticSelects();
+  renderConfiguracionView();
+  showToast('Locaciones guardadas ✓');
+
+  Object.entries(nuevos).forEach(([id,nombre]) => fbSet('locaciones', id, {id, nombre}).catch(e=>console.warn('locacion sync', e)));
+  eliminados.forEach(id => fbDelete('locaciones', id).catch(e=>console.warn('locacion delete sync', e)));
+}
+
+async function saveSlaConfig(){
+  const vals = {};
+  let error = '';
+  ['baja','media','alta'].forEach(p=>{
+    const n = parseInt(document.getElementById('sla-'+p).value, 10);
+    if(!Number.isInteger(n) || n <= 0) error = 'Los días de SLA deben ser números enteros mayores a 0';
+    vals[p] = n;
+  });
+  if(error){ showToast(error); return; }
+
+  SLA_DIAS = vals;
+  saveSlaLocal();
+  renderConfiguracionView();
+  if(document.getElementById('prioridades-grid')) renderPrioridadesView();
+  showToast('Política de SLA guardada ✓');
+  fbSet('configuracion', 'sla', SLA_DIAS).catch(e=>console.warn('sla sync', e));
+}
+
 function renderConfiguracionView(){
-  const locRows = Object.entries(LOCACIONES).map(([k,v])=>`<div class="settings-row"><span class="l">${k}</span><span class="v">${esc(v)}</span></div>`).join('');
-  const slaRows = Object.keys(PRIORIDAD_LABELS).map(p=>`<div class="settings-row"><span class="l">${PRIORIDAD_LABELS[p]}</span><span class="v">${SLA_DIAS[p]} día${SLA_DIAS[p]===1?'':'s'}</span></div>`).join('');
+  const locRows = Object.entries(LOCACIONES).map(([k,v]) => locRowHTML(k, v)).join('');
+  const slaRows = Object.keys(PRIORIDAD_LABELS).map(p => `
+    <div class="settings-row">
+      <span class="l">${PRIORIDAD_LABELS[p]}</span>
+      <span style="display:flex; align-items:center; gap:6px;">
+        <input id="sla-${p}" type="number" min="1" value="${SLA_DIAS[p]}" style="width:56px; padding:6px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; text-align:right;">
+        <span class="v" style="font-weight:600;">día${SLA_DIAS[p]===1?'':'s'}</span>
+      </span>
+    </div>`).join('');
   document.getElementById('configuracion-body').innerHTML = `
     <div class="settings-block">
       <h3>Política de SLA</h3>
-      ${slaRows}
+      <div id="sla-edit-rows">${slaRows}</div>
+      <button class="btn btn-dark btn-sm" style="margin-top:10px;" onclick="saveSlaConfig()">Guardar cambios de SLA</button>
     </div>
     <div class="settings-block">
       <h3>Locaciones</h3>
-      ${locRows}
+      <div id="loc-edit-rows">${locRows}</div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="addLocacionRow()">+ Agregar locación</button>
+        <button class="btn btn-dark btn-sm" onclick="saveLocacionesConfig()">Guardar cambios</button>
+      </div>
+      <p style="font-size:11.5px; color:var(--text3); margin:8px 0 0;">Eliminar una locación de aquí no borra los tickets/usuarios/empresas que ya la tienen asignada, solo deja de aparecer como opción nueva.</p>
     </div>
     <div class="settings-block">
       <h3>Acerca de</h3>
@@ -2869,7 +2994,7 @@ function renderConfiguracionView(){
       <div class="settings-row"><span class="l">Versión</span><span class="v">1.0</span></div>
       <div class="settings-row"><span class="l">Primer despliegue</span><span class="v">Oficinas Felices</span></div>
     </div>
-    <p style="font-size:12px; color:var(--text3); margin-top:4px;">Áreas, Estados y Prioridades son de solo lectura por ahora — en una próxima actualización se podrán crear y editar directamente desde aquí.</p>
+    <p style="font-size:12px; color:var(--text3); margin-top:4px;">Estados y Prioridades son de solo lectura por ahora — en una próxima actualización se podrán crear y editar directamente desde aquí.</p>
   `;
 }
 

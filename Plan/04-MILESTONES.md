@@ -252,3 +252,13 @@ nueva debe llevar la fecha real del día en que se hizo el trabajo._
 
 ## 2026-09-07 — Fase 6 confirmada por Jose y fusionada a main
 Dashboard ampliado probado en producción por Jose. Fusionado `plan/dashboard-ampliado` → `main`. Con esto se completa el plan de 6 fases de `06-BRIEF-Y-PROMPT-REVISION-2026-09.md`. Próximo: rediseño visual con Claude Design.
+
+## 2026-09-07 — Locaciones y SLA editables desde Configuración
+Antes eran valores fijos en el código (`LOCACIONES`, `SLA_DIAS`). Ahora Admin
+los edita desde Configuración: Locaciones pasa a ser una colección Firestore
+(`locaciones`, un doc por código, con seed automático de los 4 valores
+originales D1-D4 si la colección está vacía) y SLA pasa a un doc único
+(`configuracion/sla`). Requiere pegar las reglas nuevas de README.md §3.4 —
+mientras tanto la app sigue funcionando con los valores locales/por defecto,
+pero no persiste los cambios que se guarden ahí. Código listo, sin probar por
+Jose todavía.
