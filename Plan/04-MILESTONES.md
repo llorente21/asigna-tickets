@@ -6,6 +6,59 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-09-16 — Fix: tickets que se pierden en silencio (notificación sí, ticket no) — código listo, sin desplegar
+
+Diagnóstico y reporte de Jose: la campanita mostraba "nuevo ticket" para tickets
+que luego no aparecían en la sección Tickets. Se reprodujo en vivo contra
+producción (navegador logueado como admin `josema@oficinasfelices.com`): el
+Dashboard mostraba **1 solo ticket real** en Firestore a pesar de varias
+notificaciones "nuevo_ticket" recientes (caso concreto: Isabel Morillo,
+`isabelmorillo2@gmail.com`, 2 tickets — `fbGetOne('tickets', id)` confirmó que
+ninguno de los dos existe en la base, no es un problema de permisos ni de
+filtros de la vista).
+
+**Causa raíz confirmada:** race condition en `getIdToken()` — ver el detalle
+completo en `05-ESTANDARES.md` ("Lecciones aprendidas"). En resumen: crear un
+ticket dispara 3 escrituras casi simultáneas (2 notificaciones + el ticket);
+si el token de sesión vencía justo en ese momento, las 3 llamadas competían
+por refrescarlo, y la rotación del refresh token en Firebase hacía que el
+"perdedor" de la carrera borrara la sesión que el "ganador" acababa de
+guardar bien — perdiendo 1 o 2 de las 3 escrituras sin ningún aviso (solo
+`console.warn`).
+
+**Fix implementado** (rama `fix/token-refresh-race-y-fallos-silenciosos`,
+sin merge a `main` todavía):
+- `ensureTokenRefreshed()` — candado (`_refreshInFlight`) para que llamadas
+  concurrentes comparta un único refresh en vez de disparar varios en paralelo.
+- `fbSetWithRetry()` — reintenta una vez (forzando refresh) antes de rendirse;
+  usado ahora para crear tickets y notificaciones.
+- Si aun así falla: el ticket queda marcado `_sync_pendiente` en vez de
+  perderse — se reintenta solo en cada sync (`retrySyncPendingTickets()`, se
+  llama al entrar a la app y en cada `syncFromFirebase`), y se le avisa a quien
+  lo creó con un toast en vez de fallar en silencio.
+- `syncFromFirebase()`/`enterApp()` ya no pisan un ticket local pendiente con
+  la lista del servidor si el servidor todavía no lo tiene.
+- `objToFbFields()` excluye la bandera `_sync_pendiente` para que nunca se
+  guarde dentro del documento de Firestore.
+
+**Pendiente:**
+- Verificado: sintaxis del script sin errores (`node --check`) — **falta que
+  Jose pruebe el flujo real** (crear tickets, forzar expiración de sesión) y
+  decida cuándo hacer merge/push a `main` (proyecto compartido, solo por su
+  instrucción).
+- **Sin resolver, aparte:** la cuenta `usuarios/isabelmorillo2@gmail.com` que
+  reportó esos 2 tickets ya no existe en la colección `usuarios` (0 locatarios
+  en el sistema al momento de revisar, solo 6 cuentas de staff). No se sabe
+  todavía si se borró a propósito, quedó huérfana de un registro fallido, o es
+  otra cosa — pendiente de que Jose confirme antes de tocar nada ahí.
+- Dado que Jose pidió explícitamente "mejor nivel de autenticación y
+  seguridad": lo de arriba corrige el bug puntual, pero las reglas de
+  Firestore en sí (README.md §3.1) ya usan Firebase Authentication real y
+  seguridad por fila — no se identificó ninguna brecha de seguridad adicional
+  en esta revisión, solo el bug de confiabilidad del token. Si Jose quiere
+  ir más allá (ej. expirar sesiones más agresivamente, 2FA, límites de
+  intentos de login), es una conversación aparte.
+
 ## 2026-09-07 — Fase 5 ("Suplidor" como catálogo): confirmada por Jose
 Probada en producción: crear un suplidor y asignarlo a un ticket funcionó
 correctamente. Fase 5 cerrada.

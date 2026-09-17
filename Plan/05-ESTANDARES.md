@@ -113,5 +113,31 @@
   Trabajar en rama, avisar que está listo, y esperar instrucción explícita de Jose
   para hacer merge/push a `main`.
 
+- **Race condition en el refresh del token de Firebase Authentication —
+  causa real de "el ticket no llegó pero la notificación sí" (2026-09-16):**
+  `getIdToken()` no tenía candado. Una sola acción (crear un ticket) dispara 3
+  escrituras casi simultáneas (2 `crearNotif` + 1 `fbSet('tickets',...)`), cada
+  una llamando a `getIdToken()` por su cuenta. Si el token estaba vencido justo
+  en ese momento, las 3 llamadas veían el vencimiento y cada una lanzaba SU
+  PROPIO refresh contra Firebase en paralelo. Firebase **rota el refresh token
+  en cada uso** — el primer refresh en llegar invalida el refresh token viejo;
+  el segundo, que todavía lo estaba usando, falla con "invalid refresh token",
+  y ese catch hacía `saveAuthTokensLocal(null)`, **borrando la sesión completa
+  que el primer refresh acababa de guardar bien**. Resultado observado en
+  producción: de las 3 escrituras, 1 o 2 se perdían en silencio (sin
+  `Authorization`, Firestore las rechazaba, y cada `fbSet(...).catch(console.warn)`
+  lo escondía) mientras las demás sí se guardaban. Diagnóstico confirmado en
+  vivo: la cuenta admin veía solo 1 ticket real en Firestore pese a tener
+  notificaciones de "nuevo ticket" para varios más — los tickets nunca
+  existieron ahí, solo su notificación. Fix: `ensureTokenRefreshed()` comparte
+  un único refresh en curso entre llamadas concurrentes (`_refreshInFlight`);
+  además `fbSetWithRetry` reintenta una vez forzando refresh, y las escrituras
+  de tickets que aun así fallan quedan marcadas `_sync_pendiente` (se
+  reintentan solas en cada sync, sin que el usuario tenga que hacer nada) en
+  vez de perderse callado. **No volver a asumir que llamadas async
+  "independientes" a una función con estado compartido (un token, un archivo,
+  un contador) son seguras solo porque cada una tiene su propio `try/catch`** —
+  si comparten estado mutable sin candado, pueden pisarse entre sí.
+
 _Agregar nuevas lecciones aquí a medida que aparezcan — con contexto suficiente para
 que el próximo agente no repita el mismo error._

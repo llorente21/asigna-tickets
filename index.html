@@ -985,10 +985,36 @@ async function firebaseRefreshToken(){
   saveAuthTokensLocal({ idToken:data.id_token, refreshToken:data.refresh_token, expiresAt: Date.now() + (parseInt(data.expires_in||'3600',10)*1000) - 60000 });
   return AUTH_TOKENS;
 }
+// Bug encontrado 2026-09-16: cuando el token expira, ASIGNA crea varias
+// escrituras casi simultáneas (ej. al crear un ticket: 2 notificaciones + el
+// ticket, cada una llamando a getIdToken() por su cuenta). Sin este candado,
+// cada llamada concurrente veía el token vencido y lanzaba SU PROPIO refresh
+// contra Firebase. El primer refresh en llegar rota el refresh token (Firebase
+// invalida el anterior); el segundo refresh, que todavía usaba el refresh
+// token viejo, fallaba con 'invalid refresh token' — y ese catch hacía
+// saveAuthTokensLocal(null), borrando la sesión completa que el PRIMER refresh
+// acababa de guardar bien. Resultado real observado: de 3 escrituras
+// disparadas por la misma acción, 1 o 2 se perdían silenciosamente (quedaban
+// sin Authorization, Firestore las rechazaba, y el .catch(console.warn) de
+// cada fbSet lo escondía) mientras las demás sí se guardaban — tickets que
+// nunca llegan a Firestore aunque su notificación sí. _refreshInFlight hace
+// que todas las llamadas concurrentes esperen UN solo refresh compartido en
+// vez de disparar varios en paralelo.
+let _refreshInFlight = null;
+function ensureTokenRefreshed(){
+  if(!_refreshInFlight){
+    _refreshInFlight = firebaseRefreshToken()
+      .catch(e=>{ saveAuthTokensLocal(null); throw e; })
+      .finally(()=>{ _refreshInFlight = null; });
+  }
+  return _refreshInFlight;
+}
 async function getIdToken(){
   if(!AUTH_TOKENS) return null;
-  if(Date.now() >= AUTH_TOKENS.expiresAt){ try{ await firebaseRefreshToken(); }catch(e){ saveAuthTokensLocal(null); return null; } }
-  return AUTH_TOKENS.idToken;
+  if(Date.now() >= AUTH_TOKENS.expiresAt){
+    try{ await ensureTokenRefreshed(); }catch(e){ return null; }
+  }
+  return AUTH_TOKENS?.idToken || null;
 }
 function clearAuthTokens(){ saveAuthTokensLocal(null); }
 async function authHeaders(){
@@ -1140,6 +1166,22 @@ async function fbSet(collection, id, obj){
   if(!res.ok) throw new Error(await res.text());
   return res.json();
 }
+// fbSet ya podía fallar silenciosamente (el caller solo hacía .catch(console.warn))
+// si el token había expirado justo en ese momento — ver la nota larga en
+// getIdToken()/ensureTokenRefreshed() de 2026-09-16. fbSetWithRetry fuerza un
+// refresh de token y reintenta UNA vez antes de rendirse, para los datos que
+// no podemos permitirnos perder en silencio (tickets, notificaciones).
+async function fbSetWithRetry(collection, id, obj, retries=1){
+  try{
+    return await fbSet(collection, id, obj);
+  }catch(e){
+    if(retries > 0){
+      try{ await ensureTokenRefreshed(); }catch(_){ /* seguimos e intentamos igual */ }
+      return fbSetWithRetry(collection, id, obj, retries-1);
+    }
+    throw e;
+  }
+}
 async function fbDelete(collection, id){
   const res = await fetch(`${FB_URL}/${collection}/${encodeURIComponent(id)}?key=${FIREBASE_CONFIG.apiKey}`, { method:'DELETE', headers: await authHeaders() });
   if(!res.ok && res.status !== 404) throw new Error(await res.text());
@@ -1170,7 +1212,9 @@ function jsToFbVal(v){
 }
 function objToFbFields(obj){
   const fields = {};
-  for(const [k,v] of Object.entries(obj)){ if(k==='_id') continue; fields[k]=jsToFbVal(v); }
+  // '_sync_pendiente' es una bandera puramente local (ver retrySyncPendingTickets,
+  // 2026-09-16) — nunca debe terminar guardada dentro del documento en Firestore.
+  for(const [k,v] of Object.entries(obj)){ if(k==='_id' || k==='_sync_pendiente') continue; fields[k]=jsToFbVal(v); }
   return fields;
 }
 const sb = {
@@ -1453,7 +1497,16 @@ async function enterApp(){
       sb.getAll('locaciones').catch(e=>{ console.warn('locaciones fetch failed (¿reglas de Firestore actualizadas?)', e); return null; }),
       fbGetOne('configuracion','sla').catch(e=>{ console.warn('sla fetch failed (¿reglas de Firestore actualizadas?)', e); return null; })
     ]);
-    tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket);
+    // Igual que en syncFromFirebase: si quedó algún ticket local marcado
+    // '_sync_pendiente' de una sesión anterior que se cerró antes de
+    // reintentar, no lo pisamos con la lista del servidor — se preserva y se
+    // reintenta después de entrar.
+    {
+      const pendientesPrevios = loadTicketsLocal().filter(x => x && x._sync_pendiente);
+      const remoteIdsPrev = new Set((Array.isArray(remoteTickets)?remoteTickets:[]).map(x=>String(x.id)));
+      const preservar = pendientesPrevios.filter(x => !remoteIdsPrev.has(String(x.id)));
+      tickets = (Array.isArray(remoteTickets) ? remoteTickets : []).map(sanitizeTicket).concat(preservar);
+    }
     if(Array.isArray(remoteUsers) && remoteUsers.length){ USERS_LIST = remoteUsers; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     NOTIFS = Array.isArray(remoteNotifs) ? remoteNotifs : [];
     EMPRESAS = Array.isArray(remoteEmpresas) ? remoteEmpresas : [];
@@ -1484,6 +1537,7 @@ async function enterApp(){
   currentView = isStaff() ? 'dashboard' : 'tickets';
   applyLayoutMode();
   renderAll();
+  retrySyncPendingTickets();
 }
 
 function sanitizeTicket(t){
@@ -1704,6 +1758,22 @@ function renderAll(){
 }
 
 /* Sync en background al recuperar foco */
+// Reintenta en segundo plano los tickets que quedaron marcados
+// '_sync_pendiente' (fbSetWithRetry ya reintentó una vez al crearlos y no lo
+// logró — normalmente por el token vencido a mitad de la creación, ver nota
+// de 2026-09-16 en getIdToken()). Se llama sola cada vez que hay un
+// syncFromFirebase (focus/visibilitychange), sin que el usuario tenga que
+// hacer nada.
+async function retrySyncPendingTickets(){
+  const pendientes = tickets.filter(t => t._sync_pendiente);
+  for(const t of pendientes){
+    try{
+      await fbSetWithRetry('tickets', t.id, t);
+      delete t._sync_pendiente;
+      saveTicketsLocal();
+    }catch(e){ console.warn('retry ticket sync failed', t.id, e); }
+  }
+}
 async function syncFromFirebase(){
   if(!currentUser) return;
   try{
@@ -1717,7 +1787,18 @@ async function syncFromFirebase(){
       sb.getAll('locaciones').catch(e=>{ console.warn('locaciones fetch failed', e); return null; }),
       fbGetOne('configuracion','sla').catch(e=>{ console.warn('sla fetch failed', e); return null; })
     ]);
-    if(Array.isArray(t)){ tickets = t.map(sanitizeTicket); saveTicketsLocal(); }
+    if(Array.isArray(t)){
+      // Antes esta línea reemplazaba 'tickets' entero con lo que vino del
+      // servidor — si un ticket local seguía '_sync_pendiente' (todavía no
+      // había logrado guardarse en Firestore), este mismo sync lo borraba de
+      // la memoria/localStorage sin haberlo guardado nunca. Ahora se preserva
+      // cualquier pendiente que el servidor todavía no tenga, y se reintenta.
+      const remoteIds = new Set(t.map(x=>String(x.id)));
+      const pendientesLocales = tickets.filter(x => x._sync_pendiente && !remoteIds.has(String(x.id)));
+      tickets = t.map(sanitizeTicket).concat(pendientesLocales);
+      saveTicketsLocal();
+      retrySyncPendingTickets();
+    }
     if(Array.isArray(u) && u.length){ USERS_LIST = u; localStorage.setItem('of_users', JSON.stringify(USERS_LIST)); }
     if(Array.isArray(n)){ NOTIFS = n; saveNotifsLocal(); }
     if(Array.isArray(emp)){ EMPRESAS = emp; saveEmpresasLocal(); buildEmpresaOptions(); }
@@ -1948,7 +2029,17 @@ async function saveTicket(){
     ? `${ROLE_LABELS[currentUser.role]} registró un ticket a tu nombre: ${ticket.numero}. Te avisaremos cuando tengamos novedades.`
     : `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
 
-  fbSet('tickets', id, ticket).catch(e=>console.warn('save ticket sync', e));
+  fbSetWithRetry('tickets', id, ticket).catch(e=>{
+    // Antes esto se perdía en silencio (solo console.warn) — ver nota de
+    // 2026-09-16 en getIdToken(). Ahora, si de verdad no se pudo guardar tras
+    // el reintento, se lo decimos a quien creó el ticket (ya lo tiene guardado
+    // localmente, pero staff/otros dispositivos no lo verán hasta que se
+    // sincronice) y lo marcamos para reintentar solo en el próximo sync.
+    console.warn('save ticket sync', e);
+    ticket._sync_pendiente = true;
+    saveTicketsLocal();
+    showToast('⚠ '+ticket.numero+' se guardó en este dispositivo pero no en el servidor. Se reintentará automáticamente — no cierres esta pestaña sin conexión.');
+  });
 }
 
 /* ======================================================================
@@ -2240,7 +2331,7 @@ function crearNotif(para, tipo, ticketId, mensaje){
   NOTIFS.unshift(n);
   saveNotifsLocal();
   updateBellBadge();
-  fbSet('notificaciones', n.id, n).catch(e=>console.warn('notif sync', e));
+  fbSetWithRetry('notificaciones', n.id, n).catch(e=>console.warn('notif sync', e));
 }
 function getMyNotifs(){
   return NOTIFS.filter(n => isStaff() ? n.para==='staff' : n.para===currentUser.email)
