@@ -1350,6 +1350,15 @@ async function handleAuth(){
     try{
       await firebaseSignUp(email, pw);
       authOk = true;
+      // Migración completa: la contraseña en texto plano en Firestore ya no
+      // hace falta (Firebase Authentication es ahora la fuente de verdad) y
+      // es un riesgo de seguridad dejarla — cualquier cuenta staff puede leer
+      // el documento de otro usuario. La borramos en cuanto la migración
+      // funciona, sin bloquear el login si esta limpieza falla.
+      try{
+        const { password:_legacyPw, ...cleanUser } = legacyUser;
+        await fbSet('usuarios', email, cleanUser);
+      }catch(cleanupErr){ console.warn('No se pudo limpiar la contraseña heredada en Firestore', cleanupErr); }
     }catch(signUpErr){
       btn.disabled = false; btn.textContent = 'Ingresar →';
       err.textContent = 'No se pudo verificar tu acceso. Intenta de nuevo o contacta a administración.';
