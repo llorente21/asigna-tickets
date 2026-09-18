@@ -2152,7 +2152,7 @@ function renderDetailBody(t){
     actionBox = `
     <div class="action-box">
       <div class="t">Actualizar estatus</div>
-      <div class="field"><label>Nuevo estatus</label><select id="d-status">${opts}</select></div>
+      <div class="field"><label>Nuevo estatus</label><select id="d-status" onchange="onDetailStatusChange('${t.status}')">${opts}</select></div>
       <div class="field"><label>Prioridad</label>
         <select id="d-prioridad">
           ${['baja','media','alta'].map(p=>`<option value="${p}" ${p===t.prioridad?'selected':''}>${PRIORIDAD_LABELS[p]}</option>`).join('')}
@@ -2178,7 +2178,7 @@ function renderDetailBody(t){
         <label>Descripción</label>
         <input id="d-asignado-manual" value="${t.asignado_tipo==='manual'?esc(t.asignado_a||''):''}" placeholder="Ej. Mantenimiento / IT">
       </div>
-      <div class="field"><label>Nota (opcional)</label><textarea id="d-nota" placeholder="Detalle del avance..."></textarea></div>
+      <div class="field"><label id="d-nota-label">Nota (opcional)</label><textarea id="d-nota" placeholder="Detalle del avance..."></textarea><div class="field-hint" id="d-nota-hint" style="display:none;">Obligatorio: explica el motivo del cambio de estatus.</div></div>
       <button class="btn btn-primary" style="width:100%;" onclick="updateTicketStatus('${t.id}')">Actualizar ticket</button>
     </div>`;
   } else if(t.status === 'cerrado'){
@@ -2263,6 +2263,13 @@ function onAsignadoTipoChange(){
   document.getElementById('d-asignado-manual-field').style.display = tipo==='manual' ? 'block' : 'none';
 }
 
+function onDetailStatusChange(estadoOriginal){
+  const nuevo = document.getElementById('d-status').value;
+  const cambia = nuevo !== estadoOriginal;
+  document.getElementById('d-nota-label').textContent = cambia ? 'Nota (obligatoria)' : 'Nota (opcional)';
+  document.getElementById('d-nota-hint').style.display = cambia ? 'block' : 'none';
+}
+
 async function updateTicketStatus(id){
   const t = tickets.find(x=>x.id===id);
   if(!t) return;
@@ -2282,9 +2289,13 @@ async function updateTicketStatus(id){
     asignado_a = document.getElementById('d-asignado-manual').value.trim();
   }
   const nota = document.getElementById('d-nota').value.trim();
-  const ts = nowISO();
-
   const statusChanged = newStatus !== t.status;
+  if(statusChanged && !nota){
+    showToast('Escribe una nota explicando el motivo del cambio de estatus');
+    document.getElementById('d-nota').focus();
+    return;
+  }
+  const ts = nowISO();
   t.status = newStatus; t.prioridad = prioridad;
   t.asignado_tipo = asignadoTipo; t.asignado_id = asignado_id; t.asignado_a = asignado_a;
   t.fecha_actualizacion = ts;
