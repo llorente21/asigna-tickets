@@ -1135,8 +1135,8 @@ function seedLocacionesIfEmpty(remoteList){
   }
 }
 function applyRemoteSla(remoteDoc){
-  if(remoteDoc && Number(remoteDoc.baja)>0 && Number(remoteDoc.media)>0 && Number(remoteDoc.alta)>0){
-    SLA_DIAS = { baja:Number(remoteDoc.baja), media:Number(remoteDoc.media), alta:Number(remoteDoc.alta) };
+  if(remoteDoc && remoteDoc.baja && remoteDoc.media && remoteDoc.alta){
+    SLA_DIAS = normalizeSla(remoteDoc);
     saveSlaLocal();
     return true;
   }
@@ -1162,15 +1162,43 @@ let LOCACIONES = loadLocacionesLocal();
 const STATUS_FLOW = ['nuevo','en_proceso','cerrado'];
 const STATUS_LABELS = { nuevo:'Nuevo', en_proceso:'En proceso', cerrado:'Cerrado' };
 const PRIORIDAD_LABELS = { baja:'Baja', media:'Media', alta:'Alta' };
-const DEFAULT_SLA_DIAS = { baja:10, media:5, alta:2 };
+// SLA con dos plazos por prioridad: tiempo de RESPUESTA (horas hasta el primer
+// contacto de staff) y tiempo de RESOLUCIÓN (días hasta cerrar el ticket).
+const DEFAULT_SLA_DIAS = {
+  baja:  { respuesta_horas:24, resolucion_dias:10 },
+  media: { respuesta_horas:8,  resolucion_dias:5 },
+  alta:  { respuesta_horas:2,  resolucion_dias:2 },
+};
+// Normaliza tanto el formato viejo (número plano = solo días de resolución,
+// de antes de esta mejora) como el nuevo ({respuesta_horas, resolucion_dias}),
+// para que tickets/config guardados antes de este cambio sigan funcionando.
+function normalizeSla(raw){
+  const out = {};
+  ['baja','media','alta'].forEach(p=>{
+    const v = raw && raw[p];
+    const def = DEFAULT_SLA_DIAS[p];
+    if(v && typeof v === 'object'){
+      out[p] = {
+        respuesta_horas: Number(v.respuesta_horas) > 0 ? Number(v.respuesta_horas) : def.respuesta_horas,
+        resolucion_dias: Number(v.resolucion_dias) > 0 ? Number(v.resolucion_dias) : def.resolucion_dias,
+      };
+    } else if(Number(v) > 0){
+      out[p] = { respuesta_horas: def.respuesta_horas, resolucion_dias: Number(v) };
+    } else {
+      out[p] = Object.assign({}, def);
+    }
+  });
+  return out;
+}
 function loadSlaLocal(){
-  try{ const s=localStorage.getItem('of_sla'); if(s){ const p=JSON.parse(s); if(p && p.baja && p.media && p.alta) return p; } }catch(e){}
-  return Object.assign({}, DEFAULT_SLA_DIAS);
+  try{ const s=localStorage.getItem('of_sla'); if(s){ const p=JSON.parse(s); if(p && p.baja && p.media && p.alta) return normalizeSla(p); } }catch(e){}
+  return normalizeSla(null);
 }
 function saveSlaLocal(){ localStorage.setItem('of_sla', JSON.stringify(SLA_DIAS)); }
 // Editable desde Configuración (solo Admin) — se guarda en Firestore como un
 // único documento, colección 'configuracion', doc 'sla'.
-let SLA_DIAS = loadSlaLocal(); // días esperados de solución según prioridad
+let SLA_DIAS = loadSlaLocal(); // { baja:{respuesta_horas,resolucion_dias}, media:{...}, alta:{...} }
+function getSlaFor(prioridad){ return SLA_DIAS[prioridad] || SLA_DIAS.media; }
 const ROLE_LABELS = { admin:'Administración', empleado:'Empleado', locatario:'Locatario' };
 const ROLE_TAG = { admin:'Admin', empleado:'Empleado', locatario:'Locatario' };
 const DEFAULT_USERS = [
@@ -1330,6 +1358,7 @@ function nowLocalInputValue(){
 function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}); }
 function fmtDateShort(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.toLocaleDateString('es-DO',{day:'2-digit',month:'short'}); }
 function diffDays(a,b){ const d1=new Date(a), d2=new Date(b); if(isNaN(d1)||isNaN(d2)) return 0; return Math.max(0, Math.round((d2-d1)/86400000)); }
+function diffHours(a,b){ const d1=new Date(a), d2=new Date(b); if(isNaN(d1)||isNaN(d2)) return 0; return Math.max(0, Math.round((d2-d1)/3600000)); }
 function isAdmin(){ return currentUser?.role === 'admin'; }
 function isStaff(){ return currentUser?.role === 'admin' || currentUser?.role === 'empleado'; } // Admin + Empleado gestionan tickets; Locatario solo reporta
 function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''); }
@@ -1646,12 +1675,34 @@ function sanitizeTicket(t){
     // simplemente empiezan en 0 (no se puede reconstruir con certeza del
     // historial de texto libre).
     reaperturas: Number.isInteger(t.reaperturas) ? t.reaperturas : 0,
+    // Fecha del primer contacto de staff (cambio de estatus o comentario) —
+    // usada para medir el SLA de RESPUESTA por separado del de resolución.
+    // Tickets creados antes de esta mejora quedan sin ella (no se puede
+    // reconstruir con certeza), así que no se marcan como fuera de tiempo.
+    fecha_primera_respuesta: t.fecha_primera_respuesta || '',
   };
 }
-function isVencido(t){
+// SLA de RESPUESTA: horas desde que se creó el ticket hasta el primer contacto
+// de staff (cambio de estatus o comentario). Si ya respondió, se evalúa contra
+// esa fecha real; si no, contra ahora (para saber si ya venció sin responder).
+function isVencidoRespuesta(t){
+  const horas = getSlaFor(t.prioridad).respuesta_horas;
+  if(t.fecha_primera_respuesta) return diffHours(t.fecha_creacion, t.fecha_primera_respuesta) > horas;
+  if(t.status === 'cerrado') return false; // cerrado sin registro de respuesta (tickets viejos)
+  return diffHours(t.fecha_creacion, nowISO()) > horas;
+}
+// SLA de RESOLUCIÓN: días desde que se creó el ticket hasta que se cerró. Si ya
+// se cerró, se evalúa contra la fecha real de cierre; si sigue abierto, contra ahora.
+function isVencidoResolucion(t){
+  const dias = getSlaFor(t.prioridad).resolucion_dias;
+  if(t.fecha_resolucion) return diffDays(t.fecha_creacion, t.fecha_resolucion) > dias;
   if(t.status === 'cerrado') return false;
-  const dias = SLA_DIAS[t.prioridad] || SLA_DIAS.media;
   return diffDays(t.fecha_creacion, nowISO()) > dias;
+}
+// Vencido en general (para las vistas que solo tienen espacio para un badge):
+// vale si cualquiera de los dos plazos se incumplió.
+function isVencido(t){
+  return isVencidoRespuesta(t) || isVencidoResolucion(t);
 }
 
 function saveTicketsLocal(){ localStorage.setItem('of_tickets', JSON.stringify(tickets)); }
@@ -2096,7 +2147,7 @@ async function saveTicket(){
     prioridad,
     asignado_a: '',
     status: 'nuevo',
-    fecha_creacion: fechaNotifISO, fecha_actualizacion: ts, fecha_resolucion: '',
+    fecha_creacion: fechaNotifISO, fecha_actualizacion: ts, fecha_resolucion: '', fecha_primera_respuesta: '',
     historial: [{ status:'nuevo', fecha:fechaNotifISO, nota:notaCreacion, usuario:currentUser.name }],
     comentarios: [],
     creado_por_nombre: currentUser.name,
@@ -2232,7 +2283,10 @@ function renderDetailBody(t){
       </div>
       <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
     </div>
-    ${isVencido(t) ? `<div style="margin:-8px 0 14px;"><span class="vencido-badge">Vencido — pasó el tiempo esperado de solución (${SLA_DIAS[t.prioridad]}d)</span></div>` : ''}
+    ${(isVencidoRespuesta(t) || isVencidoResolucion(t)) ? `<div style="margin:-8px 0 14px; display:flex; gap:6px; flex-wrap:wrap;">
+      ${isVencidoRespuesta(t) ? `<span class="vencido-badge">Respuesta vencida (${getSlaFor(t.prioridad).respuesta_horas}h)</span>` : ''}
+      ${isVencidoResolucion(t) ? `<span class="vencido-badge">Resolución vencida (${getSlaFor(t.prioridad).resolucion_dias}d)</span>` : ''}
+    </div>` : ''}
     <div class="detail-grid">
       <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
       <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
@@ -2283,6 +2337,7 @@ async function updateTicketStatus(id){
   }
   const nota = document.getElementById('d-nota').value.trim();
   const ts = nowISO();
+  if(!t.fecha_primera_respuesta) t.fecha_primera_respuesta = ts; // primer contacto de staff en este ticket
 
   const statusChanged = newStatus !== t.status;
   t.status = newStatus; t.prioridad = prioridad;
@@ -2363,6 +2418,7 @@ async function addComentario(id){
   const c = { autor:currentUser.name, rol:currentUser.role, mensaje, fecha:nowISO() };
   t.comentarios = t.comentarios || [];
   t.comentarios.push(c);
+  if(isStaff() && !t.fecha_primera_respuesta) t.fecha_primera_respuesta = c.fecha; // primer contacto de staff
   saveTicketsLocal();
   openTicketDetail(id); // re-render con el comentario nuevo
   showToast('Comentario agregado');
@@ -3081,7 +3137,7 @@ function renderPrioridadesView(){
     return `
     <div class="catalog-card">
       <div class="top"><span class="prio-badge prio-${p}">${PRIORIDAD_LABELS[p]}</span><span class="count">${count}</span></div>
-      <div class="sub">SLA: ${SLA_DIAS[p]} día${SLA_DIAS[p]===1?'':'s'} para resolver · ${vencidos} vencido${vencidos===1?'':'s'}</div>
+      <div class="sub">SLA: ${getSlaFor(p).respuesta_horas}h respuesta · ${getSlaFor(p).resolucion_dias}d resolución · ${vencidos} vencido${vencidos===1?'':'s'}</div>
       <div class="bar" style="background:${color}"></div>
     </div>`;
   }).join('');
@@ -3132,9 +3188,12 @@ async function saveSlaConfig(){
   const vals = {};
   let error = '';
   ['baja','media','alta'].forEach(p=>{
-    const n = parseInt(document.getElementById('sla-'+p).value, 10);
-    if(!Number.isInteger(n) || n <= 0) error = 'Los días de SLA deben ser números enteros mayores a 0';
-    vals[p] = n;
+    const horas = parseInt(document.getElementById('sla-'+p+'-resp').value, 10);
+    const dias = parseInt(document.getElementById('sla-'+p+'-reso').value, 10);
+    if(!Number.isInteger(horas) || horas <= 0 || !Number.isInteger(dias) || dias <= 0){
+      error = 'Los tiempos de SLA deben ser números enteros mayores a 0';
+    }
+    vals[p] = { respuesta_horas: horas, resolucion_dias: dias };
   });
   if(error){ showToast(error); return; }
 
@@ -3149,11 +3208,17 @@ async function saveSlaConfig(){
 function renderConfiguracionView(){
   const locRows = Object.entries(LOCACIONES).map(([k,v]) => locRowHTML(k, v)).join('');
   const slaRows = Object.keys(PRIORIDAD_LABELS).map(p => `
-    <div class="settings-row">
+    <div class="settings-row" style="flex-wrap:wrap; gap:8px;">
       <span class="l">${PRIORIDAD_LABELS[p]}</span>
-      <span style="display:flex; align-items:center; gap:6px;">
-        <input id="sla-${p}" type="number" min="1" value="${SLA_DIAS[p]}" style="width:56px; padding:6px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; text-align:right;">
-        <span class="v" style="font-weight:600;">día${SLA_DIAS[p]===1?'':'s'}</span>
+      <span style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <span style="display:flex; align-items:center; gap:6px;">
+          <input id="sla-${p}-resp" type="number" min="1" value="${getSlaFor(p).respuesta_horas}" style="width:56px; padding:6px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; text-align:right;">
+          <span class="v" style="font-weight:600;">h respuesta</span>
+        </span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <input id="sla-${p}-reso" type="number" min="1" value="${getSlaFor(p).resolucion_dias}" style="width:56px; padding:6px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; text-align:right;">
+          <span class="v" style="font-weight:600;">d resolución</span>
+        </span>
       </span>
     </div>`).join('');
   document.getElementById('configuracion-body').innerHTML = `
