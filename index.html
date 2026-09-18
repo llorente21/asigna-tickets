@@ -119,7 +119,7 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 .auth-card .field label{font-size:14.5px;}
 .auth-card .field input{font-size:17px; padding:16px 18px; border-radius:14px;}
 .auth-card .btn-primary{padding:17px 18px; font-size:16px; border-radius:14px;}
-.auth-intro-inline{display:flex; flex-direction:column; align-items:center; margin-bottom:22px;}
+.auth-intro-inline{display:flex; flex-direction:column; align-items:center; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border);}
 .auth-intro-inline img{width:120px; height:120px; border-radius:18px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
 .auth-intro-inline .t2{font-size:11.5px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
 @media(min-width:900px){ .auth-intro-inline{display:none;} }
@@ -158,18 +158,18 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 
 /* Móvil: compactar el login/registro/pendiente para que quepa sin scroll */
 @media(max-width:899px){
-  #auth-screen, #register-screen, #pending-screen{ padding:1.1rem 1.35rem; }
+  #auth-screen, #register-screen, #pending-screen{ padding:0.9rem 1.35rem; }
   .auth-form-panel{ padding:0; }
-  .auth-intro-inline{ margin-bottom:14px; }
-  .auth-intro-inline img{ width:76px; height:76px; margin-bottom:6px; border-radius:16px; }
+  .auth-intro-inline{ margin-bottom:10px; padding-bottom:10px; }
+  .auth-intro-inline img{ width:88px; height:88px; margin-bottom:6px; border-radius:18px; }
   .auth-eyebrow{ margin-bottom:5px; }
-  .auth-title{ font-size:26px; margin-bottom:5px; }
-  .auth-desc{ font-size:13.5px; margin-bottom:16px; line-height:1.4; }
-  .auth-card .field{ margin-bottom:12px; }
+  .auth-title{ font-size:24px; margin-bottom:4px; }
+  .auth-desc{ font-size:13.5px; margin-bottom:12px; line-height:1.35; }
+  .auth-card .field{ margin-bottom:9px; }
   .auth-card .field label{ font-size:13px; margin-bottom:4px; }
   .auth-card .field input{ padding:12px 14px; font-size:16px; }
   .auth-card .btn-primary{ padding:13px 18px; }
-  .auth-hint{ margin-top:10px; font-size:11.5px; line-height:1.35; }
+  .auth-hint{ margin-top:7px; font-size:11.5px; line-height:1.3; }
 }
 
 /* ---------- App shell ---------- */
@@ -535,7 +535,7 @@ main.view.active{display:block;}
     <div class="auth-card">
       <div class="auth-intro-inline">
         <img src="logo-hero.jpg" alt="ASIGNA">
-        <div class="t2">para Oficinas Felices</div>
+        <div class="t2">Plataforma de tickets</div>
       </div>
       <div class="auth-eyebrow">Acceso seguro</div>
       <h1 class="auth-title">Inicia sesión</h1>
@@ -561,7 +561,7 @@ main.view.active{display:block;}
   <div class="auth-card">
     <div class="auth-intro-inline">
       <img src="logo-hero.jpg" alt="ASIGNA">
-      <div class="t2">para Oficinas Felices</div>
+      <div class="t2">Plataforma de tickets</div>
     </div>
     <div class="auth-eyebrow">Nueva cuenta</div>
     <h1 class="auth-title">Crear cuenta</h1>
@@ -597,7 +597,7 @@ main.view.active{display:block;}
   <div class="auth-card">
     <div class="auth-intro-inline">
       <img src="logo-hero.jpg" alt="ASIGNA">
-      <div class="t2">para Oficinas Felices</div>
+      <div class="t2">Plataforma de tickets</div>
     </div>
     <div class="auth-eyebrow">En espera</div>
     <h1 class="auth-title">Cuenta pendiente</h1>
