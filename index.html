@@ -469,6 +469,8 @@ main.view.active{display:block;}
 .icon-btn-light svg{width:18px; height:18px; stroke:var(--text2);}
 .icon-btn-light{transition:background .12s ease, border-color .12s ease;}
 .icon-btn-light:hover{background:var(--surface2); border-color:var(--border2);}
+.icon-btn-light.sm{width:30px; height:30px; border-radius:8px;}
+.icon-btn-light.sm svg{width:15px; height:15px;}
 .desktop-content{padding:24px 28px 40px; max-width:1400px;}
 #desktop-content-slot main.view{padding:0; max-width:none; min-height:0;}
 
@@ -1978,9 +1980,14 @@ function ticketsTableHTML(list){
       <td><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></td>
       <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${isVencido(t) ? ' <span class="vencido-badge">Vencido</span>' : ''}</td>
       <td>${fmtDateShort(t.fecha_creacion)}</td>
+      <td onclick="event.stopPropagation()">
+        <button class="icon-btn-light sm" onclick="openTicketDetail('${t.id}')" aria-label="Ver ticket">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </td>
     </tr>`).join('');
   return `<div style="overflow-x:auto;"><table class="data-table">
-    <thead><tr><th>Código</th><th>Empresa</th><th>Locación</th><th>Asunto</th><th>Asignado a</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead>
+    <thead><tr><th>Código</th><th>Empresa</th><th>Locación</th><th>Asunto</th><th>Asignado a</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
