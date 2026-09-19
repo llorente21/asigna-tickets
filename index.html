@@ -338,6 +338,17 @@ main.view.active{display:block;}
 .kpi-card{background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:var(--radius); padding:16px 15px 14px; box-shadow:var(--shadow-sm);}
 .kpi-card .v{font-size:28px; font-weight:800; font-family:'Public Sans',sans-serif; line-height:1; letter-spacing:-.2px;}
 .kpi-card .l{font-size:11.5px; color:var(--text3); font-weight:700; margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
+/* Variantes de color del KPI — la tarjeta "hero" destaca el número principal
+   (estilo tarjeta oscura del dashboard de referencia); el resto usa un borde
+   superior de color semántico en vez de todas iguales en amarillo. */
+.kpi-card.kpi-hero{background:var(--dark); border-color:var(--dark); border-top-color:var(--accent);}
+.kpi-card.kpi-hero .v{color:#fff;}
+.kpi-card.kpi-hero .l{color:rgba(255,255,255,.65);}
+.kpi-card.kpi-danger{border-top-color:var(--danger);}
+.kpi-card.kpi-info{border-top-color:var(--info);}
+.kpi-card.kpi-success{border-top-color:var(--success);}
+.kpi-card.kpi-purple{border-top-color:var(--purple);}
+.kpi-card.kpi-teal{border-top-color:var(--teal);}
 .chart-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 20px 18px; margin-bottom:16px; box-shadow:var(--shadow-sm);}
 .chart-card h4{font-family:'Public Sans',sans-serif; font-weight:800; font-size:12.5px; margin:0 0 16px; text-transform:uppercase; letter-spacing:.5px; color:var(--text3);}
 .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:11px; max-width:520px;}
@@ -3278,13 +3289,13 @@ function renderDashboard(){
     : null;
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
-    <div class="kpi-card"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
-    <div class="kpi-card"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
-    <div class="kpi-card"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
+    <div class="kpi-card kpi-hero"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
+    <div class="kpi-card kpi-info"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
+    <div class="kpi-card kpi-success"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
+    <div class="kpi-card kpi-danger"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
     <div class="kpi-card"><div class="v">${promDias}${promDias!=='—'?'d':''}</div><div class="l">Prom. días de solución</div></div>
-    <div class="kpi-card"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
-    <div class="kpi-card"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
+    <div class="kpi-card kpi-purple"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
+    <div class="kpi-card kpi-teal"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
     <div class="kpi-card"><div class="v">${promCalificacion==null?'—':promCalificacion+' ★'}</div><div class="l">Calificación promedio${calificados.length?' ('+calificados.length+')':''}</div></div>
   `;
 
