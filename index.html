@@ -380,13 +380,17 @@ main.view.active{display:block;}
 .app-version{text-align:center; color:var(--text3); font-size:11.5px; margin-top:22px;}
 
 /* ---------- Notifications ---------- */
-.notif-item{display:flex; gap:11px; padding:12px 4px; border-bottom:1px solid var(--border); cursor:pointer;}
-.notif-item.unread{background:var(--surface2); margin:0 -18px; padding:12px 18px; border-bottom-color:var(--border2);}
-.notif-icon{width:34px; height:34px; border-radius:9px; background:var(--accent-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-.notif-icon svg{width:16px; height:16px; stroke:var(--accent-ink);}
-.notif-item .txt{font-size:12.5px; color:var(--text2); line-height:1.4;}
-.notif-item .txt b{color:var(--text);}
-.notif-item .dt{font-size:10.5px; color:var(--text3); margin-top:3px; font-weight:600;}
+.notif-item{display:flex; gap:12px; padding:13px 4px; border-bottom:1px solid var(--border); cursor:pointer;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:var(--surface2); margin:0 -18px 8px; padding:13px 18px; border-bottom:none; border-radius:12px; border-left:3px solid var(--accent);}
+.notif-icon{width:36px; height:36px; border-radius:10px; background:var(--accent-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.notif-icon svg{width:17px; height:17px; stroke:var(--accent-ink);}
+.notif-item .txt{flex:1; min-width:0;}
+.notif-item .row-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.notif-item .ttl{font-size:13.5px; font-weight:700; color:var(--text);}
+.notif-item .unread-dot{width:7px; height:7px; border-radius:50%; background:var(--accent2); flex:none;}
+.notif-item .msg{font-size:12.5px; color:var(--text2); line-height:1.5; margin-top:3px;}
+.notif-item .dt{font-size:10.5px; color:var(--text3); margin-top:7px; font-weight:600;}
 
 /* ---------- Toast / loading ---------- */
 #toast{
@@ -2438,7 +2442,11 @@ function renderNotifsDrawerContent(){
   el.innerHTML = list.map(n => `
     <div class="notif-item ${n.leida?'':'unread'}" onclick="onNotifClick('${n.id}','${n.ticket_id}')">
       <div class="notif-icon">${ICONS.bell}</div>
-      <div class="txt"><b>${notifTitle(n.tipo)}</b><br>${esc(n.mensaje)}<div class="dt">${fmtDate(n.fecha)}</div></div>
+      <div class="txt">
+        <div class="row-top"><span class="ttl">${notifTitle(n.tipo)}</span>${n.leida?'':'<span class="unread-dot"></span>'}</div>
+        <div class="msg">${esc(n.mensaje)}</div>
+        <div class="dt">${fmtDate(n.fecha)}</div>
+      </div>
     </div>`).join('');
 }
 function notifTitle(tipo){
