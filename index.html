@@ -715,8 +715,12 @@ main.view.active{display:block;}
       </table>
     </div>
     <div class="chart-card">
-      <h4>Carga por responsable (tickets abiertos)</h4>
+      <h4>Carga por responsable interno (tickets abiertos)</h4>
       <div id="chart-responsable"></div>
+    </div>
+    <div class="chart-card">
+      <h4>Tickets con proveedor externo (abiertos)</h4>
+      <div id="chart-suplidores"></div>
     </div>
   </main>
 
@@ -1670,6 +1674,11 @@ function sanitizeTicket(t){
     // como texto libre sin tipo — se preserva tal cual, solo sin selects nuevos.
     asignado_tipo: ['interno','suplidor','manual'].includes(t.asignado_tipo) ? t.asignado_tipo : (t.asignado_a ? 'manual' : ''),
     asignado_id: t.asignado_id || '',
+    // Responsable interno (Fase 7): quien da seguimiento, separado de quién
+    // ejecuta el trabajo (que puede ser un proveedor externo). Tickets de
+    // antes de esta mejora quedan sin responsable hasta que alguien lo asigne.
+    responsable_email: t.responsable_email || '',
+    responsable_nombre: t.responsable_nombre || '',
     // Cuántas veces se reabrió este ticket ya cerrado — usado en el Dashboard
     // para la tasa de reapertura (Fase 6). Tickets de antes de este campo
     // simplemente empiezan en 0 (no se puede reconstruir con certeza del
@@ -2146,6 +2155,7 @@ async function saveTicket(){
     categoria, subcategoria, descripcion,
     prioridad,
     asignado_a: '',
+    responsable_email: '', responsable_nombre: '',
     status: 'nuevo',
     fecha_creacion: fechaNotifISO, fecha_actualizacion: ts, fecha_resolucion: '', fecha_primera_respuesta: '',
     historial: [{ status:'nuevo', fecha:fechaNotifISO, nota:notaCreacion, usuario:currentUser.name }],
@@ -2209,7 +2219,14 @@ function renderDetailBody(t){
           ${['baja','media','alta'].map(p=>`<option value="${p}" ${p===t.prioridad?'selected':''}>${PRIORIDAD_LABELS[p]}</option>`).join('')}
         </select>
       </div>
-      <div class="field"><label>Asignado a</label>
+      <div class="field"><label>Responsable interno</label>
+        <select id="d-responsable">
+          <option value="" ${!t.responsable_email?'selected':''}>Sin responsable asignado</option>
+          ${USERS_LIST.filter(u=>u.role==='admin'||u.role==='empleado').map(u=>`<option value="${esc(u.email)}" ${t.responsable_email===u.email?'selected':''}>${esc(u.name)}</option>`).join('')}
+        </select>
+        <div class="field-hint">Quien da seguimiento y responde por este ticket — aunque el trabajo lo ejecute un proveedor externo.</div>
+      </div>
+      <div class="field"><label>Asignado a (ejecuta el trabajo)</label>
         <select id="d-asignado-tipo" onchange="onAsignadoTipoChange()">
           <option value="" ${!t.asignado_tipo?'selected':''}>Sin asignar</option>
           <option value="interno" ${t.asignado_tipo==='interno'?'selected':''}>Personal interno (Admin/Empleado)</option>
@@ -2293,7 +2310,8 @@ function renderDetailBody(t){
       ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
       <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
       <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
-      ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' (suplidor)':''}</div></div>` : ''}
+      ${t.responsable_nombre ? `<div class="detail-item"><div class="l">Responsable</div><div class="v">${esc(t.responsable_nombre)}</div></div>` : ''}
+      ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a (ejecuta)</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' — proveedor externo':''}</div></div>` : ''}
     </div>
     <div class="detail-desc">${esc(t.descripcion)}
       ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
@@ -2329,6 +2347,8 @@ async function updateTicketStatus(id){
   if(!t) return;
   const newStatus = document.getElementById('d-status').value;
   const prioridad = document.getElementById('d-prioridad').value;
+  const responsableEmail = document.getElementById('d-responsable').value;
+  const responsableUser = USERS_LIST.find(x=>x.email===responsableEmail);
   const asignadoTipo = document.getElementById('d-asignado-tipo').value;
   let asignado_a = '', asignado_id = '';
   if(asignadoTipo === 'interno'){
@@ -2353,6 +2373,7 @@ async function updateTicketStatus(id){
   if(!t.fecha_primera_respuesta) t.fecha_primera_respuesta = ts; // primer contacto de staff en este ticket
   t.status = newStatus; t.prioridad = prioridad;
   t.asignado_tipo = asignadoTipo; t.asignado_id = asignado_id; t.asignado_a = asignado_a;
+  t.responsable_email = responsableEmail; t.responsable_nombre = responsableUser ? responsableUser.name : '';
   t.fecha_actualizacion = ts;
   if(newStatus === 'cerrado' && !t.fecha_resolucion) t.fecha_resolucion = ts;
   if(statusChanged){
@@ -3391,20 +3412,32 @@ function renderDashboard(){
   }).join('');
   document.getElementById('solved-table-body').innerHTML = rows;
 
-  // Carga por responsable (Fase 6): solo tickets ABIERTOS (mide carga de trabajo
-  // actual, no historial completo), agrupados por a quién quedaron asignados —
-  // personal interno o suplidor. Sin asignar queda fuera del gráfico a propósito.
+  // Carga por responsable INTERNO (Fase 7): solo tickets ABIERTOS, agrupados por
+  // quién da seguimiento (staff) — separado de a quién se le encargó ejecutar el
+  // trabajo, que puede ser un proveedor externo (ver chart-suplidores debajo).
   const cargaMap = new Map();
-  t.filter(x=>x.status!=='cerrado' && x.asignado_a).forEach(x=>{
-    const key = x.asignado_a + (x.asignado_tipo==='suplidor' ? ' (suplidor)' : '');
-    cargaMap.set(key, (cargaMap.get(key)||0) + 1);
+  t.filter(x=>x.status!=='cerrado' && x.responsable_nombre).forEach(x=>{
+    cargaMap.set(x.responsable_nombre, (cargaMap.get(x.responsable_nombre)||0) + 1);
   });
   const porResponsable = Array.from(cargaMap.entries())
     .map(([label,value],i)=>({label, value, color:CHART_COLORS[i%CHART_COLORS.length]}))
     .sort((a,b)=>b.value-a.value);
   document.getElementById('chart-responsable').innerHTML = porResponsable.length
     ? barRows(porResponsable)
-    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto tiene responsable asignado todavía</div></div>`;
+    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto tiene responsable interno asignado todavía</div></div>`;
+
+  // Tickets con proveedor externo (abiertos), agrupados por suplidor — separado
+  // a propósito del responsable interno de arriba.
+  const suplidorMap = new Map();
+  t.filter(x=>x.status!=='cerrado' && x.asignado_tipo==='suplidor' && x.asignado_a).forEach(x=>{
+    suplidorMap.set(x.asignado_a, (suplidorMap.get(x.asignado_a)||0) + 1);
+  });
+  const porSuplidor = Array.from(suplidorMap.entries())
+    .map(([label,value],i)=>({label, value, color:CHART_COLORS[i%CHART_COLORS.length]}))
+    .sort((a,b)=>b.value-a.value);
+  document.getElementById('chart-suplidores').innerHTML = porSuplidor.length
+    ? barRows(porSuplidor)
+    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto está a cargo de un proveedor externo</div></div>`;
 }
 function statusVar(s){ return { nuevo:'--info', en_proceso:'--purple', cerrado:'--success' }[s]; }
 
@@ -3419,7 +3452,7 @@ function exportTicketsCSV(){
   if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable','Tipo_responsable'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable_interno','Ejecuta','Tipo_ejecuta'];
   const RESP_LABELS = { interno:'Personal interno', suplidor:'Suplidor', manual:'Otro' };
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
@@ -3427,7 +3460,7 @@ function exportTicketsCSV(){
     fmtDate(t.fecha_creacion), fmtDate(t.fecha_actualizacion), t.fecha_resolucion?fmtDate(t.fecha_resolucion):'',
     t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
     t.calificacion ? `${t.calificacion}/5` : '',
-    t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || ''
+    t.responsable_nombre || '', t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || ''
   ]);
   const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
