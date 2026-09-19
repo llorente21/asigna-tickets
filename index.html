@@ -291,6 +291,9 @@ main.view.active{display:block;}
 .drawer-body{padding:12px 18px 24px;}
 
 .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 10px;}
+.form-info-banner{display:flex; align-items:flex-start; gap:9px; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px; margin-bottom:14px; font-size:12.5px; color:var(--text2); line-height:1.45;}
+.form-info-banner svg{width:17px; height:17px; flex:none; margin-top:1px; stroke:var(--accent2);}
+
 .form-grid .field{grid-column:span 2;}
 .form-grid .field.half{grid-column:span 1;}
 .readonly-box{background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 13px; font-size:13.5px; color:var(--text2); margin-bottom:14px;}
@@ -837,18 +840,24 @@ main.view.active{display:block;}
     <button class="drawer-close" onclick="closeDrawer('form')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="drawer-body">
-    <div class="field">
-      <label>Fecha de notificación</label>
-      <input type="datetime-local" id="f-fecha">
+    <div class="form-info-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span>Completa los datos del incidente. Entre más detalle des, más rápido podrá atenderlo el equipo.</span>
     </div>
-    <div class="field" id="f-reportante-wrap" style="display:none;">
-      <label>Reportado por</label>
-      <select id="f-reportante" onchange="onReportanteChange()"></select>
-      <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
-    </div>
-    <div class="field" id="f-reportante-info-wrap">
-      <label>Reportado por</label>
-      <div class="readonly-box" id="form-user-box"></div>
+    <div class="form-grid">
+      <div class="field half">
+        <label>Fecha de notificación</label>
+        <input type="datetime-local" id="f-fecha">
+      </div>
+      <div class="field half" id="f-reportante-wrap" style="display:none;">
+        <label>Reportado por</label>
+        <select id="f-reportante" onchange="onReportanteChange()"></select>
+        <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
+      </div>
+      <div class="field half" id="f-reportante-info-wrap">
+        <label>Reportado por</label>
+        <div class="readonly-box" id="form-user-box"></div>
+      </div>
     </div>
     <div class="form-grid">
       <div class="field half">
