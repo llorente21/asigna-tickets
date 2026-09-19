@@ -413,6 +413,12 @@ main.view.active{display:block;}
 
 .readonly-banner{display:none;}
 @media(min-width:640px){ .drawer{left:50%; right:auto; width:520px; margin-left:-260px; border-radius:20px; bottom:20px; max-height:88vh;} #drawer-overlay.open ~ .drawer{} }
+@media(min-width:900px){
+  #drawer-detail{width:880px; margin-left:-440px;}
+  .detail-layout{display:grid; grid-template-columns:1fr 320px; gap:22px; align-items:start;}
+  .detail-side{position:sticky; top:0;}
+}
+
 
 /* ======================================================================
    Panel de escritorio (sidebar) — solo Admin/Empleado en pantallas anchas
@@ -2251,26 +2257,32 @@ function renderDetailBody(t){
       <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
     </div>
     ${isVencido(t) ? `<div style="margin:-8px 0 14px;"><span class="vencido-badge">Vencido — pasó el tiempo esperado de solución (${SLA_DIAS[t.prioridad]}d)</span></div>` : ''}
-    <div class="detail-grid">
-      <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
-      <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
-      ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
-      <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
-      <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
-      ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' (suplidor)':''}</div></div>` : ''}
+    <div class="detail-layout">
+      <div class="detail-main">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
+          <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
+          ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
+          <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
+          <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
+          ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' (suplidor)':''}</div></div>` : ''}
+        </div>
+        <div class="detail-desc">${esc(t.descripcion)}
+          ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
+        </div>
+        <div class="section-title">Historial</div>
+        <div class="timeline">${timeline}</div>
+        <div class="section-title">Comentarios</div>
+        <div class="comments-list">${comentarios}</div>
+        <div class="field"><textarea id="comment-input" placeholder="Escribe un comentario para dar seguimiento..."></textarea></div>
+        <button class="btn btn-outline" style="width:100%;" onclick="addComentario('${t.id}')">Agregar comentario</button>
+        ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger);" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
+      </div>
+      <div class="detail-side">
+        ${actionBox}
+        ${calificacionBox}
+      </div>
     </div>
-    <div class="detail-desc">${esc(t.descripcion)}
-      ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
-    </div>
-    ${actionBox}
-    ${calificacionBox}
-    <div class="section-title">Historial</div>
-    <div class="timeline">${timeline}</div>
-    <div class="section-title">Comentarios</div>
-    <div class="comments-list">${comentarios}</div>
-    <div class="field"><textarea id="comment-input" placeholder="Escribe un comentario para dar seguimiento..."></textarea></div>
-    <button class="btn btn-outline" style="width:100%;" onclick="addComentario('${t.id}')">Agregar comentario</button>
-    ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger);" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
   `;
 }
 
