@@ -298,6 +298,9 @@ main.view.active{display:block;}
 .drawer-body{padding:12px 18px 24px;}
 
 .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 10px;}
+.form-info-banner{display:flex; align-items:flex-start; gap:9px; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px; margin-bottom:14px; font-size:12.5px; color:var(--text2); line-height:1.45;}
+.form-info-banner svg{width:17px; height:17px; flex:none; margin-top:1px; stroke:var(--accent2);}
+
 .form-grid .field{grid-column:span 2;}
 .form-grid .field.half{grid-column:span 1;}
 .readonly-box{background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 13px; font-size:13.5px; color:var(--text2); margin-bottom:14px;}
@@ -345,6 +348,17 @@ main.view.active{display:block;}
 .kpi-card{background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:var(--radius); padding:16px 15px 14px; box-shadow:var(--shadow-sm);}
 .kpi-card .v{font-size:28px; font-weight:800; font-family:'Public Sans',sans-serif; line-height:1; letter-spacing:-.2px;}
 .kpi-card .l{font-size:11.5px; color:var(--text3); font-weight:700; margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
+/* Variantes de color del KPI — la tarjeta "hero" destaca el número principal
+   (estilo tarjeta oscura del dashboard de referencia); el resto usa un borde
+   superior de color semántico en vez de todas iguales en amarillo. */
+.kpi-card.kpi-hero{background:var(--dark); border-color:var(--dark); border-top-color:var(--accent);}
+.kpi-card.kpi-hero .v{color:#fff;}
+.kpi-card.kpi-hero .l{color:rgba(255,255,255,.65);}
+.kpi-card.kpi-danger{border-top-color:var(--danger);}
+.kpi-card.kpi-info{border-top-color:var(--info);}
+.kpi-card.kpi-success{border-top-color:var(--success);}
+.kpi-card.kpi-purple{border-top-color:var(--purple);}
+.kpi-card.kpi-teal{border-top-color:var(--teal);}
 .chart-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 20px 18px; margin-bottom:16px; box-shadow:var(--shadow-sm);}
 .chart-card h4{font-family:'Public Sans',sans-serif; font-weight:800; font-size:12.5px; margin:0 0 16px; text-transform:uppercase; letter-spacing:.5px; color:var(--text3);}
 .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:11px; max-width:520px;}
@@ -387,13 +401,17 @@ main.view.active{display:block;}
 .app-version{text-align:center; color:var(--text3); font-size:11.5px; margin-top:22px;}
 
 /* ---------- Notifications ---------- */
-.notif-item{display:flex; gap:11px; padding:12px 4px; border-bottom:1px solid var(--border); cursor:pointer;}
-.notif-item.unread{background:var(--surface2); margin:0 -18px; padding:12px 18px; border-bottom-color:var(--border2);}
-.notif-icon{width:34px; height:34px; border-radius:9px; background:var(--accent-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-.notif-icon svg{width:16px; height:16px; stroke:var(--accent-ink);}
-.notif-item .txt{font-size:12.5px; color:var(--text2); line-height:1.4;}
-.notif-item .txt b{color:var(--text);}
-.notif-item .dt{font-size:10.5px; color:var(--text3); margin-top:3px; font-weight:600;}
+.notif-item{display:flex; gap:12px; padding:13px 4px; border-bottom:1px solid var(--border); cursor:pointer;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:var(--surface2); margin:0 -18px 8px; padding:13px 18px; border-bottom:none; border-radius:12px; border-left:3px solid var(--accent);}
+.notif-icon{width:36px; height:36px; border-radius:10px; background:var(--accent-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.notif-icon svg{width:17px; height:17px; stroke:var(--accent-ink);}
+.notif-item .txt{flex:1; min-width:0;}
+.notif-item .row-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.notif-item .ttl{font-size:13.5px; font-weight:700; color:var(--text);}
+.notif-item .unread-dot{width:7px; height:7px; border-radius:50%; background:var(--accent2); flex:none;}
+.notif-item .msg{font-size:12.5px; color:var(--text2); line-height:1.5; margin-top:3px;}
+.notif-item .dt{font-size:10.5px; color:var(--text3); margin-top:7px; font-weight:600;}
 
 /* ---------- Toast / loading ---------- */
 #toast{
@@ -409,6 +427,12 @@ main.view.active{display:block;}
 
 .readonly-banner{display:none;}
 @media(min-width:640px){ .drawer{left:50%; right:auto; width:520px; margin-left:-260px; border-radius:20px; bottom:20px; max-height:88vh;} #drawer-overlay.open ~ .drawer{} }
+@media(min-width:900px){
+  #drawer-detail{width:880px; margin-left:-440px;}
+  .detail-layout{display:grid; grid-template-columns:1fr 320px; gap:22px; align-items:start;}
+  .detail-side{position:sticky; top:0;}
+}
+
 
 /* ======================================================================
    Panel de escritorio (sidebar) — solo Admin/Empleado en pantallas anchas
@@ -465,6 +489,8 @@ main.view.active{display:block;}
 .icon-btn-light svg{width:18px; height:18px; stroke:var(--text2);}
 .icon-btn-light{transition:background .12s ease, border-color .12s ease;}
 .icon-btn-light:hover{background:var(--surface2); border-color:var(--border2);}
+.icon-btn-light.sm{width:30px; height:30px; border-radius:8px;}
+.icon-btn-light.sm svg{width:15px; height:15px;}
 .desktop-content{padding:24px 28px 40px; max-width:1400px;}
 #desktop-content-slot main.view{padding:0; max-width:none; min-height:0;}
 
@@ -849,18 +875,24 @@ main.view.active{display:block;}
     <div id="form-step2" style="display:none;">
       <div class="form-step-chip" id="form-step-chip"></div>
       <button class="btn-link-back" onclick="backFormStep1()">← Cambiar tipo de incidencia</button>
-      <div class="field">
-        <label>Fecha de notificación</label>
-        <input type="datetime-local" id="f-fecha">
+      <div class="form-info-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>Completa los datos del incidente. Entre más detalle des, más rápido podrá atenderlo el equipo.</span>
       </div>
-      <div class="field" id="f-reportante-wrap" style="display:none;">
-        <label>Reportado por</label>
-        <select id="f-reportante" onchange="onReportanteChange()"></select>
-        <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
-      </div>
-      <div class="field" id="f-reportante-info-wrap">
-        <label>Reportado por</label>
-        <div class="readonly-box" id="form-user-box"></div>
+      <div class="form-grid">
+        <div class="field half">
+          <label>Fecha de notificación</label>
+          <input type="datetime-local" id="f-fecha">
+        </div>
+        <div class="field half" id="f-reportante-wrap" style="display:none;">
+          <label>Reportado por</label>
+          <select id="f-reportante" onchange="onReportanteChange()"></select>
+          <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
+        </div>
+        <div class="field half" id="f-reportante-info-wrap">
+          <label>Reportado por</label>
+          <div class="readonly-box" id="form-user-box"></div>
+        </div>
       </div>
       <div class="form-grid">
         <div class="field half">
@@ -2047,9 +2079,14 @@ function ticketsTableHTML(list){
       <td><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></td>
       <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${isVencido(t) ? ' <span class="vencido-badge">Vencido</span>' : ''}</td>
       <td>${fmtDateShort(t.fecha_creacion)}</td>
+      <td onclick="event.stopPropagation()">
+        <button class="icon-btn-light sm" onclick="openTicketDetail('${t.id}')" aria-label="Ver ticket">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </td>
     </tr>`).join('');
   return `<div style="overflow-x:auto;"><table class="data-table">
-    <thead><tr><th>Código</th><th>Empresa</th><th>Locación</th><th>Asunto</th><th>Asignado a</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead>
+    <thead><tr><th>Código</th><th>Empresa</th><th>Locación</th><th>Asunto</th><th>Asignado a</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -2343,27 +2380,33 @@ function renderDetailBody(t){
       ${isVencidoRespuesta(t) ? `<span class="vencido-badge">Respuesta vencida (${getSlaFor(t.prioridad).respuesta_horas}h)</span>` : ''}
       ${isVencidoResolucion(t) ? `<span class="vencido-badge">Resolución vencida (${getSlaFor(t.prioridad).resolucion_dias}d)</span>` : ''}
     </div>` : ''}
-    <div class="detail-grid">
-      <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
-      <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
-      ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
-      <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
-      <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
-      ${t.responsable_nombre ? `<div class="detail-item"><div class="l">Responsable</div><div class="v">${esc(t.responsable_nombre)}</div></div>` : ''}
-      ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a (ejecuta)</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' — proveedor externo':''}</div></div>` : ''}
+    <div class="detail-layout">
+      <div class="detail-main">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
+          <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
+          ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
+          <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
+          <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
+          ${t.responsable_nombre ? `<div class="detail-item"><div class="l">Responsable</div><div class="v">${esc(t.responsable_nombre)}</div></div>` : ''}
+          ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a (ejecuta)</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' — proveedor externo':''}</div></div>` : ''}
+        </div>
+        <div class="detail-desc">${esc(t.descripcion)}
+          ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
+        </div>
+        <div class="section-title">Historial</div>
+        <div class="timeline">${timeline}</div>
+        <div class="section-title">Comentarios</div>
+        <div class="comments-list">${comentarios}</div>
+        <div class="field"><textarea id="comment-input" placeholder="Escribe un comentario para dar seguimiento..."></textarea></div>
+        <button class="btn btn-outline" style="width:100%;" onclick="addComentario('${t.id}')">Agregar comentario</button>
+        ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger);" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
+      </div>
+      <div class="detail-side">
+        ${actionBox}
+        ${calificacionBox}
+      </div>
     </div>
-    <div class="detail-desc">${esc(t.descripcion)}
-      ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
-    </div>
-    ${actionBox}
-    ${calificacionBox}
-    <div class="section-title">Historial</div>
-    <div class="timeline">${timeline}</div>
-    <div class="section-title">Comentarios</div>
-    <div class="comments-list">${comentarios}</div>
-    <div class="field"><textarea id="comment-input" placeholder="Escribe un comentario para dar seguimiento..."></textarea></div>
-    <button class="btn btn-outline" style="width:100%;" onclick="addComentario('${t.id}')">Agregar comentario</button>
-    ${isAdmin() ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger);" onclick="deleteTicket('${t.id}')">Eliminar ticket</button>` : ''}
   `;
 }
 
@@ -2565,7 +2608,11 @@ function renderNotifsDrawerContent(){
   el.innerHTML = list.map(n => `
     <div class="notif-item ${n.leida?'':'unread'}" onclick="onNotifClick('${n.id}','${n.ticket_id}')">
       <div class="notif-icon">${ICONS.bell}</div>
-      <div class="txt"><b>${notifTitle(n.tipo)}</b><br>${esc(n.mensaje)}<div class="dt">${fmtDate(n.fecha)}</div></div>
+      <div class="txt">
+        <div class="row-top"><span class="ttl">${notifTitle(n.tipo)}</span>${n.leida?'':'<span class="unread-dot"></span>'}</div>
+        <div class="msg">${esc(n.mensaje)}</div>
+        <div class="dt">${fmtDate(n.fecha)}</div>
+      </div>
     </div>`).join('');
 }
 function notifTitle(tipo){
@@ -3414,13 +3461,13 @@ function renderDashboard(){
     : null;
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
-    <div class="kpi-card"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
-    <div class="kpi-card"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
-    <div class="kpi-card"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
+    <div class="kpi-card kpi-hero"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
+    <div class="kpi-card kpi-info"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
+    <div class="kpi-card kpi-success"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
+    <div class="kpi-card kpi-danger"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
     <div class="kpi-card"><div class="v">${promDias}${promDias!=='—'?'d':''}</div><div class="l">Prom. días de solución</div></div>
-    <div class="kpi-card"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
-    <div class="kpi-card"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
+    <div class="kpi-card kpi-purple"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
+    <div class="kpi-card kpi-teal"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
     <div class="kpi-card"><div class="v">${promCalificacion==null?'—':promCalificacion+' ★'}</div><div class="l">Calificación promedio${calificados.length?' ('+calificados.length+')':''}</div></div>
   `;
 
