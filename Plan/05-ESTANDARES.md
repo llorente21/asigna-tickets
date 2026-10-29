@@ -139,5 +139,16 @@
   un contador) son seguras solo porque cada una tiene su propio `try/catch`** —
   si comparten estado mutable sin candado, pueden pisarse entre sí.
 
+- **`device_commit_files` puede escribir una versión VIEJA si se reutiliza la misma
+  ruta de origen (2026-10-29).** Al copiar `index.html` de vuelta a la computadora de
+  Jose desde la misma ruta del contenedor (`/mnt/user-data/outputs/asigna/index.html`)
+  que se había usado antes en la sesión, la herramienta escribió el contenido de la
+  subida anterior. El archivo nuevo nunca llegó y el commit "Fase A" quedó con código
+  viejo: había revertido el fix de móvil y la locación IUK. Se detectó porque el tamaño
+  y el `grep` en el dispositivo no coincidían. **Regla:**
+  1. Usa un nombre de origen único para cada versión (`.../v/index-faseX.html`).
+  2. Después de escribir, verifica en el dispositivo con `md5sum` (o `grep` de algo
+     nuevo) **antes** de `git commit`.
+
 _Agregar nuevas lecciones aquí a medida que aparezcan — con contexto suficiente para
 que el próximo agente no repita el mismo error._

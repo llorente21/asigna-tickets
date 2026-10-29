@@ -1,182 +1,202 @@
 # Referencia: plataforma admin de Oficinas Felices → mejoras para ASIGNA (2026-10)
 
-**Estado:** propuesta. Las decisiones de alcance ya las confirmó Jose (ver abajo).
-Todavía no se implementa nada: primero va la aprobación de los mockups
-(canvas de Claude Design "ASIGNA — Propuesta referencia OF", https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX; fuentes `.dc.html` en `design/source/propuesta-referencia-of/`).
+**Estado (2026-10-29):**
+- **Fases A, C y D: implementadas** en ramas locales, sin push. Falta que Jose las pruebe
+  contra Firebase.
+- **Fase B (catálogo de espacios): cancelada.**
+- **Fase E (Dashboard): propuesta en mockup**, esperando aprobación.
+
+Mockups: canvas de Claude Design "ASIGNA — Propuesta referencia OF"
+(https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX), con el design system ASIGNA. Las
+fuentes `.dc.html` están en `design/source/propuesta-referencia-of/` (copia del
+2026-10-29; si alguien edita el canvas después, la versión vigente es la del canvas).
 
 ## Fuente
 
 Grabación de pantalla `ASIGNA - Grabacion.mp4` (2:36 min, sin narración), compartida
 por Jose el 2026-10-29. Muestra la plataforma admin de Oficinas Felices, que está en
-demo en `demo.admin.dixdigitalagency.com`. Se ven seis módulos en una barra de
-íconos:
+demo en `demo.admin.dixdigitalagency.com`. Se ven seis módulos:
 
-| Módulo | Pantallas vistas |
-|---|---|
-| Operación | Tickets (lista + crear), SLA de tickets, Reservas, Bloqueos |
-| Inmuebles | Edificios (lista + nuevo), Oficinas y espacios |
-| Clientes | Clientes e inquilinos (lista + crear), Contratos |
-| Comercial / Servicios | Solo el ícono; no se abrieron |
-| Administración | Usuarios (lista + invitar) |
+- **Operación:** Tickets, SLA, Reservas, Bloqueos.
+- **Inmuebles:** Edificios, Oficinas y espacios.
+- **Clientes:** Clientes e inquilinos, Contratos.
+- **Comercial** y **Servicios:** solo el ícono; no se abrieron.
+- **Administración:** Usuarios.
 
-En la grabación aparecen los edificios DIX Business Center 01–04 y además
-**iUKEN Business Center**, que ASIGNA todavía no tiene en sus locaciones.
+## Decisiones de Jose
 
-## Decisiones de Jose (2026-10-29)
+**Ronda 1 (2026-10-29, antes de los mockups)**
+- **Alcance:** tickets + espacios. El catálogo de espacios se descartó después, en la
+  ronda 2.
+- **Base de trabajo:** primero se fusionaron `review/todo-junto` y
+  `review/diseno-junto` en la rama `integracion/referencia-of`.
+- **Estados:** los 3 de siempre + "En espera" con motivo, que pausa el SLA.
+- **Extras:** sin preferencia.
 
-1. **Alcance: tickets + espacios.** Se mejoran tickets, SLA y usuarios, y se agrega
-   un catálogo de espacios por edificio. No entran Clientes con datos fiscales,
-   Contratos, Reservas ni Comercial.
-2. **Base: rama de integración.** Las ramas `review/todo-junto` y
-   `review/diseno-junto` se fusionaron en `integracion/referencia-of`, y todo lo
-   nuevo se construye encima de esa rama. `main` no se tocó.
-3. **Estados: los 3 actuales + "En espera" con motivo.** El motivo puede ser cliente,
-   proveedor o aprobación, y mientras el ticket está en espera **se pausa el reloj
-   del SLA**. No se adoptan los 7 estados del video.
-4. **Extras** (prioridad Crítica, Admin cliente, invitar por correo, vista SLA): Jose
-   no expresó preferencia. Por eso solo se propone la **vista SLA**, que se apoya en
-   el SLA de dos plazos que ya existe. Los otros tres quedan en el roadmap sin
-   compromiso.
+**Ronda 2 (2026-10-29, revisión de los mockups)**
+1. **Mockups aprobados**, salvo que la vista SLA no lleva las tarjetas de indicadores.
+2. **Dashboard:** Jose pidió una propuesta. Es el mockup E (ver abajo) y está pendiente
+   de aprobación.
+3. **iUKEN Business Center:**
+   - En producción ya existía con el código **IUK**, y Jose eligió conservarlo.
+   - Se agregó a las locaciones por defecto del código, solo para instalaciones nuevas.
+4. **Sin catálogo de espacios:** ASIGNA es solo para tickets/incidentes.
+   - La ubicación exacta se escribe en texto libre.
+   - **Sin "responsable por edificio":** el responsable interno se elige a mano, como
+     antes.
 
-## Qué tiene la plataforma, qué tiene ASIGNA y qué se propone
+## Implementado
 
-| Tema | Plataforma OF | ASIGNA (rama de integración) | Propuesta |
-|---|---|---|---|
-| Inicio del formulario | Paso 1: edificio. Después, el tipo de incidencia (*Edificio / área común* o *Inquilino*) con un banner que explica cada caso | Paso 1: categoría. Paso 2: detalles | Paso 1 **¿Dónde?** (edificio + tipo: *Oficina de un inquilino* / *Área común*) y **¿Qué?** (categoría). El banner cambia según el tipo |
-| Ubicación precisa | "Espacio registrado" (opcional, de un catálogo) + "Área o ubicación" en texto libre con un ejemplo | Solo la locación D1–D4 | `espacio_id` (catálogo) + `ubicacion_detalle` libre. El detalle es obligatorio cuando el ticket es de área común |
-| Título | Campo propio, obligatorio | No existe; la tarjeta muestra categoría · subcategoría | `titulo` opcional, que se prellena con categoría · subcategoría y se puede editar |
-| Estados | 7 (Abierto, En revisión, Pend. aprobación/cliente/proveedor, En proceso, Resuelto) | 3 (Nuevo, En proceso, Cerrado) | 3 + **En espera** con `espera_motivo`, que pausa el SLA |
-| Asignación | Responsable + proveedor en la misma celda | Ya existe en la rama: Responsable interno + Asignado a (ejecuta) | Se mantiene. Además, el responsable del edificio queda como responsable interno sugerido |
-| SLA | Vista con dos listas: *Vencidos* y *En riesgo* (vence en < 4 h). Se elige primera respuesta o resolución. Hora de Santo Domingo | Dos plazos por prioridad y badges de vencido | Vista **SLA** con *Vencidos* y *En riesgo*, filtros por tipo de plazo y por edificio, y la fecha límite visible en la lista |
-| Lista de tickets | Columnas: Ticket, Tipo/Ubicación, Prioridad, Estado, Asignación, SLA resolución, Acciones (ver / asignar / cambiar estado) | Tarjetas o tabla con columna Acciones (solo "ver") | Columna **Vence** con chip de riesgo, ubicación en una línea y acción rápida de cambiar estado |
-| Filtros | Hay que pulsar "Filtrar" | Búsqueda y filtros instantáneos | Se mantienen instantáneos (es mejor que la plataforma) |
-| Edificios | Código automático (DIX-01), dirección, ciudad, sector, responsable, estado, amenidades. La lista muestra ocupación % y oficinas ocupadas / total | Locaciones D1–D4 editables (solo nombre) | Locación con `direccion` y `responsable_email` (opcionales). Agregar iUKEN si Jose lo confirma |
-| Espacios | Tipo, piso, capacidad, precio, disponible, reservable y foto. KPIs arriba | No existe | Colección `espacios` mínima: código, nombre, tipo, piso, locación, empresa ocupante y estado. Sin precio ni reservas |
-| Usuarios | Invitar en 3 secciones numeradas (Identidad y rol → Alcance → Permisos). 9 roles | Admin crea la cuenta con contraseña o la aprueba si llegó por auto-registro. 3 roles | En el formulario de usuario: secciones numeradas y elegir su **espacio** (oficina) además de la locación. Roles nuevos: solo en el roadmap |
+Cada fase quedó en su propia rama, en cadena:
+`integracion/referencia-of` → `feat/en-espera` → `feat/form-donde-que` →
+`feat/lista-vence-sla`. Así cada rama incluye las anteriores y para probar todo basta
+la última.
 
-## Propuesta por fases (cada una en su propia rama, sobre `integracion/referencia-of`)
+### Fase A — "En espera" con motivo y pausa del SLA (`feat/en-espera`)
 
-### Fase A — "En espera" con motivo y pausa del SLA
-- Nuevo estado `en_espera` entre En proceso y Cerrado:
-  `STATUS_FLOW = ['nuevo','en_proceso','en_espera','cerrado']`.
-- Campos del ticket:
-  - `espera_motivo` (`cliente` | `proveedor` | `aprobacion`).
-  - `espera_desde` (ISO).
-  - `sla_pausado_ms`: acumulado. Al salir de espera se suma `ahora - espera_desde`.
-- `isVencidoRespuesta`/`isVencidoResolucion` restan `sla_pausado_ms`, y también
-  el tramo en curso si el ticket sigue en espera.
-- Al pasar a En espera es obligatorio elegir el motivo. La nota ya es obligatoria en
-  la rama.
-- Si el motivo es **cliente**, el Locatario recibe una notificación ("Necesitamos tu
-  respuesta").
-- Firestore: la regla vigente de `update` en `tickets` no restringe `status`, así que
-  **no hacen falta reglas nuevas**.
-- Tickets viejos: no tienen estos campos y se tratan como 0 de pausa.
+**Estados y datos**
+- `STATUS_FLOW = ['nuevo','en_proceso','en_espera','cerrado']`.
+- Campos nuevos del ticket:
+  - `espera_motivo`: `cliente` | `proveedor` | `aprobacion`.
+  - `espera_desde`: fecha ISO.
+  - `sla_pausado_ms`: tiempo acumulado de las esperas ya terminadas.
 
-### Fase B — Catálogo de espacios + datos de la locación
-- Colección nueva `espacios/{id}`:
-  - Obligatorios: `id`, `nombre`, `locacion`.
-  - Opcionales: `codigo` (se genera como `D1-1A`), `tipo` (`oficina`, `sala`,
-    `area_comun`, `parqueo`, `tecnico`), `piso`, `empresa_id`, `activo`.
-- Sección **Espacios** en el panel (solo Admin), con el mismo patrón que
-  Empresas/Suplidores: tarjetas o tabla, filtro por locación y 4 KPIs (total,
-  ocupados, libres, áreas comunes).
-- Locación: se agregan `direccion` y `responsable_email` (opcionales), editables en
-  Configuración.
-- Regla a publicar (igual que `locaciones`):
-  ```
-  match /espacios/{espacioId} {
-    allow read: if autenticado();
-    allow create, update: if soyAdmin() && tieneClaves(request.resource.data, ['id','nombre','locacion']);
-    allow delete: if soyAdmin();
-  }
-  ```
-- La lectura va en su propio `try/catch`, por si la regla todavía no se ha publicado
-  (lección aprendida).
+**Reglas del SLA**
+- Al entrar en espera se marca `espera_desde`.
+- Al salir, `cerrarTramoEspera()` suma el tramo a `sla_pausado_ms`.
+- `isVencidoResolucion()` y `slaLimiteResolucion()` descuentan `msEnEspera()`.
+- El SLA de primera respuesta no cambia: poner un ticket en espera ya cuenta como
+  respuesta de staff.
+- La resolución ahora se mide en milisegundos exactos. Antes se redondeaba a días
+  enteros.
 
-### Fase C — Formulario de nuevo ticket
-- **Paso 1 — ¿Dónde y qué?**
-  - Edificio. Para el Locatario viene fijado con su locación.
-  - Tipo: *Mi oficina / oficina de un inquilino* o *Área común*.
-  - Categoría y, si aplica, subcategoría.
-  - El banner cambia según el tipo:
-    - Área común: "Para parqueo, techo, cisterna, ascensor… El seguimiento es
-      interno."
-    - Oficina: "La oficina/empresa afectada recibe las actualizaciones."
-- **Paso 2 — Detalles**
-  - Espacio registrado (opcional). Se filtra por edificio y, para un Locatario, viene
-    prellenado con su oficina.
-  - Área o ubicación, con el ejemplo "Ej.: parqueo nivel 1, baño del 2º piso, cuarto
-    eléctrico". Es obligatoria en área común.
-  - Título (prellenado), descripción, prioridad, fecha y "reportado por" (staff).
-- Campos nuevos del ticket: `tipo_incidencia` (`inquilino` | `area_comun`),
-  `espacio_id`, `espacio_nombre`, `ubicacion_detalle`, `titulo`.
-- Firestore: no se agregan claves requeridas, porque `tieneClaves` solo exige las
-  existentes. **No hacen falta reglas nuevas.**
-- La exportación CSV agrega Tipo, Espacio, Ubicación y Título.
+**Comportamiento**
+- El motivo es obligatorio. En el panel de acciones se elige con chips, junto a la nota,
+  que ya era obligatoria.
+- Con motivo **cliente**, el locatario recibe "Necesitamos tu respuesta".
+  - Cuando comenta, el ticket vuelve solo a En proceso.
+  - Staff recibe entonces "El cliente respondió".
+- El detalle muestra el bloque **"Reloj del SLA"**: plazo usado, fecha límite, estado
+  de la primera respuesta y tiempo en espera.
+- El historial muestra el motivo de cada espera.
+- El CSV suma las columnas `Esperando` y `Horas_en_espera`.
 
-### Fase D — Lista de tickets + vista SLA
-- Tabla con estas columnas:
-  - Ticket (número + título).
-  - Ubicación (edificio · espacio · detalle).
-  - Prioridad.
-  - Estado (con el motivo cuando está en espera).
-  - Asignación (responsable / proveedor).
-  - **Vence**: fecha límite de resolución con chip *En riesgo* o *Vencido*.
-  - Acciones: ver y cambiar estado.
-- Vista **SLA**, solo para staff:
-  - Selector de plazo: Primera respuesta / Resolución.
-  - Filtro por edificio.
-  - Dos bloques: **Vencidos** y **En riesgo**.
-  - Umbral de "en riesgo": 4 h para respuesta y 24 h para resolución, editable en
-    Configuración.
-  - Nota de pie: "Horas de Santo Domingo. Solo tickets abiertos; los tickets en
-    espera no cuentan."
+**Firestore:** sin reglas nuevas. Si en el futuro se restringe con `affectedKeys()` lo
+que puede editar el locatario, hay que permitirle `status`, `espera_*`,
+`sla_pausado_ms`, `historial`, `comentarios` y `fecha_actualizacion`, o se rompe el
+"cliente respondió".
 
-## Patrones de UI que se adoptan (en todas las fases)
-- **Obligatorios con `*`**: los campos obligatorios llevan `*`, y debajo de cada
-  campo va un texto de ayuda con un ejemplo concreto.
-- **Valores por defecto**: el formulario llega prellenado con lo que ya se sabe
-  (locación del locatario, fecha y hora actual, prioridad Media).
-- **Códigos automáticos**: se muestran pero no se editan, con el texto "Se genera al
-  guardar".
-- **Formularios largos**: secciones numeradas (01, 02, 03) con un título y una línea
-  de descripción.
-- **Banners que cambian**: el banner informativo cambia según lo que eligió el
-  usuario. No es un texto fijo.
-- **Estados vacíos**: dicen qué hacer y dónde. Ejemplo: "Todavía no hay espacios en
-  D3 — créalos en Espacios".
-- **Breadcrumbs en escritorio**: debajo del título de la sección, por ejemplo
-  *Tickets / OF-1234567*.
-- **Un teléfono, una columna**: el formulario usa una sola columna en móvil. Ya está
-  aplicado en la rama de integración.
+### Fase C — Formulario "¿Dónde y qué?" → "Detalles" (`feat/form-donde-que`)
+
+**Paso 1**
+- **Staff** elige:
+  - **Reportado por:** "Yo" o un locatario.
+  - **Edificio**.
+- **Locatario:** ve su empresa y su edificio fijos, porque vienen de su cuenta.
+- **Tipo de incidencia** en tarjetas: *Oficina de un inquilino* / *Área común*. El
+  banner cambia según el tipo.
+- **Categoría** e **incidente**.
+
+**Paso 2**
+- Resumen en chips de lo elegido en el paso 1.
+- **Empresa afectada:** solo para staff y solo si es oficina.
+- **Área o ubicación** en texto libre. Es obligatoria en áreas comunes.
+- **Título** prellenado con la categoría.
+- **Descripción**, **prioridad** y **fecha**.
+- Vista previa del SLA según la prioridad.
+
+**Datos y reglas**
+- Campos nuevos del ticket:
+  - `titulo`.
+  - `tipo_incidencia`: `inquilino` | `area_comun`.
+  - `ubicacion_detalle`.
+- Tickets viejos: se tratan como `inquilino`, y en lugar del título se muestra la
+  categoría (`tituloTicket()`).
+- Un área común no lleva empresa.
+- Staff ya puede reportar a su propio nombre. En ese caso no se envía notificación de
+  confirmación y ya no hace falta que exista algún locatario.
+- Tarjetas, detalle, búsqueda y CSV usan título, tipo y ubicación.
+
+**Firestore:** sin reglas nuevas.
+
+### Fase D — Lista con "Vence" + vista SLA (`feat/lista-vence-sla`)
+
+**Lista de tickets (staff)**
+- Pestañas por estado con conteo.
+- Filtro "Solo en riesgo o vencidos".
+- Columnas de la tabla:
+  - **Ticket:** número y título.
+  - **Ubicación**.
+  - **Prioridad**.
+  - **Estado:** incluye el motivo de la espera.
+  - **Asignación:** responsable / proveedor.
+  - **Vence:** el próximo plazo (`slaEstado()`).
+  - **Acciones:** ver y cambiar estado.
+- Las tarjetas muestran el chip "En riesgo".
+
+**Vista SLA (staff, menú lateral y navegación móvil)**
+- Elige plazo (primera respuesta o resolución) y edificio.
+- Muestra dos listas: Vencidos y En riesgo.
+- **No lleva tarjetas de indicadores.**
+- El menú lateral tiene un contador con los tickets vencidos o en riesgo.
+
+**Umbral de "en riesgo"**
+- 4 h para la primera respuesta y 24 h para la resolución.
+- Es fijo (`SLA_RIESGO_MS`); todavía no se edita desde Configuración.
+
+## Fase E — Dashboard (propuesta, sin implementar)
+
+Mockup "E · Dashboard (propuesta)" en el canvas. Cambios respecto al Dashboard actual:
+
+- **Filtros:** período (este mes / 3 meses / este año / todo) y edificio. Hoy todo es
+  histórico.
+- **"Ahora mismo":** fila que no depende del período.
+  - Abiertos, desglosados por estado.
+  - Vencidos y en riesgo, con enlace a la vista SLA.
+  - En espera, con su motivo.
+  - Son los indicadores que salieron de la vista SLA.
+- **Cumplimiento del SLA del período:**
+  - Primera respuesta y resolución, en % y cantidades.
+  - Promedios: primera respuesta (ahora con un dato real, `fecha_primera_respuesta`) y
+    solución sin contar el tiempo en espera.
+  - Reapertura y calificación.
+- **Tabla por edificio:** abiertos, vencidos, en espera y % de SLA de resolución.
+- **Dona de abiertos por estado** (incluye En espera) y la proporción oficinas / áreas
+  comunes.
+- **Creados frente a cerrados** de los últimos 6 meses, y la categoría con el promedio
+  de días de solución.
+- **Carga por responsable:** muestra "Sin responsable". Los proveedores externos van
+  aparte.
+
+## Patrones de UI adoptados
+- **Campos:** los obligatorios llevan `*`; debajo va un texto de ayuda con un ejemplo
+  concreto.
+- **Valores por defecto:** el formulario llega prellenado con lo que ya se sabe
+  (edificio del locatario, ahora, prioridad Media, título desde la categoría).
+- **Secciones numeradas** (01–04) con título y una línea de descripción.
+- **Banner que cambia** según lo elegido.
+- **Teléfono:** una sola columna.
+- **Estados vacíos** que dicen qué pasa.
 
 ## Qué NO se copia de la plataforma
-- **Errores técnicos crudos**: no se le muestra al usuario un mensaje como "resource
-  not found (solicitud …)" (la vista SLA del video estaba rota así). Se usan mensajes
-  humanos y se registra el detalle en la consola.
+- **Errores técnicos crudos** ("resource not found (solicitud …)").
 - **Botón "Filtrar"**: ASIGNA filtra al instante.
-- **KPIs que dependen de la paginación** ("En esta página: 25").
+- **KPIs que dependen de la paginación.**
 - **Valores sin traducir** como "OTHER", o listas con scroll horizontal.
-- **Permisos como texto separado por comas** ("Denegaciones").
-- **Formularios con ~18 campos legales obligatorios**: ASIGNA no los necesita para
-  tickets.
-- **Solo escritorio**: ASIGNA mantiene su experiencia móvil para Locatarios.
+- **Permisos como texto separado por comas.**
+- **Formularios de cliente** con ~18 campos legales obligatorios.
+- **Catálogos de inmuebles, contratos o reservas**: fuera del alcance de ASIGNA.
 
-## En el roadmap, sin compromiso (Jose no dio preferencia)
-- **Prioridad "Crítica"**: 4 niveles, cada uno con su SLA.
-- **Rol "Admin cliente"**: un Locatario que ve los tickets de toda su empresa. Toca
-  las reglas de seguridad por fila.
-- **Invitar usuario por correo**: la persona elige su contraseña. Se apoyaría en
-  `accounts:sendOobCode`, que ya se usa para el reset.
-- **Número secuencial legible** (`OF-2026-000012`): hoy es `OF-` + los últimos 7
-  dígitos del id. Un contador seguro necesita una transacción de Firestore (REST
-  `:commit` con precondición).
+## En el roadmap, sin compromiso
+- Prioridad "Crítica" (4 niveles).
+- Rol "Admin cliente".
+- Invitar usuario por correo.
+- Número de ticket secuencial `OF-2026-000012`.
+- Umbral de "en riesgo" editable en Configuración.
 
-## Observaciones de seguridad encontradas durante la revisión
-- **Edición del ticket por el Locatario**: la regla `allow update` de `tickets` deja
-  que el Locatario dueño edite **cualquier campo** de su ticket (estado, prioridad,
-  responsable). Así funcionan hoy la calificación y la reapertura, pero también le
-  permitiría cambiar el estado por REST. Conviene restringirla con
-  `request.resource.data.diff(resource.data).affectedKeys().hasOnly([...])` cuando se
-  toquen las reglas. No es urgente; queda anotado.
+## Observación de seguridad (anotada)
+- **Edición del ticket por el Locatario:** la regla `allow update` de `tickets` deja
+  que el Locatario dueño edite **cualquier campo** de su ticket. Conviene restringirla
+  con `affectedKeys().hasOnly([...])` la próxima vez que se toquen las reglas. Hay que
+  tener en cuenta los campos que necesitan la calificación, la reapertura y "cliente
+  respondió".

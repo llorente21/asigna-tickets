@@ -57,23 +57,10 @@ a{color:#8A6508}a:hover{color:#221E1F}
           <div style="font-size: 12.5px; color: #6F675F;">Para que quien atienda llegue directo al lugar.</div>
         </div>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="c2-espacio" style="font-size: 13px; font-weight: 600;">Espacio registrado <span style="font-weight: 400; color: #6F675F;">(opcional)</span></label>
-          <select id="c2-espacio" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
-            <option>D1-PQ1 · Parqueo nivel 1</option>
-            <option>Sin espacio específico</option>
-            <option>D1-PQ2 · Parqueo nivel 2</option>
-            <option>D1-TEC · Cuarto eléctrico</option>
-            <option>D1-1A · Oficina privada 1A</option>
-          </select>
-          <div style="font-size: 12px; line-height: 1.45; color: #6F675F;">Solo espacios de D1. ¿No está en la lista? Descríbelo al lado.</div>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="c2-ubic" style="font-size: 13px; font-weight: 600;">Área o ubicación <span style="color: #B71C1C;">*</span></label>
-          <input id="c2-ubic" type="text" value="Junto a la rampa de salida" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
-          <div style="font-size: 12px; line-height: 1.45; color: #6F675F;">Ej.: baño del 2º piso, techo del bloque A, cisterna. Obligatorio en áreas comunes.</div>
-        </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="c2-ubic" style="font-size: 13px; font-weight: 600;">Área o ubicación <span style="color: #B71C1C;">*</span></label>
+        <input id="c2-ubic" type="text" value="Parqueo nivel 1, junto a la rampa de salida" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
+        <div style="font-size: 12px; line-height: 1.45; color: #6F675F;">Ej.: parqueo nivel 1, baño del 2º piso, techo del bloque A, cisterna. Obligatorio en áreas comunes; en una oficina, opcional (ej.: "sala de reuniones interna").</div>
       </div>
     </div>
 
