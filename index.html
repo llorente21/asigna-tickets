@@ -303,6 +303,8 @@ main.view.active{display:block;}
 
 .form-grid .field{grid-column:span 2;}
 .form-grid .field.half{grid-column:span 1;}
+/* Teléfonos: formulario de una sola columna — en 2 columnas los selects y textos de ayuda quedaban comprimidos. */
+@media (max-width:520px){ .form-grid .field.half{grid-column:span 2;} }
 .readonly-box{background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 13px; font-size:13.5px; color:var(--text2); margin-bottom:14px;}
 .readonly-box b{color:var(--text);}
 
