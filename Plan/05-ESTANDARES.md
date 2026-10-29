@@ -162,5 +162,17 @@
   (`chmod 600`), úsalo con `git -c credential.helper=...` solo en el comando del push
   y bórralo al terminar. No lo guardes en la configuración global de git.
 
+- **Formularios: menos texto, más forma (2026-10-29, crítica de Jose).**
+  - No llenes un formulario de banners, subtítulos de sección, textos de ayuda y
+    vistas previas: transmite que el formulario no se explica solo.
+  - Lo que se espera es lo del formulario de referencia (plataforma OF):
+    - una pantalla grande, ordenada de arriba abajo en 2 columnas;
+    - campos altos (52 px);
+    - etiquetas claras con `*` en los obligatorios;
+    - un ejemplo dentro del campo solo cuando haga falta;
+    - Cancelar · Acción al final.
+  - Antes de agregar un texto explicativo, pregúntate si una mejor etiqueta lo hace
+    innecesario.
+
 _Agregar nuevas lecciones aquí a medida que aparezcan — con contexto suficiente para
 que el próximo agente no repita el mismo error._

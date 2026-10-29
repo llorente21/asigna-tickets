@@ -6,6 +6,55 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — Nuevo ticket en una sola pantalla (rediseño aprobado por Jose)
+
+**Crítica de Jose al formulario de la Fase C:**
+- Tenía demasiado texto explicativo, como si no confiara en que el formulario se
+  entiende solo.
+- No seguía el formulario del video: grande, en una sola pantalla, con secuencia
+  visual.
+
+**Mockup:** "Nuevo ticket v2" en el canvas, aprobado.
+
+**Rama:** `feat/form-una-pantalla`, que sale de `main`.
+
+**Cómo quedó:**
+- **Ya no es un panel lateral en 2 pasos:** ahora es la vista `nuevo`, una pantalla
+  completa con ruta "Tickets / Nuevo ticket".
+- **Escritorio:** una tarjeta ancha en 2 columnas con campos de 52 px:
+
+  | Izquierda | Derecha |
+  |---|---|
+  | Edificio | Tipo de incidencia |
+  | Reportado por | Empresa afectada |
+  | Categoría | Incidente |
+  | Área o ubicación | Prioridad |
+  | Título (ancho completo) | |
+  | Descripción (ancho completo) | |
+
+  Al final van los botones Cancelar · Crear ticket.
+- **Teléfono:** una columna, el botón "Crear ticket" fijo abajo y la barra inferior
+  oculta mientras se llena.
+- **Se quitó:**
+  - Títulos y subtítulos de paso, secciones numeradas y banners.
+  - Textos de ayuda bajo los campos y la vista previa del SLA.
+  - Las tarjetas de tipo, reemplazadas por una lista como en el video.
+  - El campo de fecha: se guarda la hora de creación.
+- **Reglas que se mantienen:**
+  - Área común oculta "Empresa afectada" y hace obligatoria la ubicación.
+  - El locatario ve su edificio bloqueado y sin "Reportado por" ni "Empresa".
+  - El título se prellena con la categoría hasta que alguien lo edite.
+  - Los datos guardados no cambian (mismos campos de la Fase C).
+- **Lección de diseño:** ver `05-ESTANDARES.md`.
+
+**Verificado:**
+- `node --check` sin errores.
+- Navegador sin conexión con datos simulados, en escritorio (1440px) y en móvil
+  (390px):
+  - Staff, área común: sin ubicación no deja guardar; con ubicación guarda sin empresa.
+  - Locatario: guarda con su edificio y su empresa.
+  - Sin errores de JS.
+
 ## 2026-10-29 — Quitar la fila de pestañas de estado de la lista de tickets (staff)
 
 **Qué cambió:**

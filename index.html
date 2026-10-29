@@ -137,33 +137,31 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 .field textarea{resize:vertical; min-height:84px;}
 .field-check{display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text2); font-weight:500;}
 .field-hint{font-size:11.5px; color:var(--text3); margin-top:5px;}
-/* Paso 1/2 del formulario de "Nuevo ticket" — categoría primero, detalles después */
-.form-step-title{font-family:'Public Sans',sans-serif; font-weight:800; font-size:19px; margin:0 0 4px; letter-spacing:-.3px;}
-.form-step-sub{font-size:13px; color:var(--text2); line-height:1.45; margin:0 0 16px;}
-.form-step-chip{display:flex; flex-wrap:wrap; gap:6px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:9px 10px; font-size:13px; margin-bottom:8px;}
-.form-chip{display:inline-block; padding:4px 10px; border-radius:100px; background:var(--surface); border:1px solid var(--border2); font-size:12.5px; font-weight:600; color:var(--text);}
-.form-step-chip .chip-label{color:var(--text3); font-weight:600;}
-.btn-link-back{background:none; border:none; padding:0; margin:0 0 16px; color:var(--accent2); font-size:12.5px; font-weight:700; cursor:pointer;}
-.btn-link-back:hover{text-decoration:underline;}
-/* Formulario "¿Dónde y qué?" (Fase C, 2026-10): secciones numeradas, tipo de
-   incidencia como tarjetas, banner que cambia según el tipo y vista previa del SLA */
-.form-sec{display:flex; align-items:center; gap:10px; margin:6px 0 12px;}
-.form-sec-num{display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; flex:none; border-radius:9px; background:var(--accent-light); font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; color:var(--text);}
-.form-sec-t{font-family:'Public Sans',sans-serif; font-weight:800; font-size:15.5px; color:var(--text);}
-.form-sec-s{font-size:12px; color:#6F675F;}
+/* Nuevo ticket en una sola pantalla (2026-10, como el formulario de la
+   plataforma OF): tarjeta ancha en dos columnas, campos altos, sin textos de
+   ayuda. En teléfono: una columna y el botón fijo abajo. */
 .req{color:var(--danger);}
-.tipo-cards{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-.tipo-card{display:flex; gap:10px; align-items:flex-start; text-align:left; min-height:72px; padding:12px 14px; border-radius:var(--radius-sm); border:2px solid var(--border); background:var(--surface); color:var(--text); font-family:'Inter',sans-serif; cursor:pointer;}
-.tipo-card svg{width:22px; height:22px; flex:none; stroke:var(--text);}
-.tipo-card b{display:block; font-size:13.5px; font-weight:700;}
-.tipo-card small{display:block; margin-top:2px; font-size:12px; line-height:1.4; color:var(--text2);}
-.tipo-card[aria-checked="true"]{border-color:var(--accent); background:var(--surface2);}
-.tipo-card:focus-visible{outline:2px solid var(--accent2); outline-offset:2px;}
-.form-tipo-banner{display:flex; gap:9px; align-items:flex-start; margin-top:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--info-bg); color:#0D47A1; font-size:12.5px; line-height:1.45;}
-.form-tipo-banner svg{width:16px; height:16px; flex:none; margin-top:1px; stroke:currentColor;}
-.sla-preview{display:flex; gap:9px; align-items:center; margin:2px 0 14px; padding:10px 12px; border:1px dashed var(--border2); border-radius:var(--radius-sm); font-size:12.5px; color:var(--text2);}
-.sla-preview svg{width:16px; height:16px; flex:none; stroke:currentColor;}
-@media (max-width:520px){ .tipo-cards{grid-template-columns:1fr;} }
+.nt-crumb{font-size:13px; color:#6F675F; margin:0 0 8px;}
+.nt-crumb a{color:#6F675F; text-decoration:none;}
+.nt-crumb a:hover{color:var(--text); text-decoration:underline;}
+.nt-card{display:block; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); margin:0 0 24px;}
+.nt-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px 28px; padding:30px 34px;}
+.nt-field{display:flex; flex-direction:column; gap:8px; min-width:0;}
+.nt-field.full{grid-column:1 / -1;}
+.nt-field label{font-size:14px; font-weight:600; color:var(--text);}
+.nt-field input, .nt-field select, .nt-field textarea{width:100%; height:52px; box-sizing:border-box; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0 16px; background:var(--surface); font-family:'Inter',sans-serif; font-size:15px; color:var(--text);}
+.nt-field textarea{height:auto; min-height:140px; padding:14px 16px; line-height:1.5; resize:vertical;}
+.nt-field input:focus, .nt-field select:focus, .nt-field textarea:focus{outline:none; border-color:var(--accent2); box-shadow:0 0 0 3px rgba(194,163,16,.16);}
+.nt-field select:disabled{background:#F2EEE2; color:var(--text2); opacity:1;}
+.nt-actions{display:flex; justify-content:flex-end; gap:12px; padding:18px 34px; border-top:1px solid var(--border);}
+.nt-actions .btn{min-height:50px; padding:0 26px; font-size:15px;}
+@media (max-width:600px){
+  .nt-card{border:none; box-shadow:none; background:transparent; margin:0;}
+  .nt-grid{grid-template-columns:1fr; gap:18px; padding:6px 0 18px;}
+  .nt-actions{position:sticky; bottom:0; z-index:5; margin:0 -16px; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--border);}
+  .nt-actions .btn-outline{display:none;}
+  .nt-actions .btn-primary{width:100%;}
+}
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
   border:none; border-radius:var(--radius-sm); padding:13px 18px; font-size:14.5px; font-weight:700;
@@ -373,8 +371,6 @@ main.view.active{display:block;}
 .drawer-body{padding:12px 18px 24px;}
 
 .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 10px;}
-.form-info-banner{display:flex; align-items:flex-start; gap:9px; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px; margin-bottom:14px; font-size:12.5px; color:var(--text2); line-height:1.45;}
-.form-info-banner svg{width:17px; height:17px; flex:none; margin-top:1px; stroke:var(--accent2);}
 
 .form-grid .field{grid-column:span 2;}
 .form-grid .field.half{grid-column:span 1;}
@@ -794,6 +790,67 @@ main.view.active{display:block;}
     <div id="tickets-list"></div>
   </main>
 
+  <!-- ---------- Nuevo ticket: una sola pantalla (2026-10, aprobado por Jose) ---------- -->
+  <main class="view" id="view-nuevo">
+    <nav class="nt-crumb" aria-label="Ruta"><a href="javascript:void(0)" onclick="cancelarNuevoTicket()">Tickets</a> / <span>Nuevo ticket</span></nav>
+    <h1 class="page-title">Nuevo ticket</h1>
+    <form class="nt-card" id="nt-form" onsubmit="event.preventDefault(); saveTicket();" novalidate>
+      <div class="nt-grid">
+        <div class="nt-field">
+          <label for="f-locacion">Edificio <span class="req">*</span></label>
+          <select id="f-locacion"></select>
+        </div>
+        <div class="nt-field">
+          <label for="f-tipo">Tipo de incidencia <span class="req">*</span></label>
+          <select id="f-tipo" onchange="onTipoIncidenciaChange()">
+            <option value="inquilino" id="f-tipo-inquilino-opt">Oficina de un inquilino</option>
+            <option value="area_comun">Área común</option>
+          </select>
+        </div>
+        <div class="nt-field" id="f-reportante-wrap">
+          <label for="f-reportante">Reportado por <span class="req">*</span></label>
+          <select id="f-reportante" onchange="onReportanteChange()"></select>
+        </div>
+        <div class="nt-field" id="f-empresa-wrap">
+          <label for="f-empresa">Empresa afectada</label>
+          <select id="f-empresa"></select>
+        </div>
+        <div class="nt-field">
+          <label for="f-categoria">Categoría <span class="req">*</span></label>
+          <select id="f-categoria" onchange="onCategoriaChange()"></select>
+        </div>
+        <div class="nt-field" id="f-subcategoria-wrap">
+          <label for="f-subcategoria">Incidente</label>
+          <select id="f-subcategoria" onchange="autoTituloTicket()"></select>
+        </div>
+        <div class="nt-field">
+          <label for="f-ubicacion" id="f-ubicacion-label">Área o ubicación</label>
+          <input type="text" id="f-ubicacion" maxlength="120" placeholder="Ej.: parqueo nivel 1">
+        </div>
+        <div class="nt-field">
+          <label for="f-prioridad">Prioridad <span class="req">*</span></label>
+          <select id="f-prioridad">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <div class="nt-field full">
+          <label for="f-titulo">Título <span class="req">*</span></label>
+          <input type="text" id="f-titulo" maxlength="90" oninput="this.dataset.editado='1'">
+        </div>
+        <div class="nt-field full">
+          <label for="f-descripcion">Descripción <span class="req">*</span></label>
+          <textarea id="f-descripcion"></textarea>
+        </div>
+      </div>
+      <div class="nt-actions">
+        <button type="button" class="btn btn-outline" onclick="cancelarNuevoTicket()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear ticket</button>
+      </div>
+    </form>
+  </main>
+
   <!-- ---------- SLA (staff) — Fase D, 2026-10 ---------- -->
   <main class="view" id="view-sla">
     <h1 class="page-title">SLA</h1>
@@ -948,121 +1005,6 @@ main.view.active{display:block;}
 
 <!-- ===================== DRAWERS ===================== -->
 <div id="drawer-overlay" onclick="closeAllDrawers()"></div>
-
-<!-- Nuevo ticket -->
-<div class="drawer" id="drawer-form">
-  <div class="drawer-handle"></div>
-  <div class="drawer-head"><h3>Nuevo Ticket</h3>
-    <button class="drawer-close" onclick="closeDrawer('form')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-  </div>
-  <div class="drawer-body">
-    <!-- Formulario en 2 pasos (Fase C, 2026-10 — ver Plan/07):
-         Paso 1 "¿Dónde y qué?": edificio, tipo de incidencia (oficina de un
-         inquilino / área común) y categoría. Paso 2 "Detalles": ubicación
-         exacta, título, descripción, prioridad y fecha. -->
-    <div id="form-step1">
-      <div class="form-step-title">¿Dónde y qué?</div>
-      <p class="form-step-sub">Indica dónde está el problema y de qué tipo es. En el siguiente paso agregas la ubicación exacta y la descripción.</p>
-
-      <div class="form-sec"><span class="form-sec-num">01</span><div><div class="form-sec-t">¿Dónde?</div><div class="form-sec-s">Edificio y tipo de lugar afectado.</div></div></div>
-      <div class="form-grid">
-        <div class="field" id="f-reportante-wrap" style="display:none;">
-          <label for="f-reportante">Reportado por <span class="req">*</span></label>
-          <select id="f-reportante" onchange="onReportanteChange()"></select>
-          <div class="field-hint">Si un locatario lo reportó por teléfono, elígelo: recibirá las actualizaciones.</div>
-        </div>
-        <div class="field" id="f-locacion-wrap">
-          <label for="f-locacion">Edificio <span class="req">*</span></label>
-          <select id="f-locacion" onchange="onLocacionFormChange()"></select>
-        </div>
-        <div class="field" id="f-reportante-info-wrap">
-          <label>Tu empresa</label>
-          <div class="readonly-box" id="form-user-box"></div>
-        </div>
-      </div>
-      <div class="field">
-        <label id="f-tipo-label">Tipo de incidencia <span class="req">*</span></label>
-        <div class="tipo-cards" role="radiogroup" aria-labelledby="f-tipo-label">
-          <button type="button" class="tipo-card" id="f-tipo-inquilino" role="radio" aria-checked="true" onclick="setTipoIncidencia('inquilino')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"/></svg>
-            <span><b id="f-tipo-inquilino-t">Oficina de un inquilino</b><small>Algo dentro de una oficina o espacio alquilado.</small></span>
-          </button>
-          <button type="button" class="tipo-card" id="f-tipo-area_comun" role="radio" aria-checked="false" onclick="setTipoIncidencia('area_comun')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
-            <span><b>Área común del edificio</b><small>Parqueo, techo, cisterna, ascensor, pasillos, baños.</small></span>
-          </button>
-        </div>
-        <input type="hidden" id="f-tipo" value="inquilino">
-        <div class="form-tipo-banner" id="f-tipo-banner"></div>
-      </div>
-
-      <div class="form-sec"><span class="form-sec-num">02</span><div><div class="form-sec-t">¿Qué pasa?</div><div class="form-sec-s">Categoría del catálogo de Áreas.</div></div></div>
-      <div class="form-grid">
-        <div class="field half">
-          <label for="f-categoria">Categoría <span class="req">*</span></label>
-          <select id="f-categoria" onchange="onCategoriaChange()"></select>
-        </div>
-        <div class="field half" id="f-subcategoria-wrap" style="display:none;">
-          <label for="f-subcategoria">Incidente</label>
-          <select id="f-subcategoria"></select>
-        </div>
-      </div>
-      <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="goFormStep2()">Continuar →</button>
-    </div>
-
-    <!-- Paso 2: detalles, con el resumen de lo elegido en el paso 1. -->
-    <div id="form-step2" style="display:none;">
-      <div class="form-step-chip" id="form-step-chip"></div>
-      <button class="btn-link-back" onclick="backFormStep1()">← Cambiar dónde o qué</button>
-      <div class="form-info-banner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span>Completa los datos del incidente. Entre más detalle des, más rápido podrá atenderlo el equipo.</span>
-      </div>
-
-      <div class="form-sec"><span class="form-sec-num">03</span><div><div class="form-sec-t">Ubicación exacta</div><div class="form-sec-s">Para que quien atienda llegue directo al lugar.</div></div></div>
-      <div class="form-grid">
-        <div class="field half" id="f-empresa-wrap" style="display:none;">
-          <label for="f-empresa">Empresa afectada</label>
-          <select id="f-empresa"></select>
-          <div class="field-hint">La oficina/empresa con el problema — no siempre coincide con quién reporta.</div>
-        </div>
-        <div class="field" id="f-ubicacion-wrap">
-          <label for="f-ubicacion" id="f-ubicacion-label">Área o ubicación</label>
-          <input type="text" id="f-ubicacion" maxlength="120" placeholder="Ej.: parqueo nivel 1, baño del 2º piso, cuarto eléctrico">
-          <div class="field-hint" id="f-ubicacion-hint"></div>
-        </div>
-      </div>
-
-      <div class="form-sec"><span class="form-sec-num">04</span><div><div class="form-sec-t">Detalle</div><div class="form-sec-s">Lo que se ve en la lista y lo que lee el equipo.</div></div></div>
-      <div class="field">
-        <label for="f-titulo">Título <span class="req">*</span></label>
-        <input type="text" id="f-titulo" maxlength="90" oninput="this.dataset.editado='1'">
-        <div class="field-hint">Se prellena con la categoría. Ajústalo para que se entienda en una línea.</div>
-      </div>
-      <div class="field">
-        <label for="f-descripcion">Descripción <span class="req">*</span></label>
-        <textarea id="f-descripcion" placeholder="Describe qué está ocurriendo, desde cuándo, y cualquier detalle útil..."></textarea>
-      </div>
-      <div class="form-grid">
-        <div class="field half">
-          <label for="f-prioridad">Prioridad <span class="req">*</span></label>
-          <select id="f-prioridad" onchange="renderSlaPreview()">
-            <option value="baja">Baja</option>
-            <option value="media" selected>Media</option>
-            <option value="alta">Alta</option>
-          </select>
-        </div>
-        <div class="field half">
-          <label for="f-fecha">Fecha de notificación</label>
-          <input type="datetime-local" id="f-fecha">
-          <div class="field-hint">Hora de Santo Domingo. Por defecto, ahora.</div>
-        </div>
-      </div>
-      <div class="sla-preview" id="f-sla-preview"></div>
-      <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="saveTicket()">Enviar ticket</button>
-    </div>
-  </div>
-</div>
 
 <!-- Detalle de ticket -->
 <div class="drawer" id="drawer-detail">
@@ -2086,15 +2028,17 @@ function onCategoriaChange(){
   const subs = CATEGORIAS[cat] || [];
   const wrap = document.getElementById('f-subcategoria-wrap');
   if(subs.length){
-    wrap.style.display = 'block';
+    wrap.style.display = '';
     document.getElementById('f-subcategoria').innerHTML = subs.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
   } else { wrap.style.display = 'none'; }
+  autoTituloTicket();
 }
 
-const VIEW_TITLES = { tickets:'Tickets', sla:'SLA', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
+const VIEW_TITLES = { tickets:'Tickets', nuevo:'Nuevo ticket', sla:'SLA', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
 const VIEW_SUBS = {
   tickets:'Todos los tickets entrantes de la red',
   sla:'Tickets abiertos vencidos o por vencer',
+  nuevo:'',
   dashboard:'Métricas del sistema de tickets — Oficinas Felices',
   usuarios:'Todas las cuentas de acceso: Administración, Empleados y Locatarios',
   empresas:'Compañías clientes de la red',
@@ -2201,6 +2145,12 @@ function switchView(name){
   document.querySelectorAll('.nav-btn, .sidebar-link').forEach(b=>b.classList.remove('active'));
   const navBtn = document.getElementById('nav-'+name); if(navBtn) navBtn.classList.add('active');
   const sideBtn = document.getElementById('side-'+name); if(sideBtn) sideBtn.classList.add('active');
+  if(name==='nuevo'){ // el formulario de nuevo ticket "pertenece" a Tickets en la navegación
+    const st = document.getElementById('side-tickets'); if(st) st.classList.add('active');
+    const nt = document.getElementById('nav-tickets'); if(nt) nt.classList.add('active');
+  }
+  // En teléfono el formulario va a pantalla completa, sin la barra inferior.
+  document.getElementById('bottom-nav').style.display = (!isDesktopLayout() && name!=='nuevo') ? 'flex' : 'none';
   document.getElementById('fab-btn').style.display = (name==='tickets' && !isDesktopLayout()) ? 'flex' : 'none';
   document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
   const topNewTicket = document.getElementById('topbar-new-ticket'); if(topNewTicket) topNewTicket.style.display = (name==='tickets') ? 'inline-flex' : 'none';
@@ -2448,118 +2398,59 @@ function resetFilters(){
    Crear ticket
    ====================================================================== */
 function openTicketForm(){
-  if(isStaff()){
-    document.getElementById('f-reportante-wrap').style.display = 'block';
-    document.getElementById('f-locacion-wrap').style.display = 'block';
-    document.getElementById('f-reportante-info-wrap').style.display = 'none';
+  const staff = isStaff();
+  const loc = document.getElementById('f-locacion');
+  document.getElementById('f-reportante-wrap').style.display = staff ? '' : 'none';
+  loc.disabled = !staff; // el locatario reporta desde su edificio (viene de su cuenta)
+  if(staff){
     buildReportanteOptions();
+    document.getElementById('f-reportante').value = '__yo__';
     onReportanteChange();
   } else {
-    // El locatario reporta desde su propia empresa y edificio (vienen de su cuenta).
-    document.getElementById('f-reportante-wrap').style.display = 'none';
-    document.getElementById('f-locacion-wrap').style.display = 'none';
-    document.getElementById('f-reportante-info-wrap').style.display = 'block';
-    const loc = currentUser.locacion || Object.keys(LOCACIONES)[0];
-    document.getElementById('form-user-box').innerHTML = `<b>${esc(currentUser.empresa || currentUser.name)}</b> · ${esc(loc)} — ${esc(LOCACIONES[loc]||'')}`;
-    document.getElementById('f-locacion').value = loc;
+    loc.value = (currentUser.locacion && LOCACIONES[currentUser.locacion]) ? currentUser.locacion : Object.keys(LOCACIONES)[0];
     document.getElementById('f-empresa').value = currentUser.empresa || '';
   }
-  document.getElementById('f-fecha').value = nowLocalInputValue();
-  document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
-  onCategoriaChange();
-  document.getElementById('f-descripcion').value = '';
-  document.getElementById('f-ubicacion').value = '';
+  document.getElementById('f-tipo-inquilino-opt').textContent = staff ? 'Oficina de un inquilino' : 'En mi oficina';
+  document.getElementById('f-tipo').value = 'inquilino';
   const titulo = document.getElementById('f-titulo');
   titulo.value = ''; delete titulo.dataset.editado;
+  document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
+  onCategoriaChange();
+  document.getElementById('f-ubicacion').value = '';
+  document.getElementById('f-descripcion').value = '';
   document.getElementById('f-prioridad').value = 'media';
-  setTipoIncidencia('inquilino');
-  document.getElementById('form-step1').style.display = 'block';
-  document.getElementById('form-step2').style.display = 'none';
-  openDrawer('form');
+  onTipoIncidenciaChange();
+  switchView('nuevo');
+  window.scrollTo(0, 0);
+}
+function cancelarNuevoTicket(){ switchView('tickets'); }
+
+// Área común: no lleva empresa y la ubicación pasa a ser obligatoria.
+function onTipoIncidenciaChange(){
+  const comun = document.getElementById('f-tipo').value === 'area_comun';
+  document.getElementById('f-empresa-wrap').style.display = (isStaff() && !comun) ? '' : 'none';
+  document.getElementById('f-ubicacion-label').innerHTML = comun ? 'Área o ubicación <span class="req">*</span>' : 'Área o ubicación';
 }
 
-// Tipo de incidencia: 'inquilino' (oficina/espacio alquilado) o 'area_comun'
-// (parqueo, techo, cisterna...). Cambia el banner, si se pide la empresa y si
-// la ubicación es obligatoria.
-function setTipoIncidencia(tipo){
-  if(tipo !== 'area_comun') tipo = 'inquilino';
-  document.getElementById('f-tipo').value = tipo;
-  ['inquilino','area_comun'].forEach(k=>{
-    document.getElementById('f-tipo-'+k).setAttribute('aria-checked', k===tipo ? 'true' : 'false');
-  });
-  document.getElementById('f-tipo-inquilino-t').textContent = isStaff() ? 'Oficina de un inquilino' : 'En mi oficina';
-  const icon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
-  let txt;
-  if(tipo === 'area_comun'){
-    txt = isStaff() && document.getElementById('f-reportante').value === '__yo__'
-      ? 'No se asocia a ninguna empresa: el seguimiento es interno y ningún locatario recibe notificaciones.'
-      : 'Lo atiende el equipo de administración del edificio. Quien reporta recibe las actualizaciones.';
-  } else {
-    txt = isStaff()
-      ? 'La empresa de esa oficina queda asociada al ticket; quien reporta recibe una notificación en cada cambio de estado.'
-      : 'Te avisaremos en cada cambio de estado de tu ticket.';
-  }
-  document.getElementById('f-tipo-banner').innerHTML = icon + `<span>${txt}</span>`;
-}
-
-function onLocacionFormChange(){ /* el edificio se muestra en el resumen del paso 2 */ }
-
-// Paso 1 → 2: valida lo elegido, arma el resumen (chips), prellena el título
-// con la categoría y ajusta la sección de ubicación según el tipo.
-function goFormStep2(){
+// El título se prellena con la categoría · incidente mientras nadie lo edite.
+function autoTituloTicket(){
+  const t = document.getElementById('f-titulo');
+  if(!t || t.dataset.editado) return;
   const cat = document.getElementById('f-categoria').value;
   const subs = CATEGORIAS[cat] || [];
   const sub = subs.length ? document.getElementById('f-subcategoria').value : '';
-  const loc = document.getElementById('f-locacion').value;
-  const tipo = document.getElementById('f-tipo').value;
-  if(!loc){ showToast('Elige el edificio'); return; }
-  if(!cat){ showToast('Elige la categoría'); return; }
-  const chip = s => `<span class="form-chip">${s}</span>`;
-  document.getElementById('form-step-chip').innerHTML =
-    chip(`${esc(loc)} — ${esc(LOCACIONES[loc]||'')}`) +
-    chip(tipo === 'area_comun' ? 'Área común' : (isStaff() ? 'Oficina de un inquilino' : 'En mi oficina')) +
-    chip(`${esc(cat)}${sub ? ' · '+esc(sub) : ''}`);
-  const titulo = document.getElementById('f-titulo');
-  if(!titulo.dataset.editado) titulo.value = sub ? `${cat} · ${sub}` : cat;
-  const comun = tipo === 'area_comun';
-  document.getElementById('f-empresa-wrap').style.display = (isStaff() && !comun) ? 'block' : 'none';
-  document.getElementById('f-ubicacion-wrap').className = (isStaff() && !comun) ? 'field half' : 'field';
-  document.getElementById('f-ubicacion-label').innerHTML = comun ? 'Área o ubicación <span class="req">*</span>' : 'Área o ubicación <span style="font-weight:400; color:#6F675F;">(opcional)</span>';
-  document.getElementById('f-ubicacion-hint').textContent = comun
-    ? 'Obligatorio en áreas comunes. Ej.: parqueo nivel 1 junto a la rampa, techo del bloque A.'
-    : 'Ej.: sala de reuniones interna, cocina, puesto 4.';
-  renderSlaPreview();
-  document.getElementById('form-step1').style.display = 'none';
-  document.getElementById('form-step2').style.display = 'block';
-}
-function backFormStep1(){
-  document.getElementById('form-step2').style.display = 'none';
-  document.getElementById('form-step1').style.display = 'block';
-}
-
-// "Con prioridad Media: primera respuesta en 8 h · resolución en 5 días."
-function renderSlaPreview(){
-  const p = document.getElementById('f-prioridad').value || 'media';
-  const sla = getSlaFor(p);
-  document.getElementById('f-sla-preview').innerHTML =
-    `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>` +
-    `<span>Con prioridad <b>${PRIORIDAD_LABELS[p]}</b>: primera respuesta en <b>${sla.respuesta_horas} h</b> · resolución en <b>${sla.resolucion_dias} días</b>.</span>`;
+  t.value = sub ? `${cat} · ${sub}` : cat;
 }
 
 function onReportanteChange(){
   const email = document.getElementById('f-reportante').value;
-  if(email === '__yo__'){
-    document.getElementById('f-empresa').value = '';
-    if(document.getElementById('f-tipo')) setTipoIncidencia(document.getElementById('f-tipo').value);
-    return;
-  }
+  if(email === '__yo__'){ document.getElementById('f-empresa').value = ''; return; }
   const u = USERS_LIST.find(x=>x.email===email);
   if(!u) return;
   // Precarga el edificio/empresa de quien reporta como punto de partida — el
   // problema puede ser de otra oficina, así que queda libre para cambiarla.
   if(u.locacion && LOCACIONES[u.locacion]) document.getElementById('f-locacion').value = u.locacion;
   document.getElementById('f-empresa').value = u.empresa || '';
-  if(document.getElementById('f-tipo')) setTipoIncidencia(document.getElementById('f-tipo').value);
 }
 
 async function saveTicket(){
@@ -2568,8 +2459,7 @@ async function saveTicket(){
   const subcategoria = subs.length ? document.getElementById('f-subcategoria').value : '';
   const descripcion = document.getElementById('f-descripcion').value.trim();
   const prioridad = document.getElementById('f-prioridad').value || 'media';
-  const fechaInput = document.getElementById('f-fecha').value;
-  const fechaNotif = fechaInput ? new Date(fechaInput) : new Date();
+  const fechaNotif = new Date(); // la fecha de notificación es la hora en que se crea
   const tipo_incidencia = document.getElementById('f-tipo').value === 'area_comun' ? 'area_comun' : 'inquilino';
   const ubicacion_detalle = document.getElementById('f-ubicacion').value.trim();
   const titulo = document.getElementById('f-titulo').value.trim() || (subcategoria ? `${categoria} · ${subcategoria}` : categoria);
@@ -2619,7 +2509,7 @@ async function saveTicket(){
 
   tickets.unshift(ticket);
   saveTicketsLocal();
-  closeDrawer('form');
+  switchView('tickets');
   renderTicketsView();
   showToast('Ticket enviado ✓ '+ticket.numero);
 
