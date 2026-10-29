@@ -258,6 +258,37 @@ main.view.active{display:block;}
   font-size:12.5px; font-weight:700; color:var(--text2); white-space:nowrap;
 }
 .chip.active{background:var(--dark); border-color:var(--dark); color:#fff;}
+.chip .chip-n{font-family:'Roboto Mono',monospace; margin-left:4px;}
+.chip.chip-riesgo{display:inline-flex; align-items:center; gap:5px;}
+.chip.chip-riesgo svg{width:14px; height:14px; stroke:currentColor;}
+/* Lista con columna "Vence" + vista SLA (Fase D, 2026-10) */
+.data-table td.wrap{white-space:normal; min-width:150px;}
+.tk-num{font-size:12px; font-weight:700;}
+.tk-tit{font-weight:600; font-size:13px; margin-top:2px; white-space:normal; max-width:280px;}
+.tk-sub{font-size:11.5px; color:#6F675F; margin-top:2px; white-space:normal;}
+.tk-strong{font-weight:600; color:var(--text);}
+.tk-vence{font-size:12px; font-weight:700;}
+.sla-chip{display:inline-block; margin-top:4px; padding:2px 8px; border-radius:100px; font-size:10.5px; font-weight:700; white-space:nowrap;}
+.sla-riesgo{background:var(--warning-bg); color:#8A6508;}
+.sla-vencido{background:var(--danger-bg); color:#B71C1C;}
+.sla-pausado{background:var(--teal-bg); color:#0B6E62;}
+.sla-toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px;}
+.sla-toolbar select{height:42px; border:1.5px solid var(--border2); border-radius:var(--radius-sm); padding:0 12px; background:var(--surface); font-family:'Inter',sans-serif; font-size:13.5px; color:var(--text);}
+.seg{display:inline-flex; padding:4px; border-radius:100px; background:var(--surface); border:1.5px solid var(--border2);}
+.seg-btn{height:34px; padding:0 14px; border-radius:100px; border:none; background:transparent; font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:var(--text2); cursor:pointer;}
+.seg-btn[aria-pressed="true"]{background:var(--dark); color:#fff;}
+.sla-section{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:16px; overflow:hidden;}
+.sla-section h2{display:flex; align-items:center; gap:10px; margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:15.5px;}
+.sla-section h2 .dot{width:10px; height:10px; border-radius:100px; flex:none;}
+.sla-section h2 .note{margin-left:auto; font-family:'Inter',sans-serif; font-weight:500; font-size:12px; color:#6F675F;}
+.sla-row{display:grid; grid-template-columns:minmax(0,2.2fr) minmax(0,1.6fr) minmax(0,1.3fr) minmax(0,1fr) auto; gap:14px; align-items:center; padding:12px 16px; border-top:1px solid var(--border); font-size:13px; cursor:pointer;}
+.sla-row:first-child{border-top:none;}
+.sla-row:hover{background:var(--surface2);}
+.sla-empty{padding:18px 16px; font-size:13px; color:#6F675F;}
+.sla-foot{font-size:12px; line-height:1.5; color:#6F675F; margin:4px 0 0;}
+.side-badge{margin-left:auto; padding:1px 8px; border-radius:100px; background:var(--danger-bg); color:#B71C1C; font-size:11px; font-weight:800;}
+.side-badge:empty{display:none;}
+@media (max-width:760px){ .sla-row{grid-template-columns:1fr auto; } .sla-row .sla-col-hide{display:none;} }
 
 .search-bar{display:flex; align-items:center; gap:8px; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; margin-bottom:14px;}
 .search-bar svg{width:17px; height:17px; stroke:var(--text3); flex:0 0 auto;}
@@ -756,6 +787,28 @@ main.view.active{display:block;}
 
     <div class="chip-row" id="quick-chips"></div>
     <div id="tickets-list"></div>
+  </main>
+
+  <!-- ---------- SLA (staff) — Fase D, 2026-10 ---------- -->
+  <main class="view" id="view-sla">
+    <h1 class="page-title">SLA</h1>
+    <p class="page-sub">Tickets abiertos que ya vencieron o están por vencer.</p>
+    <div class="sla-toolbar">
+      <div class="seg" role="group" aria-label="Plazo">
+        <button class="seg-btn" id="sla-tipo-respuesta" aria-pressed="false" onclick="setSlaTipo('respuesta')">Primera respuesta</button>
+        <button class="seg-btn" id="sla-tipo-resolucion" aria-pressed="true" onclick="setSlaTipo('resolucion')">Resolución</button>
+      </div>
+      <select id="sla-edificio" onchange="renderSlaView()" aria-label="Edificio"></select>
+    </div>
+    <section class="sla-section" aria-labelledby="sla-venc-t">
+      <h2><span class="dot" style="background:var(--danger);"></span><span id="sla-venc-t">Vencidos</span><span class="note">Más atrasado primero</span></h2>
+      <div id="sla-vencidos"></div>
+    </section>
+    <section class="sla-section" aria-labelledby="sla-riesgo-t">
+      <h2><span class="dot" style="background:var(--warning);"></span><span id="sla-riesgo-t">En riesgo</span><span class="note">Vence primero arriba</span></h2>
+      <div id="sla-riesgo"></div>
+    </section>
+    <p class="sla-foot">Hora de Santo Domingo. Solo tickets abiertos; los que están En espera no cuentan mientras el reloj está pausado. "En riesgo" = vence en menos de 4 h (primera respuesta) o 24 h (resolución).</p>
   </main>
 
   <!-- ---------- Dashboard (admin) ---------- -->
@@ -1485,7 +1538,8 @@ let editingSuplidorId = null;
 let currentDetailId = null;
 let currentReabrirId = null;
 let currentView = 'tickets';
-const F  = { status:'todos', categoria:'', locacion:'', search:'' };
+const F  = { status:'todos', categoria:'', locacion:'', search:'', riesgo:false };
+let SLA_TIPO = 'resolucion'; // vista SLA: 'respuesta' | 'resolucion'
 const EF = { tab:'todos' };
 let listViewMode = localStorage.getItem('of_view_mode') || 'cards'; // 'cards' | 'list' — solo aplica en el panel de escritorio
 
@@ -1877,6 +1931,53 @@ function fmtDuracion(ms){
   if(h >= 1) return `${h} h${min%60 ? ' '+(min%60)+' min' : ''}`;
   return `${min} min`;
 }
+// "En riesgo": el plazo vence en menos de 4 h (respuesta) o 24 h (resolución).
+const SLA_RIESGO_MS = { respuesta: 4*3600000, resolucion: 24*3600000 };
+// "Hoy 5:40 p. m." / "Mañana 8:10 a. m." / "Ayer 4:00 p. m." / "30/10 · 10:05 a. m."
+function fmtVence(d){
+  if(!(d instanceof Date) || isNaN(d)) return '—';
+  const hoy = new Date(), man = new Date(), ayer = new Date();
+  man.setDate(hoy.getDate()+1); ayer.setDate(hoy.getDate()-1);
+  const hora = d.toLocaleTimeString('es-DO',{hour:'numeric', minute:'2-digit'});
+  const same = (a,b) => a.toDateString() === b.toDateString();
+  if(same(d,hoy)) return `Hoy ${hora}`;
+  if(same(d,man)) return `Mañana ${hora}`;
+  if(same(d,ayer)) return `Ayer ${hora}`;
+  return `${d.toLocaleDateString('es-DO',{day:'2-digit', month:'2-digit'})} · ${hora}`;
+}
+// Estado del PRÓXIMO plazo del ticket, para la columna "Vence": primera
+// respuesta mientras staff no haya respondido; después, resolución.
+function slaEstado(t){
+  if(t.status === 'cerrado'){
+    const fuera = isVencidoResolucion(t);
+    return { plazo:'Resolución', estado: fuera ? 'fuera' : 'cumplido', texto: fuera ? 'Fuera de plazo' : 'Cumplido', chip:'' };
+  }
+  if(t.status === 'en_espera'){
+    return { plazo:'Resolución', estado:'pausado', texto:'Pausado', chip:`Reloj detenido desde ${fmtDateShort(t.espera_desde)}` };
+  }
+  const tipo = t.fecha_primera_respuesta ? 'resolucion' : 'respuesta';
+  const limite = tipo === 'respuesta' ? slaLimiteRespuesta(t) : slaLimiteResolucion(t);
+  const resta = limite - Date.now();
+  let estado = 'ok', chip = '';
+  if(resta < 0){ estado = 'vencido'; chip = `Vencido hace ${fmtDuracion(-resta)}`; }
+  else if(resta <= SLA_RIESGO_MS[tipo]){ estado = 'riesgo'; chip = `En riesgo · ${fmtDuracion(resta)}`; }
+  return { plazo: tipo === 'respuesta' ? 'Respuesta' : 'Resolución', estado, texto: fmtVence(limite), chip };
+}
+function enRiesgoOVencido(t){ const e = slaEstado(t); return e.estado === 'vencido' || e.estado === 'riesgo'; }
+// Listas de la vista SLA para un tipo de plazo y (opcional) un edificio.
+function slaListas(tipo, loc){
+  const now = Date.now();
+  const abiertos = tickets.filter(t => t.status !== 'cerrado' && t.status !== 'en_espera' && (!loc || t.locacion === loc));
+  const cand = tipo === 'respuesta' ? abiertos.filter(t => !t.fecha_primera_respuesta) : abiertos;
+  const items = cand.map(t => {
+    const lim = tipo === 'respuesta' ? slaLimiteRespuesta(t) : slaLimiteResolucion(t);
+    return { t, resta: lim - now };
+  }).filter(x => !isNaN(x.resta));
+  return {
+    vencidos: items.filter(x => x.resta < 0).sort((a,b) => a.resta - b.resta),
+    riesgo: items.filter(x => x.resta >= 0 && x.resta <= SLA_RIESGO_MS[tipo]).sort((a,b) => a.resta - b.resta)
+  };
+}
 // SLA de RESPUESTA: horas desde que se creó el ticket hasta el primer contacto
 // de staff (cambio de estatus o comentario). Si ya respondió, se evalúa contra
 // esa fecha real; si no, contra ahora (para saber si ya venció sin responder).
@@ -1949,9 +2050,10 @@ function onCategoriaChange(){
   } else { wrap.style.display = 'none'; }
 }
 
-const VIEW_TITLES = { tickets:'Tickets', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
+const VIEW_TITLES = { tickets:'Tickets', sla:'SLA', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
 const VIEW_SUBS = {
   tickets:'Todos los tickets entrantes de la red',
+  sla:'Tickets abiertos vencidos o por vencer',
   dashboard:'Métricas del sistema de tickets — Oficinas Felices',
   usuarios:'Todas las cuentas de acceso: Administración, Empleados y Locatarios',
   empresas:'Compañías clientes de la red',
@@ -1967,13 +2069,13 @@ const ADMIN_ONLY_VIEWS = ['empresas','suplidores','areas','estados','prioridades
 // Administrador y Empleado (staff): Dashboard es de solo lectura para Empleado;
 // Usuarios permite a Empleado gestionar solo cuentas de Locatario (ver saveUser/
 // renderUsersList). Un Locatario nunca llega a estas vistas.
-const STAFF_VIEWS = ['dashboard','usuarios'];
+const STAFF_VIEWS = ['dashboard','usuarios','sla'];
 
 function buildNav(){
   const admin = isAdmin();
   const staff = isStaff();
   const tabs = staff
-    ? [ ['tickets','Tickets',ICONS.ticket], ['dashboard','Dashboard',ICONS.chart], ['usuarios','Usuarios',ICONS.users], ['perfil','Perfil',ICONS.user] ]
+    ? [ ['tickets','Tickets',ICONS.ticket], ['sla','SLA',ICONS.clock], ['dashboard','Dashboard',ICONS.chart], ['usuarios','Usuarios',ICONS.users], ['perfil','Perfil',ICONS.user] ]
     : [ ['tickets','Tickets',ICONS.ticket], ['perfil','Perfil',ICONS.user] ];
   document.getElementById('bottom-nav').innerHTML = tabs.map(([id,label,icon])=>
     `<button class="nav-btn" id="nav-${id}" onclick="switchView('${id}')">${icon}<span>${label}</span></button>`
@@ -1989,7 +2091,8 @@ function buildSidebarNav(){
   const staff = isStaff();
   let html = `<button class="sidebar-link" id="side-tickets" onclick="switchView('tickets')">${ICONS.ticket}<span>Tickets</span></button>`;
   if(staff){
-    html = `<button class="sidebar-link" id="side-dashboard" onclick="switchView('dashboard')">${ICONS.chart}<span>Dashboard</span></button>` + html;
+    html = `<button class="sidebar-link" id="side-dashboard" onclick="switchView('dashboard')">${ICONS.chart}<span>Dashboard</span></button>` + html
+      + `<button class="sidebar-link" id="side-sla" onclick="switchView('sla')">${ICONS.clock}<span>SLA</span><span class="side-badge" id="sla-badge" aria-label="tickets vencidos o en riesgo"></span></button>`;
     html += `
       <div class="sidebar-section">${admin ? 'Administración' : 'Gestión'}</div>
       <button class="sidebar-link" id="side-usuarios" onclick="switchView('usuarios')">${ICONS.users}<span>Usuarios</span></button>`;
@@ -2066,6 +2169,7 @@ function switchView(name){
   if(isDesktopLayout()) document.title = `${VIEW_TITLES[name]||'ASIGNA'} · ASIGNA`;
 
   if(name==='dashboard') renderDashboard();
+  if(name==='sla') renderSlaView();
   if(name==='usuarios') renderUsersList();
   if(name==='empresas') renderEmpresasView();
   if(name==='areas') renderAreasView();
@@ -2079,6 +2183,8 @@ function switchView(name){
 
 function renderAll(){
   renderTicketsView();
+  updateSlaBadge();
+  if(currentView==='sla') renderSlaView();
   updateBellBadge();
   updateSidebarUser();
   if(currentView==='dashboard') renderDashboard();
@@ -2160,6 +2266,7 @@ function getFilteredTickets(){
     if(F.status !== 'todos') list = list.filter(t => t.status === F.status);
     if(F.categoria) list = list.filter(t => t.categoria === F.categoria);
     if(F.locacion) list = list.filter(t => t.locacion === F.locacion);
+    if(F.riesgo) list = list.filter(enRiesgoOVencido);
   }
   const q = (isStaff() ? F.search : EF.search) || '';
   if(q){
@@ -2183,9 +2290,14 @@ function renderTicketsView(){
 
   const chipsWrap = document.getElementById('quick-chips');
   if(staff){
-    chipsWrap.innerHTML = '';
-    const active = F.status!=='todos' || F.categoria || F.locacion;
-    document.getElementById('filter-btn').classList.toggle('has-filters', active);
+    // Pestañas por estado (con conteo) + "Solo en riesgo o vencidos"
+    const count = s => s === 'todos' ? tickets.length : tickets.filter(t => t.status === s).length;
+    const nRiesgo = tickets.filter(enRiesgoOVencido).length;
+    chipsWrap.innerHTML = [['todos','Todos'], ...STATUS_FLOW.map(s => [s, STATUS_LABELS[s]])]
+      .map(([id,label]) => `<button class="chip ${F.status===id?'active':''}" aria-pressed="${F.status===id}" onclick="setStaffStatus('${id}')">${label}<span class="chip-n">${count(id)}</span></button>`).join('')
+      + `<button class="chip chip-riesgo ${F.riesgo?'active':''}" aria-pressed="${F.riesgo}" onclick="toggleRiesgo()">${ICONS.clock}Solo en riesgo o vencidos<span class="chip-n">${nRiesgo}</span></button>`;
+    const active = F.categoria || F.locacion;
+    document.getElementById('filter-btn').classList.toggle('has-filters', !!active);
   } else {
     const chips = [['todos','Todos'],['abiertos','Abiertos'],['cerrados','Cerrados']];
     chipsWrap.innerHTML = chips.map(([id,label])=>`<button class="chip ${EF.tab===id?'active':''}" onclick="setEmpTab('${id}')">${label}</button>`).join('');
@@ -2193,6 +2305,8 @@ function renderTicketsView(){
   renderTicketsList();
 }
 function setEmpTab(tab){ EF.tab = tab; renderTicketsView(); }
+function setStaffStatus(s){ F.status = s; const sel = document.getElementById('tmp-status'); if(sel) sel.value = s; renderTicketsView(); }
+function toggleRiesgo(){ F.riesgo = !F.riesgo; renderTicketsView(); }
 
 function renderTicketsList(){
   const list = getFilteredTickets();
@@ -2207,26 +2321,45 @@ function renderTicketsList(){
 }
 
 function ticketsTableHTML(list){
-  const rows = list.map(t => `
+  const rows = list.map(t => {
+    const e = slaEstado(t);
+    const lugar = t.tipo_incidencia === 'area_comun' ? 'Área común' : (t.empresa || '—');
+    const ejecuta = t.asignado_a ? esc(t.asignado_a) + (t.asignado_tipo==='suplidor' ? ' (proveedor)' : '') : 'Sin proveedor';
+    return `
     <tr onclick="openTicketDetail('${t.id}')">
-      <td class="mono">${esc(t.numero)}</td>
-      <td>${t.empresa ? esc(t.empresa) : '—'}</td>
-      <td>${esc(t.locacion)}</td>
-      <td>${esc(tituloTicket(t))}</td>
-      <td>${t.asignado_a ? esc(t.asignado_a) : '—'}</td>
+      <td class="wrap"><div class="mono tk-num">${esc(t.numero)}</div><div class="tk-tit">${esc(tituloTicket(t))}</div>${t.titulo ? `<div class="tk-sub">${esc(catTicket(t))}</div>` : ''}</td>
+      <td class="wrap"><div class="tk-strong">${esc(t.locacion)} · ${esc(lugar)}</div>${t.ubicacion_detalle ? `<div class="tk-sub">${esc(t.ubicacion_detalle)}</div>` : ''}</td>
       <td><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></td>
-      <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${isVencido(t) ? ' <span class="vencido-badge">Vencido</span>' : ''}</td>
-      <td>${fmtDateShort(t.fecha_creacion)}</td>
-      <td onclick="event.stopPropagation()">
-        <button class="icon-btn-light sm" onclick="openTicketDetail('${t.id}')" aria-label="Ver ticket">
+      <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${t.status==='en_espera' && ESPERA_MOTIVOS[t.espera_motivo] ? `<div class="tk-sub">Esperando: ${esc(ESPERA_MOTIVOS[t.espera_motivo].toLowerCase())}</div>` : ''}</td>
+      <td class="wrap"><div class="tk-strong">${esc(t.responsable_nombre || 'Sin responsable')}</div><div class="tk-sub">${ejecuta}</div></td>
+      <td><div class="tk-sub" style="margin-top:0;">${e.plazo}</div><div class="mono tk-vence">${esc(e.texto)}</div>${e.chip ? `<span class="sla-chip sla-${e.estado}">${esc(e.chip)}</span>` : ''}</td>
+      <td onclick="event.stopPropagation()" style="text-align:right;"><div style="display:inline-flex; gap:6px;">
+        <button class="icon-btn-light sm" onclick="openTicketDetail('${t.id}')" aria-label="Ver ticket ${esc(t.numero)}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-      </td>
-    </tr>`).join('');
+        ${t.status !== 'cerrado' ? `<button class="icon-btn-light sm" onclick="quickStatus('${t.id}')" aria-label="Cambiar estado de ${esc(t.numero)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg>
+        </button>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
   return `<div style="overflow-x:auto;"><table class="data-table">
-    <thead><tr><th>Código</th><th>Empresa</th><th>Locación</th><th>Asunto</th><th>Asignado a</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+    <thead><tr><th>Ticket</th><th>Ubicación</th><th>Prioridad</th><th>Estado</th><th>Asignación</th><th>Vence</th><th style="text-align:right;">Acciones</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
+}
+// Acción rápida de la tabla: abre el detalle con el foco en "Nuevo estatus".
+// Tras crear/actualizar/borrar un ticket: lista (con conteos de las pestañas),
+// contador de SLA y, si están abiertas, la vista SLA y el Dashboard.
+function refreshAfterTicketChange(){
+  renderTicketsView();
+  updateSlaBadge();
+  if(currentView==='sla') renderSlaView();
+  if(currentView==='dashboard') renderDashboard();
+}
+function quickStatus(id){
+  openTicketDetail(id);
+  setTimeout(()=>{ const sel = document.getElementById('d-status'); if(sel){ sel.scrollIntoView({block:'center'}); sel.focus(); } }, 280);
 }
 
 function renderTicketCard(t){
@@ -2250,7 +2383,7 @@ function renderTicketCard(t){
       ${isStaff() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
       ${days}
       ${t.prioridad==='alta' ? '<span class="prio-badge prio-alta">Urgente</span>' : ''}
-      ${isVencido(t) ? '<span class="vencido-badge">Vencido</span>' : ''}
+      ${isVencido(t) ? '<span class="vencido-badge">Vencido</span>' : (slaEstado(t).estado === 'riesgo' ? '<span class="sla-chip sla-riesgo" style="margin-top:0;">En riesgo</span>' : '')}
     </div>
   </div>`;
 }
@@ -2745,7 +2878,7 @@ async function updateTicketStatus(id){
 
   saveTicketsLocal();
   closeDrawer('detail');
-  renderTicketsList();
+  refreshAfterTicketChange();
   showToast('Ticket actualizado ✓');
 
   if((statusChanged || motivoCambia) && newStatus === 'en_espera' && motivo === 'cliente'){
@@ -2798,7 +2931,7 @@ function deleteTicket(id){
   tickets = tickets.filter(x=>x.id!==id);
   saveTicketsLocal();
   closeDrawer('detail');
-  renderTicketsList();
+  refreshAfterTicketChange();
   showToast('Ticket eliminado');
   fbDelete('tickets', id).catch(e=>console.warn(e));
 
@@ -2874,7 +3007,7 @@ async function reabrirTicket(){
 
   saveTicketsLocal();
   closeDrawer('eval');
-  renderTicketsList();
+  refreshAfterTicketChange();
   showToast('Ticket reabierto — administración lo revisará de nuevo');
 
   crearNotif('staff', 'reabierto', t.id, `El ticket ${t.numero} fue reabierto: ${motivo}`);
@@ -3716,6 +3849,50 @@ function donutSVG(data){
     return `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="${d.color}" stroke-width="7" stroke-dasharray="${dash}" stroke-dashoffset="${offset}"/>`;
   }).join('');
   return `<svg viewBox="0 0 42 42" class="donut">${circles}</svg>`;
+}
+
+/* ======================================================================
+   Vista SLA (staff) — Fase D, 2026-10
+   ====================================================================== */
+function setSlaTipo(tipo){ SLA_TIPO = tipo === 'respuesta' ? 'respuesta' : 'resolucion'; renderSlaView(); }
+function slaRowHTML(x, vencido){
+  const t = x.t;
+  const cuando = vencido ? `Venció hace ${fmtDuracion(-x.resta)}` : `Vence en ${fmtDuracion(x.resta)}`;
+  const sla = getSlaFor(t.prioridad);
+  const plazo = SLA_TIPO === 'respuesta' ? `${sla.respuesta_horas} h` : `${sla.resolucion_dias} días`;
+  return `
+    <div class="sla-row" onclick="openTicketDetail('${t.id}')">
+      <div style="min-width:0;"><div class="mono tk-num">${esc(t.numero)}</div><div class="tk-tit">${esc(tituloTicket(t))}</div></div>
+      <div class="sla-col-hide" style="color:var(--text2);">${esc(ubicacionTicket(t))}</div>
+      <div class="sla-col-hide"><div class="tk-strong">${esc(t.responsable_nombre || 'Sin responsable')}</div><div class="tk-sub">${PRIORIDAD_LABELS[t.prioridad]} · ${plazo}</div></div>
+      <div><span class="sla-chip ${vencido ? 'sla-vencido' : 'sla-riesgo'}" style="margin-top:0;">${cuando}</span></div>
+      <div class="sla-col-hide"><button class="btn btn-outline" style="padding:8px 14px; min-height:40px;" onclick="event.stopPropagation(); openTicketDetail('${t.id}')">Abrir</button></div>
+    </div>`;
+}
+function renderSlaView(){
+  const sel = document.getElementById('sla-edificio');
+  if(sel){
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Todos los edificios</option>' + Object.entries(LOCACIONES).map(([k,v]) => `<option value="${k}">${k} — ${esc(v)}</option>`).join('');
+    sel.value = prev && LOCACIONES[prev] ? prev : '';
+  }
+  ['respuesta','resolucion'].forEach(k => { const b = document.getElementById('sla-tipo-'+k); if(b) b.setAttribute('aria-pressed', SLA_TIPO===k ? 'true' : 'false'); });
+  const nombre = SLA_TIPO === 'respuesta' ? 'Primera respuesta' : 'Resolución';
+  document.getElementById('sla-venc-t').textContent = `Vencidos · ${nombre}`;
+  document.getElementById('sla-riesgo-t').textContent = `En riesgo · ${nombre}`;
+  const { vencidos, riesgo } = slaListas(SLA_TIPO, sel ? sel.value : '');
+  document.getElementById('sla-vencidos').innerHTML = vencidos.length ? vencidos.map(x => slaRowHTML(x, true)).join('') : '<div class="sla-empty">Ningún ticket vencido en este momento.</div>';
+  document.getElementById('sla-riesgo').innerHTML = riesgo.length ? riesgo.map(x => slaRowHTML(x, false)).join('') : '<div class="sla-empty">Ningún ticket por vencer en las próximas horas.</div>';
+  updateSlaBadge();
+}
+// Contador del menú lateral: tickets abiertos vencidos o en riesgo en
+// cualquiera de los dos plazos (sin repetir).
+function updateSlaBadge(){
+  const el = document.getElementById('sla-badge');
+  if(!el || !isStaff()) return;
+  const ids = new Set();
+  ['respuesta','resolucion'].forEach(tipo => { const l = slaListas(tipo, ''); l.vencidos.concat(l.riesgo).forEach(x => ids.add(x.t.id)); });
+  el.textContent = ids.size ? String(ids.size) : '';
 }
 
 function renderDashboard(){
