@@ -264,9 +264,6 @@ main.view.active{display:block;}
   font-size:12.5px; font-weight:700; color:var(--text2); white-space:nowrap;
 }
 .chip.active{background:var(--dark); border-color:var(--dark); color:#fff;}
-.chip .chip-n{font-family:'Roboto Mono',monospace; margin-left:4px;}
-.chip.chip-riesgo{display:inline-flex; align-items:center; gap:5px;}
-.chip.chip-riesgo svg{width:14px; height:14px; stroke:currentColor;}
 /* Lista con columna "Vence" + vista SLA (Fase D, 2026-10) */
 .data-table td.wrap{white-space:normal; min-width:150px;}
 .tk-num{font-size:12px; font-weight:700;}
@@ -1546,7 +1543,7 @@ let editingSuplidorId = null;
 let currentDetailId = null;
 let currentReabrirId = null;
 let currentView = 'tickets';
-const F  = { status:'todos', categoria:'', locacion:'', search:'', riesgo:false };
+const F  = { status:'todos', categoria:'', locacion:'', search:'' };
 let SLA_TIPO = 'resolucion'; // vista SLA: 'respuesta' | 'resolucion'
 const EF = { tab:'todos' };
 let listViewMode = localStorage.getItem('of_view_mode') || 'cards'; // 'cards' | 'list' — solo aplica en el panel de escritorio
@@ -2310,7 +2307,6 @@ function getFilteredTickets(){
     if(F.status !== 'todos') list = list.filter(t => t.status === F.status);
     if(F.categoria) list = list.filter(t => t.categoria === F.categoria);
     if(F.locacion) list = list.filter(t => t.locacion === F.locacion);
-    if(F.riesgo) list = list.filter(enRiesgoOVencido);
   }
   const q = (isStaff() ? F.search : EF.search) || '';
   if(q){
@@ -2334,23 +2330,20 @@ function renderTicketsView(){
 
   const chipsWrap = document.getElementById('quick-chips');
   if(staff){
-    // Pestañas por estado (con conteo) + "Solo en riesgo o vencidos"
-    const count = s => s === 'todos' ? tickets.length : tickets.filter(t => t.status === s).length;
-    const nRiesgo = tickets.filter(enRiesgoOVencido).length;
-    chipsWrap.innerHTML = [['todos','Todos'], ...STATUS_FLOW.map(s => [s, STATUS_LABELS[s]])]
-      .map(([id,label]) => `<button class="chip ${F.status===id?'active':''}" aria-pressed="${F.status===id}" onclick="setStaffStatus('${id}')">${label}<span class="chip-n">${count(id)}</span></button>`).join('')
-      + `<button class="chip chip-riesgo ${F.riesgo?'active':''}" aria-pressed="${F.riesgo}" onclick="toggleRiesgo()">${ICONS.clock}Solo en riesgo o vencidos<span class="chip-n">${nRiesgo}</span></button>`;
-    const active = F.categoria || F.locacion;
+    // Sin fila de pestañas para staff (decisión de Jose, 2026-10-29): el estado
+    // se filtra desde el botón de filtros y los vencidos/en riesgo, en la vista SLA.
+    chipsWrap.innerHTML = '';
+    chipsWrap.style.display = 'none';
+    const active = F.status!=='todos' || F.categoria || F.locacion;
     document.getElementById('filter-btn').classList.toggle('has-filters', !!active);
   } else {
+    chipsWrap.style.display = '';
     const chips = [['todos','Todos'],['abiertos','Abiertos'],['cerrados','Cerrados']];
     chipsWrap.innerHTML = chips.map(([id,label])=>`<button class="chip ${EF.tab===id?'active':''}" onclick="setEmpTab('${id}')">${label}</button>`).join('');
   }
   renderTicketsList();
 }
 function setEmpTab(tab){ EF.tab = tab; renderTicketsView(); }
-function setStaffStatus(s){ F.status = s; const sel = document.getElementById('tmp-status'); if(sel) sel.value = s; renderTicketsView(); }
-function toggleRiesgo(){ F.riesgo = !F.riesgo; renderTicketsView(); }
 
 function renderTicketsList(){
   const list = getFilteredTickets();

@@ -6,6 +6,17 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — Quitar la fila de pestañas de estado de la lista de tickets (staff)
+
+**Qué cambió:**
+- A pedido de Jose se quitó la fila Todos · Nuevo · En proceso · En espera · Cerrado ·
+  "Solo en riesgo o vencidos" de la vista Tickets de staff.
+- El estado se filtra con el botón de filtros (embudo); vencidos y en riesgo se ven en
+  la vista SLA.
+- Los locatarios conservan sus pestañas Todos · Abiertos · Cerrados.
+
+**Rama:** `fix/quitar-pestanas-estado`, que sale de `main`.
+
 ## 2026-10-29 — En producción: fases A, C y D + "¿Olvidaste tu contraseña?"
 
 **Merge y push:**

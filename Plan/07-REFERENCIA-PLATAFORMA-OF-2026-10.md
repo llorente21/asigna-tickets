@@ -122,8 +122,8 @@ que puede editar el locatario, hay que permitirle `status`, `espera_*`,
 ### Fase D — Lista con "Vence" + vista SLA (`feat/lista-vence-sla`)
 
 **Lista de tickets (staff)**
-- Pestañas por estado con conteo.
-- Filtro "Solo en riesgo o vencidos".
+- ~~Pestañas por estado con conteo~~ y ~~"Solo en riesgo o vencidos"~~: quitadas el
+  2026-10-29 a pedido de Jose; el estado se filtra con el botón de filtros.
 - Columnas de la tabla:
   - **Ticket:** número y título.
   - **Ubicación**.
