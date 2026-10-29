@@ -253,6 +253,7 @@ main.view.active{display:block;}
 .card-accent-bar{position:absolute; left:0; top:0; bottom:0; width:6px; border-radius:0 3px 3px 0;}
 .ticket-card:has(.bar-nuevo){background:linear-gradient(100deg, var(--info-bg) 0%, var(--surface) 14%);}
 .ticket-card:has(.bar-en_proceso){background:linear-gradient(100deg, var(--purple-bg) 0%, var(--surface) 14%);}
+.ticket-card:has(.bar-en_espera){background:linear-gradient(100deg, var(--teal-bg) 0%, var(--surface) 14%);}
 .ticket-card:has(.bar-cerrado){background:linear-gradient(100deg, var(--success-bg) 0%, var(--surface) 14%);}
 .ticket-card .row-top{display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px;}
 .ticket-card .numero{font-family:'Roboto Mono',monospace; font-weight:700; font-size:11.5px; color:var(--text3);}
@@ -265,10 +266,30 @@ main.view.active{display:block;}
 .status-badge{font-size:11px; font-weight:800; padding:5px 12px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; box-shadow:0 1px 2px rgba(34,30,31,.06);}
 .badge-nuevo{background:var(--info-bg); color:var(--info);}
 .badge-en_proceso{background:var(--purple-bg); color:var(--purple);}
+.badge-en_espera{background:var(--teal-bg); color:#0B6E62;}
 .badge-cerrado{background:var(--success-bg); color:var(--success);}
 .bar-nuevo{background:var(--info);}
 .bar-en_proceso{background:var(--purple);}
+.bar-en_espera{background:var(--teal);}
 .bar-cerrado{background:var(--success);}
+/* "En espera" (2026-10): motivo como chips de radio + reloj del SLA en el detalle */
+.chip-radios{display:flex; flex-wrap:wrap; gap:8px;}
+.chip-radio{position:relative; display:inline-flex;}
+.chip-radio input{position:absolute; opacity:0; width:1px; height:1px; margin:0;}
+.chip-radio span{display:inline-flex; align-items:center; min-height:40px; padding:0 14px; border-radius:100px; border:1px solid var(--border2); background:var(--surface); font-size:13px; font-weight:700; color:var(--text); cursor:pointer;}
+.chip-radio input:checked + span{background:var(--dark); border-color:var(--dark); color:#fff;}
+.chip-radio input:focus-visible + span{outline:2px solid var(--accent2); outline-offset:2px;}
+.espera-note{display:flex; gap:8px; align-items:flex-start; margin-top:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--teal-bg); color:#0B6E62; font-size:12.5px; line-height:1.45;}
+.espera-note svg{width:16px; height:16px; flex-shrink:0; margin-top:1px; stroke:currentColor;}
+.sla-box{border:1px solid var(--border); border-radius:var(--radius); background:var(--bg); padding:12px 14px; margin-bottom:16px;}
+.sla-box .sla-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
+.sla-box .sla-head b{font-family:'Public Sans',sans-serif; font-weight:800; font-size:13.5px;}
+.sla-box .sla-head span{font-size:11.5px; color:var(--text2);}
+.sla-box .sla-bar{height:8px; border-radius:100px; background:var(--border); overflow:hidden; margin-bottom:8px;}
+.sla-box .sla-bar div{height:100%; border-radius:100px; background:var(--dark);}
+.sla-box .sla-bar.pausa div{background:var(--teal);}
+.sla-box .sla-bar.vencido div{background:var(--danger);}
+.sla-box .sla-meta{display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--text2); line-height:1.45;}
 
 .prio-badge{font-size:10px; font-weight:800; padding:3px 8px; border-radius:100px;}
 .prio-baja{background:var(--success-bg); color:var(--success);}
@@ -1217,8 +1238,12 @@ function saveLocacionesLocal(){ localStorage.setItem('of_locaciones', JSON.strin
 // 'locaciones' (un doc por código). LOCACIONES sigue siendo el lookup {codigo:
 // nombre} que usa el resto del código sin cambios (Object.entries/LOCACIONES[x]).
 let LOCACIONES = loadLocacionesLocal();
-const STATUS_FLOW = ['nuevo','en_proceso','cerrado'];
-const STATUS_LABELS = { nuevo:'Nuevo', en_proceso:'En proceso', cerrado:'Cerrado' };
+// "En espera" (2026-10): el ticket depende de un tercero — el cliente, un
+// proveedor o una aprobación — y mientras tanto el reloj del SLA de resolución
+// se detiene. Ver Plan/07-REFERENCIA-PLATAFORMA-OF-2026-10.md, Fase A.
+const STATUS_FLOW = ['nuevo','en_proceso','en_espera','cerrado'];
+const STATUS_LABELS = { nuevo:'Nuevo', en_proceso:'En proceso', en_espera:'En espera', cerrado:'Cerrado' };
+const ESPERA_MOTIVOS = { cliente:'Respuesta del cliente', proveedor:'Proveedor', aprobacion:'Aprobación' };
 const PRIORIDAD_LABELS = { baja:'Baja', media:'Media', alta:'Alta' };
 // SLA con dos plazos por prioridad: tiempo de RESPUESTA (horas hasta el primer
 // contacto de staff) y tiempo de RESOLUCIÓN (días hasta cerrar el ticket).
@@ -1743,7 +1768,40 @@ function sanitizeTicket(t){
     // Tickets creados antes de esta mejora quedan sin ella (no se puede
     // reconstruir con certeza), así que no se marcan como fuera de tiempo.
     fecha_primera_respuesta: t.fecha_primera_respuesta || '',
+    // "En espera" (2026-10): motivo, desde cuándo, y cuánto tiempo acumulado
+    // lleva el reloj del SLA detenido por esperas ya terminadas. Tickets
+    // anteriores simplemente no tienen pausas (0).
+    espera_motivo: ESPERA_MOTIVOS[t.espera_motivo] ? t.espera_motivo : '',
+    espera_desde: t.espera_desde || '',
+    sla_pausado_ms: Number(t.sla_pausado_ms) > 0 ? Number(t.sla_pausado_ms) : 0,
   };
+}
+// Milisegundos que el ticket pasó En espera hasta `hastaISO` (por defecto,
+// ahora): las esperas ya terminadas (sla_pausado_ms) más el tramo en curso.
+function msEnEspera(t, hastaISO){
+  let ms = Number(t.sla_pausado_ms) || 0;
+  if(t.status === 'en_espera' && t.espera_desde){
+    const desde = new Date(t.espera_desde), hasta = new Date(hastaISO || nowISO());
+    if(!isNaN(desde) && !isNaN(hasta) && hasta > desde) ms += hasta - desde;
+  }
+  return ms;
+}
+// Fechas límite del SLA. La de resolución se corre hacia adelante todo el
+// tiempo que el ticket estuvo En espera; la de respuesta no (poner un ticket
+// en espera ya es, en sí, la primera respuesta de staff).
+function slaLimiteRespuesta(t){
+  return new Date(new Date(t.fecha_creacion).getTime() + getSlaFor(t.prioridad).respuesta_horas*3600000);
+}
+function slaLimiteResolucion(t){
+  return new Date(new Date(t.fecha_creacion).getTime() + getSlaFor(t.prioridad).resolucion_dias*86400000 + msEnEspera(t));
+}
+// "2 d 4 h", "3 h 20 min", "25 min"
+function fmtDuracion(ms){
+  ms = Math.max(0, ms||0);
+  const min = Math.round(ms/60000), h = Math.floor(min/60), d = Math.floor(h/24);
+  if(d >= 1) return `${d} d${h%24 ? ' '+(h%24)+' h' : ''}`;
+  if(h >= 1) return `${h} h${min%60 ? ' '+(min%60)+' min' : ''}`;
+  return `${min} min`;
 }
 // SLA de RESPUESTA: horas desde que se creó el ticket hasta el primer contacto
 // de staff (cambio de estatus o comentario). Si ya respondió, se evalúa contra
@@ -1754,13 +1812,18 @@ function isVencidoRespuesta(t){
   if(t.status === 'cerrado') return false; // cerrado sin registro de respuesta (tickets viejos)
   return diffHours(t.fecha_creacion, nowISO()) > horas;
 }
-// SLA de RESOLUCIÓN: días desde que se creó el ticket hasta que se cerró. Si ya
-// se cerró, se evalúa contra la fecha real de cierre; si sigue abierto, contra ahora.
+// SLA de RESOLUCIÓN: tiempo desde que se creó el ticket hasta que se cerró,
+// SIN contar el tiempo En espera. Si ya se cerró, se evalúa contra la fecha real
+// de cierre; si sigue abierto, contra ahora.
 function isVencidoResolucion(t){
   const dias = getSlaFor(t.prioridad).resolucion_dias;
-  if(t.fecha_resolucion) return diffDays(t.fecha_creacion, t.fecha_resolucion) > dias;
-  if(t.status === 'cerrado') return false;
-  return diffDays(t.fecha_creacion, nowISO()) > dias;
+  let fin;
+  if(t.fecha_resolucion) fin = t.fecha_resolucion;
+  else if(t.status === 'cerrado') return false;
+  else fin = nowISO();
+  const inicio = new Date(t.fecha_creacion), hasta = new Date(fin);
+  if(isNaN(inicio) || isNaN(hasta)) return false;
+  return (hasta - inicio - msEnEspera(t, fin)) > dias*86400000;
 }
 // Vencido en general (para las vistas que solo tienen espacio para un badge):
 // vale si cualquiera de los dos plazos se incumplió.
@@ -2280,7 +2343,7 @@ function openTicketDetail(id){
 function renderDetailBody(t){
   const timeline = (t.historial||[]).slice().reverse().map(h => `
     <div class="timeline-item">
-      <div class="st">${STATUS_LABELS[h.status]||esc(h.status)}</div>
+      <div class="st">${STATUS_LABELS[h.status]||esc(h.status)}${h.espera_motivo && ESPERA_MOTIVOS[h.espera_motivo] ? ' · '+ESPERA_MOTIVOS[h.espera_motivo] : ''}</div>
       <div class="dt">${fmtDate(h.fecha)} · ${esc(h.usuario||'')}</div>
       ${h.nota ? `<div class="nota">${esc(h.nota)}</div>` : ''}
     </div>`).join('');
@@ -2292,6 +2355,13 @@ function renderDetailBody(t){
     <div class="action-box">
       <div class="t">Actualizar estatus</div>
       <div class="field"><label>Nuevo estatus</label><select id="d-status" onchange="onDetailStatusChange('${t.status}')">${opts}</select></div>
+      <div class="field" id="d-espera-field" style="display:${t.status==='en_espera'?'block':'none'};">
+        <label id="d-espera-label">¿Qué se está esperando? *</label>
+        <div class="chip-radios" role="radiogroup" aria-labelledby="d-espera-label">
+          ${Object.entries({cliente:'Al cliente', proveedor:'Al proveedor', aprobacion:'Una aprobación'}).map(([k,lbl])=>`<label class="chip-radio"><input type="radio" name="d-espera-motivo" value="${k}" ${t.espera_motivo===k?'checked':''}><span>${lbl}</span></label>`).join('')}
+        </div>
+        <div class="espera-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg><span>El reloj del SLA de resolución se detiene mientras esté en espera y sigue al volver a En proceso. Con "Al cliente", ${esc(t.empleado_nombre||'el locatario')} recibe un aviso para responder; cuando comenta, el ticket vuelve solo a En proceso.</span></div>
+      </div>
       <div class="field"><label>Prioridad</label>
         <select id="d-prioridad">
           ${['baja','media','alta'].map(p=>`<option value="${p}" ${p===t.prioridad?'selected':''}>${PRIORIDAD_LABELS[p]}</option>`).join('')}
@@ -2393,6 +2463,7 @@ function renderDetailBody(t){
           ${t.responsable_nombre ? `<div class="detail-item"><div class="l">Responsable</div><div class="v">${esc(t.responsable_nombre)}</div></div>` : ''}
           ${t.asignado_a ? `<div class="detail-item"><div class="l">Asignado a (ejecuta)</div><div class="v">${esc(t.asignado_a)}${t.asignado_tipo==='suplidor'?' — proveedor externo':''}</div></div>` : ''}
         </div>
+        ${slaBoxHTML(t)}
         <div class="detail-desc">${esc(t.descripcion)}
           ${t.creado_por_rol && t.creado_por_rol!=='locatario' ? `<div style="margin-top:8px; font-size:11.5px; color:var(--text3);">Registrado por ${ROLE_LABELS[t.creado_por_rol]||t.creado_por_rol} (${esc(t.creado_por_nombre)})</div>` : ''}
         </div>
@@ -2424,6 +2495,51 @@ function onDetailStatusChange(estadoOriginal){
   const cambia = nuevo !== estadoOriginal;
   document.getElementById('d-nota-label').textContent = cambia ? 'Nota (obligatoria)' : 'Nota (opcional)';
   document.getElementById('d-nota-hint').style.display = cambia ? 'block' : 'none';
+  const espera = document.getElementById('d-espera-field');
+  if(espera) espera.style.display = nuevo === 'en_espera' ? 'block' : 'none';
+}
+
+// Bloque "Reloj del SLA" del detalle: cuánto plazo de resolución se ha usado
+// (sin contar el tiempo En espera), estado de la primera respuesta y fecha límite.
+function slaBoxHTML(t){
+  const sla = getSlaFor(t.prioridad);
+  const plazoMs = sla.resolucion_dias*86400000;
+  const fin = t.fecha_resolucion || nowISO();
+  const pausado = msEnEspera(t, fin);
+  const usado = Math.max(0, new Date(fin) - new Date(t.fecha_creacion) - pausado);
+  if(isNaN(usado)) return '';
+  const pct = Math.min(100, Math.round(usado/plazoMs*100));
+  const vencidoRes = isVencidoResolucion(t);
+  const barCls = t.status==='en_espera' ? 'pausa' : (vencidoRes ? 'vencido' : '');
+
+  let resp;
+  if(t.fecha_primera_respuesta){
+    const ms = new Date(t.fecha_primera_respuesta) - new Date(t.fecha_creacion);
+    resp = isVencidoRespuesta(t) ? `respondida tarde (${fmtDuracion(ms)})` : `cumplida en ${fmtDuracion(ms)}`;
+  } else if(t.status === 'cerrado'){
+    resp = 'sin registro';
+  } else {
+    resp = isVencidoRespuesta(t) ? `<b style="color:var(--danger);">vencida</b> — límite ${fmtDate(slaLimiteRespuesta(t).toISOString())}` : `pendiente — límite ${fmtDate(slaLimiteRespuesta(t).toISOString())}`;
+  }
+
+  let reso;
+  if(t.status === 'cerrado'){
+    reso = `${vencidoRes ? 'cerrada fuera de plazo' : 'cerrada a tiempo'} — ${fmtDuracion(usado)} de ${sla.resolucion_dias} días`;
+  } else if(t.status === 'en_espera'){
+    reso = `<b style="color:#0B6E62;">reloj detenido</b> desde ${fmtDate(t.espera_desde)} (${ESPERA_MOTIVOS[t.espera_motivo]||'en espera'}) — ${fmtDuracion(usado)} usados de ${sla.resolucion_dias} días`;
+  } else {
+    reso = `${fmtDuracion(usado)} usados de ${sla.resolucion_dias} días — ${vencidoRes ? '<b style="color:var(--danger);">venció</b>' : 'vence'} ${fmtDate(slaLimiteResolucion(t).toISOString())}`;
+  }
+  return `
+    <div class="sla-box">
+      <div class="sla-head"><b>Reloj del SLA</b><span>${PRIORIDAD_LABELS[t.prioridad]} · respuesta ${sla.respuesta_horas} h · resolución ${sla.resolucion_dias} días</span></div>
+      <div class="sla-bar ${barCls}" role="img" aria-label="${pct}% del plazo de resolución usado"><div style="width:${pct}%"></div></div>
+      <div class="sla-meta">
+        <span>Primera respuesta: ${resp}</span>
+        <span>Resolución: ${reso}</span>
+        ${pausado > 0 ? `<span>Tiempo en espera (no cuenta): ${fmtDuracion(pausado)}</span>` : ''}
+      </div>
+    </div>`;
 }
 
 async function updateTicketStatus(id){
@@ -2453,17 +2569,31 @@ async function updateTicketStatus(id){
     document.getElementById('d-nota').focus();
     return;
   }
+  // En espera: el motivo es obligatorio (cliente / proveedor / aprobación).
+  const motivoSel = document.querySelector('input[name="d-espera-motivo"]:checked');
+  const motivo = motivoSel ? motivoSel.value : '';
+  if(newStatus === 'en_espera' && !ESPERA_MOTIVOS[motivo]){
+    showToast('Elige qué se está esperando: cliente, proveedor o aprobación');
+    return;
+  }
+  const motivoCambia = newStatus === 'en_espera' && t.status === 'en_espera' && motivo !== t.espera_motivo;
   const ts = nowISO();
   if(!t.fecha_primera_respuesta) t.fecha_primera_respuesta = ts; // primer contacto de staff en este ticket
+  // Reloj del SLA: al SALIR de "En espera" se suma el tramo pausado; al ENTRAR
+  // se marca desde cuándo. Hay que hacerlo antes de cambiar t.status.
+  if(t.status === 'en_espera' && newStatus !== 'en_espera') cerrarTramoEspera(t, ts);
+  if(newStatus === 'en_espera' && t.status !== 'en_espera') t.espera_desde = ts;
+  if(newStatus === 'en_espera') t.espera_motivo = motivo;
   t.status = newStatus; t.prioridad = prioridad;
   t.asignado_tipo = asignadoTipo; t.asignado_id = asignado_id; t.asignado_a = asignado_a;
   t.responsable_email = responsableEmail; t.responsable_nombre = responsableUser ? responsableUser.name : '';
   t.fecha_actualizacion = ts;
   if(newStatus === 'cerrado' && !t.fecha_resolucion) t.fecha_resolucion = ts;
-  if(statusChanged){
-    t.historial.push({ status:newStatus, fecha:ts, nota: nota || `Estatus actualizado a "${STATUS_LABELS[newStatus]}"`, usuario:currentUser.name });
+  const extraEspera = newStatus === 'en_espera' ? { espera_motivo: motivo } : {};
+  if(statusChanged || motivoCambia){
+    t.historial.push({ status:newStatus, fecha:ts, nota: nota || `Estatus actualizado a "${STATUS_LABELS[newStatus]}"`, usuario:currentUser.name, ...extraEspera });
   } else if(nota){
-    t.historial.push({ status:newStatus, fecha:ts, nota, usuario:currentUser.name });
+    t.historial.push({ status:newStatus, fecha:ts, nota, usuario:currentUser.name, ...extraEspera });
   }
 
   saveTicketsLocal();
@@ -2471,10 +2601,25 @@ async function updateTicketStatus(id){
   renderTicketsList();
   showToast('Ticket actualizado ✓');
 
-  if(statusChanged){
-    crearNotif(t.empleado_email, 'cambio_estado', id, `Tu ticket ${t.numero} cambió a estatus "${STATUS_LABELS[newStatus]}".`);
+  if((statusChanged || motivoCambia) && newStatus === 'en_espera' && motivo === 'cliente'){
+    const pedido = nota ? `: "${nota.slice(0,100)}${nota.length>100?'...':''}"` : '';
+    crearNotif(t.empleado_email, 'espera_cliente', id, `Necesitamos tu respuesta en el ticket ${t.numero}${pedido}. Respóndenos con un comentario en el ticket.`);
+  } else if(statusChanged){
+    const extra = newStatus === 'en_espera' ? ` (esperando: ${ESPERA_MOTIVOS[motivo].toLowerCase()})` : '';
+    crearNotif(t.empleado_email, 'cambio_estado', id, `Tu ticket ${t.numero} cambió a estatus "${STATUS_LABELS[newStatus]}"${extra}.`);
   }
   fbSet('tickets', id, t).catch(e=>console.warn('update ticket sync', e));
+}
+
+// Termina el tramo En espera en curso: suma el tiempo pausado al acumulado
+// del ticket (para el SLA) y limpia los campos de la espera.
+function cerrarTramoEspera(t, ts){
+  if(t.espera_desde){
+    const ms = new Date(ts) - new Date(t.espera_desde);
+    if(ms > 0) t.sla_pausado_ms = (Number(t.sla_pausado_ms)||0) + ms;
+  }
+  t.espera_desde = '';
+  t.espera_motivo = '';
 }
 
 function starsHTML(n){
@@ -2535,12 +2680,24 @@ async function addComentario(id){
   t.comentarios = t.comentarios || [];
   t.comentarios.push(c);
   if(isStaff() && !t.fecha_primera_respuesta) t.fecha_primera_respuesta = c.fecha; // primer contacto de staff
+  // Si el ticket esperaba una respuesta del cliente y quien comenta es el
+  // locatario que lo reportó, vuelve solo a "En proceso" y el reloj del SLA
+  // sigue corriendo — así nadie tiene que acordarse de reactivarlo.
+  const clienteRespondio = !isStaff() && t.status === 'en_espera' && t.espera_motivo === 'cliente' && t.empleado_email === currentUser.email;
+  if(clienteRespondio){
+    cerrarTramoEspera(t, c.fecha);
+    t.status = 'en_proceso';
+    t.fecha_actualizacion = c.fecha;
+    t.historial.push({ status:'en_proceso', fecha:c.fecha, nota:`${currentUser.name} respondió — vuelve a En proceso`, usuario:currentUser.name });
+  }
   saveTicketsLocal();
   openTicketDetail(id); // re-render con el comentario nuevo
-  showToast('Comentario agregado');
+  showToast(clienteRespondio ? 'Respuesta enviada — el equipo retoma tu ticket' : 'Comentario agregado');
 
   const destinatario = isStaff() ? t.empleado_email : 'staff';
-  if(!(isStaff() && destinatario===currentUser.email)){
+  if(clienteRespondio){
+    crearNotif('staff', 'cliente_respondio', id, `${t.empleado_nombre} respondió en ${t.numero} — vuelve a En proceso: "${mensaje.slice(0,80)}${mensaje.length>80?'...':''}"`);
+  } else if(!(isStaff() && destinatario===currentUser.email)){
     crearNotif(destinatario, 'comentario', id, `Nuevo comentario en ${t.numero}: "${mensaje.slice(0,80)}${mensaje.length>80?'...':''}"`);
   }
   fbSet('tickets', id, t).catch(e=>console.warn('comment sync', e));
@@ -2618,7 +2775,7 @@ function renderNotifsDrawerContent(){
     </div>`).join('');
 }
 function notifTitle(tipo){
-  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto', nuevo_registro:'Solicitud de cuenta', calificacion:'Calificación del servicio' }[tipo] || 'Notificación';
+  return { nuevo_ticket:'Nuevo ticket', confirmacion:'Ticket recibido', cambio_estado:'Actualización', resuelto:'Ticket resuelto', cerrado:'Ticket cerrado', comentario:'Nuevo comentario', reabierto:'Ticket reabierto', nuevo_registro:'Solicitud de cuenta', calificacion:'Calificación del servicio', espera_cliente:'Necesitamos tu respuesta', cliente_respondio:'El cliente respondió' }[tipo] || 'Notificación';
 }
 function onNotifClick(notifId, ticketId){
   const n = NOTIFS.find(x=>x.id===notifId);
@@ -3232,6 +3389,7 @@ async function deleteCategoriaForm(){
 const ESTADO_DESC = {
   nuevo:'Ticket recién creado, pendiente de revisión.',
   en_proceso:'Administración o Empleado lo está atendiendo.',
+  en_espera:'Depende del cliente, de un proveedor o de una aprobación. El reloj del SLA de resolución se detiene.',
   cerrado:'Solución aplicada — el ticket quedó cerrado.'
 };
 function renderEstadosView(){
@@ -3527,7 +3685,7 @@ function renderDashboard(){
     ? barRows(porSuplidor)
     : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto está a cargo de un proveedor externo</div></div>`;
 }
-function statusVar(s){ return { nuevo:'--info', en_proceso:'--purple', cerrado:'--success' }[s]; }
+function statusVar(s){ return { nuevo:'--info', en_proceso:'--purple', en_espera:'--teal', cerrado:'--success' }[s]; }
 
 /* ======================================================================
    Exportar CSV (admin)
@@ -3540,7 +3698,7 @@ function exportTicketsCSV(){
   if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable_interno','Ejecuta','Tipo_ejecuta'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable_interno','Ejecuta','Tipo_ejecuta','Esperando','Horas_en_espera'];
   const RESP_LABELS = { interno:'Personal interno', suplidor:'Suplidor', manual:'Otro' };
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
@@ -3548,7 +3706,8 @@ function exportTicketsCSV(){
     fmtDate(t.fecha_creacion), fmtDate(t.fecha_actualizacion), t.fecha_resolucion?fmtDate(t.fecha_resolucion):'',
     t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
     t.calificacion ? `${t.calificacion}/5` : '',
-    t.responsable_nombre || '', t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || ''
+    t.responsable_nombre || '', t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || '',
+    t.status==='en_espera' ? (ESPERA_MOTIVOS[t.espera_motivo]||'') : '', (msEnEspera(t, t.fecha_resolucion||undefined)/3600000).toFixed(1)
   ]);
   const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
