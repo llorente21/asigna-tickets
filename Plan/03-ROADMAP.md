@@ -5,7 +5,16 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-(nada por ahora — el plan de ajustes 2026-09 quedó completo con la Fase 6)
+- **Mejoras tomadas de la plataforma admin de Oficinas Felices (2026-10).** Alcance,
+  fases A–D y decisiones de Jose en `07-REFERENCIA-PLATAFORMA-OF-2026-10.md`. Base:
+  rama `integracion/referencia-of`, que ya incluye las 10 ramas pendientes de
+  septiembre. **Estado: mockups esperando la aprobación de Jose; nada implementado
+  todavía.**
+  - A — Estado "En espera" con motivo + pausa del SLA.
+  - B — Catálogo de espacios por locación + dirección y responsable de la locación.
+  - C — Formulario de nuevo ticket: ¿Dónde y qué? → Detalles (espacio, ubicación,
+    título).
+  - D — Lista de tickets con columna "Vence" + vista SLA (Vencidos / En riesgo).
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad
@@ -35,8 +44,15 @@ moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
   toman elementos sueltos. Ver `design/README.md` para cómo verlas/editarlas.
 
 ## Ideas sin priorizar
-- (agregar aquí ideas sueltas que surjan en conversación, para no perderlas, antes de
-  decidir si entran al roadmap formal)
+- De la plataforma OF (Jose no dio preferencia, 2026-10-29): prioridad **Crítica**
+  (4 niveles), rol **Admin cliente** (ve los tickets de toda su empresa), **invitar
+  usuario por correo**, número de ticket secuencial `OF-2026-000012`. Detalle en
+  `07-REFERENCIA-PLATAFORMA-OF-2026-10.md`.
+- Restringir con `affectedKeys().hasOnly([...])` qué campos puede editar el
+  Locatario dueño de un ticket (hoy la regla `update` le permite cambiar
+  cualquiera).
+- Agregar **iUKEN Business Center** como locación (aparece en la plataforma OF).
+  Pendiente de que Jose confirme.
 
 ---
 Cuando el usuario pida algo nuevo que no se vaya a implementar de inmediato, registrarlo

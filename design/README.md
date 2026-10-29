@@ -8,6 +8,15 @@ Abre estos archivos en cualquier navegador — son autocontenidos, funcionan off
 - `asigna-estado-actual.html` — la interfaz actual, reconstruida con sus tokens reales
 - `asigna-tres-direcciones.html` — las tres direcciones visuales propuestas (1a Luz de día, 1b Vecinos, 1c Panel claro)
 
+## Propuesta "referencia OF" (2026-10)
+Mockups de las fases A–D de `Plan/07-REFERENCIA-PLATAFORMA-OF-2026-10.md`, hechos con el
+design system ASIGNA:
+
+- Canvas en línea: "ASIGNA — Propuesta referencia OF" — https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX
+  (privado hasta compartirlo desde su menú Share).
+- Fuentes: `source/propuesta-referencia-of/` (`canvas.json` + 8 artboards `.dc.html`).
+  Son maquetas con datos de ejemplo; no tocan Firebase.
+
 ## Editar en Claude Design
 1. Crea (o abre) un proyecto en Claude Design.
 2. Sube toda la carpeta `design/source/` al proyecto — incluye los dos `.dc.html`,

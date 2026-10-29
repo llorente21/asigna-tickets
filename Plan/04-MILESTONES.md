@@ -6,6 +6,49 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — Revisión de la plataforma admin de Oficinas Felices + rama de integración
+
+Jose compartió una grabación de la plataforma admin de Oficinas Felices
+(`demo.admin.dixdigitalagency.com`) para tomar de ahí buenas prácticas, diseño y
+formularios. El análisis completo y la propuesta por fases están en
+`07-REFERENCIA-PLATAFORMA-OF-2026-10.md`.
+
+Decisiones de Jose:
+- Alcance: tickets + espacios.
+- Base de trabajo: fusionar primero las ramas pendientes.
+- Estados: los 3 actuales + "En espera" con motivo, que pausa el SLA.
+- Extras: sin preferencia. Solo se propone la vista SLA; el resto queda en el
+  roadmap.
+
+Hecho:
+- Rama **`integracion/referencia-of`** (local, sin push), creada desde `main`, con
+  `review/todo-junto` + `review/diseno-junto`. En total, las 10 ramas de
+  septiembre: SLA dos plazos, responsable interno, tipo primero, nota obligatoria y
+  los rediseños de lista, detalle, formulario, dashboard y notificaciones.
+- Conflictos resueltos:
+  - Formulario: se mantiene el flujo en 2 pasos y dentro del paso 2 se aplican el
+    banner y la grilla del rediseño.
+  - Detalle: layout de 2 columnas + badges de SLA de dos plazos + Responsable /
+    Asignado a (ejecuta).
+- Fix: en teléfonos (<520px) el formulario pasa a una sola columna. Antes, "Reportado
+  por" quedaba comprimido en "Loca…".
+- Verificado:
+  - `node --check` sin errores.
+  - Prueba en navegador sin conexión, con datos simulados, en escritorio (1366px) y
+    móvil (390px): lista, paso 1, paso 2 y detalle con el panel de acciones. Sin
+    errores de JS.
+  - **No probado contra Firebase real.**
+- Mockups de las fases A–D para aprobación: canvas de Claude Design "ASIGNA —
+  Propuesta referencia OF" (https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX), con el
+  design system ASIGNA. 8 artboards: nuevo ticket (paso 1, paso 2, móvil), lista de
+  tickets, detalle En espera, vista SLA, catálogo de espacios y nuevo espacio. Las
+  fuentes `.dc.html` están en `design/source/propuesta-referencia-of/`.
+
+Pendiente:
+- Que Jose apruebe o ajuste los mockups antes de implementar.
+- Que pruebe la rama de integración contra Firebase.
+- Que decida cuándo subirla.
+
 ## 2026-09-16 — Fix: tickets que se pierden en silencio (notificación sí, ticket no) — código listo, sin desplegar
 
 Diagnóstico y reporte de Jose: la campanita mostraba "nuevo ticket" para tickets
