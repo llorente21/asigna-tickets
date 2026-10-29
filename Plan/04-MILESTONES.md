@@ -6,6 +6,28 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — En producción: fases A, C y D + "¿Olvidaste tu contraseña?"
+
+**Merge y push:**
+- Jose probó en local contra Firebase real: creó un ticket de área común y lo pasó por
+  En espera → En proceso; el plazo de resolución se corrió 2 min, que es el tiempo que
+  estuvo en espera.
+- Por su instrucción se hizo merge `--no-ff` de `feat/olvide-contrasena` (incluye
+  todo) a `main`: commit `5f63170`.
+- Push con GitHub device login.
+
+**Verificación:**
+- GitHub Pages desplegó `5f63170` (API `actions/runs`: success).
+- En el navegador integrado, https://llorente21.github.io/asigna-tickets/ ya sirve la
+  versión nueva: hay vista SLA, `STATUS_FLOW` incluye `en_espera`, existe el enlace
+  "¿Olvidaste tu contraseña?" y la locación IUK.
+
+**Pendiente:**
+1. Jose revisa en producción las pruebas que faltan: detalle con reloj del SLA, vista
+   SLA, móvil y borrar el ticket "Prueba".
+2. Aprobar el mockup E (Dashboard).
+3. Actualizar `README.md` raíz.
+
 ## 2026-10-29 — "¿Olvidaste tu contraseña?" en el inicio de sesión
 
 **Motivo:** al ir a probar la rama, Jose no recordaba su contraseña. La pantalla de

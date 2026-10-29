@@ -150,5 +150,17 @@
   2. Después de escribir, verifica en el dispositivo con `md5sum` (o `grep` de algo
      nuevo) **antes** de `git commit`.
 
+- **La VM del dispositivo y el contenedor no alcanzan `llorente21.github.io`
+  (2026-10-29)**: `curl` devuelve 000 o "connect_rejected" por la lista de dominios
+  permitidos. Para verificar un deploy:
+  1. API pública de GitHub: `curl -s https://api.github.com/repos/llorente21/asigna-tickets/actions/runs?per_page=1`
+     debe mostrar "pages build and deployment" con `success` y el SHA del commit.
+  2. Abrir el sitio en el **navegador integrado** y revisar con JavaScript algo que
+     solo tenga la versión nueva.
+  - No concluir "no desplegó" a partir de un `curl` fallido.
+- **Token de GitHub del device login:** guárdalo en un archivo de `$HOME` de la VM
+  (`chmod 600`), úsalo con `git -c credential.helper=...` solo en el comando del push
+  y bórralo al terminar. No lo guardes en la configuración global de git.
+
 _Agregar nuevas lecciones aquí a medida que aparezcan — con contexto suficiente para
 que el próximo agente no repita el mismo error._

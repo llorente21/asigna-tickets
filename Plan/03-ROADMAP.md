@@ -15,10 +15,9 @@ moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
     (`feat/lista-vence-sla`).
   - **E** — Dashboard con filtros de período y edificio, "Ahora mismo" y % de
     cumplimiento del SLA: **mockup esperando aprobación**.
-  - **Siguiente:**
-    1. Jose prueba `feat/lista-vence-sla` (incluye A, C y D) contra Firebase.
-    2. Decide merge/push a `main`.
-    3. Aprueba o ajusta el mockup E.
+  - **A, C y D (+ "¿Olvidaste tu contraseña?") en producción desde 2026-10-29**
+    (`main` 5f63170).
+  - **Siguiente:** Jose revisa en producción y aprueba o ajusta el mockup E.
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad
