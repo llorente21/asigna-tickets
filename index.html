@@ -181,6 +181,12 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 .btn-sm{padding:9px 13px; font-size:13px; border-radius:8px;}
 .btn:disabled{opacity:.55; pointer-events:none;}
 .auth-error{display:none; background:var(--danger-bg); color:var(--danger); font-size:13px; font-weight:600; padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:14px;}
+/* "¿Olvidaste tu contraseña?" (2026-10) */
+.auth-info{display:none; background:var(--success-bg); color:var(--success); font-size:13px; font-weight:600; line-height:1.45; padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:14px;}
+.auth-forgot{display:flex; justify-content:flex-end; margin:-6px 0 14px;}
+.auth-forgot-btn{background:none; border:none; padding:6px 0; min-height:32px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text2); text-decoration:underline; cursor:pointer;}
+.auth-forgot-btn:hover{color:var(--text);}
+.auth-forgot-btn:disabled{opacity:.6; cursor:wait;}
 .auth-hint{margin-top:18px; font-size:12px; color:var(--text3); text-align:center; line-height:1.5;}
 
 /* Móvil: compactar el login/registro/pendiente para que quepa sin scroll */
@@ -647,15 +653,17 @@ main.view.active{display:block;}
       <div class="auth-eyebrow">Acceso seguro</div>
       <h1 class="auth-title">Inicia sesión</h1>
       <p class="auth-desc">Usa tu correo y contraseña para entrar al portal.</p>
-      <div id="auth-error" class="auth-error"></div>
+      <div id="auth-error" class="auth-error" role="alert"></div>
+      <div id="auth-info" class="auth-info" role="status"></div>
       <div class="field">
-        <label>Correo electrónico</label>
+        <label for="email-input">Correo electrónico</label>
         <input id="email-input" type="email" placeholder="tucorreo@empresa.com" autocomplete="username">
       </div>
       <div class="field">
-        <label>Contraseña</label>
+        <label for="password-input">Contraseña</label>
         <input id="password-input" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
+      <div class="auth-forgot"><button type="button" class="auth-forgot-btn" id="auth-forgot-btn" onclick="olvideContrasena()">¿Olvidaste tu contraseña?</button></div>
       <button class="btn btn-primary" id="auth-btn" style="width:100%;" onclick="handleAuth()">Ingresar →</button>
       <p class="auth-hint">¿Eres Locatario y no tienes cuenta? <a href="javascript:void(0)" onclick="showRegisterScreen()">Crea tu cuenta aquí</a>.</p>
       <p class="auth-hint">¿No tienes acceso y no eres Locatario? Solicítalo a la administración de tu locación para que te cree un usuario.</p>
@@ -1621,12 +1629,48 @@ function findUser(email, pw){
 // en Firestore (usuarios/{email}.password) y, si coincide, se crea la cuenta de
 // Auth en ese momento (migración "perezosa", una vez por usuario, la primera vez
 // que inicia sesión con este código). Ver Plan/01-ARQUITECTURA.md.
+// "¿Olvidaste tu contraseña?" (2026-10): Firebase Authentication envía el enlace
+// para crear una contraseña nueva al correo escrito arriba. El mensaje es el
+// mismo exista o no la cuenta, para no revelar qué correos están registrados.
+async function olvideContrasena(){
+  const err = document.getElementById('auth-error');
+  const info = document.getElementById('auth-info');
+  const btn = document.getElementById('auth-forgot-btn');
+  err.style.display = 'none'; info.style.display = 'none';
+  const email = document.getElementById('email-input').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    err.textContent = 'Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?".';
+    err.style.display = 'block';
+    document.getElementById('email-input').focus();
+    return;
+  }
+  btn.disabled = true;
+  try{
+    await firebaseSendPasswordReset(email);
+  }catch(e){
+    const m = String(e && e.message || '');
+    if(!/EMAIL_NOT_FOUND/.test(m)){
+      console.warn('olvideContrasena', e);
+      err.textContent = /TOO_MANY_ATTEMPTS|RESET_PASSWORD_EXCEED_LIMIT/.test(m)
+        ? 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.'
+        : 'No se pudo enviar el enlace. Revisa tu conexión e inténtalo de nuevo.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      return;
+    }
+  }
+  info.textContent = `Si ${email} tiene una cuenta en ASIGNA, te enviamos un enlace para crear una contraseña nueva. Revisa tu bandeja de entrada y la carpeta de spam.`;
+  info.style.display = 'block';
+  btn.disabled = false;
+}
+
 async function handleAuth(){
   const email = document.getElementById('email-input').value.trim().toLowerCase();
   const pw = document.getElementById('password-input').value.trim();
   const btn = document.getElementById('auth-btn');
   const err = document.getElementById('auth-error');
   err.style.display = 'none';
+  document.getElementById('auth-info').style.display = 'none';
   if(!email || !pw){ err.textContent='Ingresa tu correo y contraseña.'; err.style.display='block'; return; }
   btn.disabled = true; btn.textContent = 'Verificando...';
 

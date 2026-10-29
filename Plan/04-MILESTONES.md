@@ -6,6 +6,26 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — "¿Olvidaste tu contraseña?" en el inicio de sesión
+
+**Motivo:** al ir a probar la rama, Jose no recordaba su contraseña. La pantalla de
+login no tenía cómo recuperarla; solo un Admin podía mandar el enlace desde Usuarios.
+
+**Rama:** `feat/olvide-contrasena`, que sale de `feat/lista-vence-sla` y por lo tanto
+incluye A, C y D.
+
+**Cómo funciona:**
+- Hay un enlace "¿Olvidaste tu contraseña?" bajo el campo de contraseña.
+- Usa el correo escrito arriba y llama a `firebaseSendPasswordReset()`
+  (`accounts:sendOobCode`).
+- El mensaje es el mismo exista o no la cuenta, para no revelar qué correos están
+  registrados. Si hay demasiados intentos, se avisa.
+- Las etiquetas del login ahora están asociadas a sus campos (`for`).
+- **Firestore:** sin reglas nuevas.
+
+**Verificado:** sintaxis y navegador con Firebase simulado (escritorio y móvil). **Falta
+la prueba real**: que llegue el correo.
+
 ## 2026-10-29 (tarde) — Fases A, C y D implementadas; mockups ajustados; propuesta de Dashboard
 
 **Feedback de Jose sobre los mockups:**
