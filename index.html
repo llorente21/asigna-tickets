@@ -1207,7 +1207,7 @@ let CATEGORIAS_LIST = loadCategoriasLocal();
 // Objeto derivado {nombre: [subcategorías]} — se mantiene por compatibilidad con el
 // resto del código, que sigue leyendo CATEGORIAS[cat] / Object.keys(CATEGORIAS).
 let CATEGORIAS = categoriasAsObject();
-const DEFAULT_LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D3: "DIX Business Center 3", D4: "DIX Business Center 4" };
+const DEFAULT_LOCACIONES = { D1: "DIX Business Center 1", D2: "DIX Business Center 2", D3: "DIX Business Center 3", D4: "DIX Business Center 4", IUK: "iUKEN Business Center" };
 function loadLocacionesLocal(){
   try{ const s=localStorage.getItem('of_locaciones'); if(s){ const p=JSON.parse(s); if(p && Object.keys(p).length) return p; } }catch(e){}
   return Object.assign({}, DEFAULT_LOCACIONES);
