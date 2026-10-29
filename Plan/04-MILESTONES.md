@@ -6,6 +6,129 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-29 — "¿Olvidaste tu contraseña?" en el inicio de sesión
+
+**Motivo:** al ir a probar la rama, Jose no recordaba su contraseña. La pantalla de
+login no tenía cómo recuperarla; solo un Admin podía mandar el enlace desde Usuarios.
+
+**Rama:** `feat/olvide-contrasena`, que sale de `feat/lista-vence-sla` y por lo tanto
+incluye A, C y D.
+
+**Cómo funciona:**
+- Hay un enlace "¿Olvidaste tu contraseña?" bajo el campo de contraseña.
+- Usa el correo escrito arriba y llama a `firebaseSendPasswordReset()`
+  (`accounts:sendOobCode`).
+- El mensaje es el mismo exista o no la cuenta, para no revelar qué correos están
+  registrados. Si hay demasiados intentos, se avisa.
+- Las etiquetas del login ahora están asociadas a sus campos (`for`).
+- **Firestore:** sin reglas nuevas.
+
+**Verificado:** sintaxis y navegador con Firebase simulado (escritorio y móvil). **Falta
+la prueba real**: que llegue el correo.
+
+## 2026-10-29 (tarde) — Fases A, C y D implementadas; mockups ajustados; propuesta de Dashboard
+
+**Feedback de Jose sobre los mockups:**
+- Aprobados, salvo que la vista SLA no lleva tarjetas de indicadores.
+- No hay propuesta de Dashboard → hacerla.
+- Agregar iUKEN.
+- **Sin catálogo de espacios**: ASIGNA es solo para incidentes.
+- **Sin responsable por edificio.**
+
+**Canvas actualizado:**
+- Se quitaron las tarjetas de SLA, los espacios y el responsable por edificio.
+- Se agregó iUKEN.
+- Mockup nuevo **"E · Dashboard (propuesta)"**: filtros de período y edificio,
+  "Ahora mismo", % de cumplimiento del SLA, tabla por edificio, oficinas frente a
+  áreas comunes, creados frente a cerrados y "Sin responsable" visible.
+
+**iUKEN:**
+- Al abrir producción en el navegador integrado, iUKEN **ya existía con el código IUK**
+  (caché local de la app; sin sesión iniciada).
+- Jose eligió conservar IUK.
+- Se agregó `IUK` a `DEFAULT_LOCACIONES` (commit `9257adf` en
+  `integracion/referencia-of`).
+- No se tocó producción.
+
+**Ramas** (locales, sin push, cada una sale de la anterior):
+- `feat/en-espera` — Fase A: estado En espera con motivo; el SLA de resolución
+  descuenta la espera; "cliente respondió" lo regresa a En proceso; bloque "Reloj del
+  SLA" en el detalle.
+- `feat/form-donde-que` — Fase C:
+  - Formulario ¿Dónde y qué? → Detalles, con tipo oficina / área común, ubicación
+    libre y título.
+  - Staff puede reportar a su propio nombre.
+- `feat/lista-vence-sla` — Fase D:
+  - Pestañas por estado, filtro de riesgo y tabla con columna "Vence".
+  - Vista SLA con Vencidos y En riesgo, más un contador en el menú lateral.
+
+**Verificado:**
+- `node --check` sin errores.
+- Pruebas en navegador sin conexión con datos simulados:
+  - **Fase A:** sin motivo no deja guardar; motivo cliente → notificación al
+    locatario; el locatario comenta → vuelve a En proceso con 3 h de pausa acumulada.
+  - **Fase C:** staff "Yo" + área común exige ubicación y no manda confirmación a sí
+    mismo; el locatario reporta con su empresa y edificio.
+  - **Fase D:** estados de vencimiento correctos, filtro de riesgo, vista SLA en
+    escritorio (1440px) y en móvil (390px).
+  - Sin errores de JS.
+- **No probado contra Firebase real.**
+
+**Incidente corregido en la sesión:**
+- El primer commit de la Fase A escribió una versión vieja de `index.html` (ver
+  lección nueva en `05-ESTANDARES.md`).
+- Se rehízo el commit (`24a6afd`) y se verificó por `md5sum` antes de cada commit
+  siguiente.
+
+**Pendiente:**
+1. Jose prueba `feat/lista-vence-sla` (incluye todo) y decide el merge/push a `main`.
+2. Aprueba o ajusta el mockup E (Dashboard).
+3. Se actualiza `README.md` raíz (guía de usuario) con el estado En espera y la vista
+   SLA cuando se suba a producción.
+
+## 2026-10-29 — Revisión de la plataforma admin de Oficinas Felices + rama de integración
+
+Jose compartió una grabación de la plataforma admin de Oficinas Felices
+(`demo.admin.dixdigitalagency.com`) para tomar de ahí buenas prácticas, diseño y
+formularios. El análisis completo y la propuesta por fases están en
+`07-REFERENCIA-PLATAFORMA-OF-2026-10.md`.
+
+Decisiones de Jose:
+- Alcance: tickets + espacios.
+- Base de trabajo: fusionar primero las ramas pendientes.
+- Estados: los 3 actuales + "En espera" con motivo, que pausa el SLA.
+- Extras: sin preferencia. Solo se propone la vista SLA; el resto queda en el
+  roadmap.
+
+Hecho:
+- Rama **`integracion/referencia-of`** (local, sin push), creada desde `main`, con
+  `review/todo-junto` + `review/diseno-junto`. En total, las 10 ramas de
+  septiembre: SLA dos plazos, responsable interno, tipo primero, nota obligatoria y
+  los rediseños de lista, detalle, formulario, dashboard y notificaciones.
+- Conflictos resueltos:
+  - Formulario: se mantiene el flujo en 2 pasos y dentro del paso 2 se aplican el
+    banner y la grilla del rediseño.
+  - Detalle: layout de 2 columnas + badges de SLA de dos plazos + Responsable /
+    Asignado a (ejecuta).
+- Fix: en teléfonos (<520px) el formulario pasa a una sola columna. Antes, "Reportado
+  por" quedaba comprimido en "Loca…".
+- Verificado:
+  - `node --check` sin errores.
+  - Prueba en navegador sin conexión, con datos simulados, en escritorio (1366px) y
+    móvil (390px): lista, paso 1, paso 2 y detalle con el panel de acciones. Sin
+    errores de JS.
+  - **No probado contra Firebase real.**
+- Mockups de las fases A–D para aprobación: canvas de Claude Design "ASIGNA —
+  Propuesta referencia OF" (https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX), con el
+  design system ASIGNA. 8 artboards: nuevo ticket (paso 1, paso 2, móvil), lista de
+  tickets, detalle En espera, vista SLA, catálogo de espacios y nuevo espacio. Las
+  fuentes `.dc.html` están en `design/source/propuesta-referencia-of/`.
+
+Pendiente:
+- Que Jose apruebe o ajuste los mockups antes de implementar.
+- Que pruebe la rama de integración contra Firebase.
+- Que decida cuándo subirla.
+
 ## 2026-09-16 — Fix: tickets que se pierden en silencio (notificación sí, ticket no) — código listo, sin desplegar
 
 Diagnóstico y reporte de Jose: la campanita mostraba "nuevo ticket" para tickets

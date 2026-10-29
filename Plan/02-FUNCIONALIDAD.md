@@ -38,9 +38,19 @@ su primer despliegue, pero está pensada como producto con identidad propia.
    abiertos por responsable (personal interno o suplidor) — ver "Dashboard
    ampliado" más abajo.
 
-## Flujo de estatus (simplificado desde 2026-09-01)
+## Flujo de estatus
 
-**Nuevo → En proceso → Cerrado** (3 pasos). Se quitaron "En revisión" y "Resuelto".
+**Desde 2026-10 (Fase A, `Plan/07`):** Nuevo → En proceso ⇄ **En espera** →
+Cerrado.
+- **Motivo obligatorio:** "En espera" exige uno: cliente, proveedor o aprobación.
+- **Pausa del SLA:** mientras el ticket está en espera, el reloj del SLA de
+  resolución se detiene (`sla_pausado_ms`, `msEnEspera()`).
+- **Motivo "cliente":**
+  - El locatario recibe "Necesitamos tu respuesta".
+  - Cuando comenta, el ticket vuelve solo a En proceso.
+  - Staff recibe "El cliente respondió".
+
+**Simplificado el 2026-09-01: Nuevo → En proceso → Cerrado** (3 pasos). Se quitaron "En revisión" y "Resuelto".
 Reabrir un ticket cerrado lo regresa directamente a "En proceso" (antes iba a "En
 revisión"). La evaluación de conformidad del locatario (1-5 estrellas), quitada en
 este cambio, volvió en la Fase 4 (2026-09) — ver "Calificación del servicio" más
@@ -107,17 +117,43 @@ reglas de Firestore nuevas):
   quedan fuera a propósito.
 
 ## SLA e indicador de "Vencido"
-Por prioridad: alta 2 días / media 5 días / baja 10 días. KPI visible en el Dashboard.
+- **Dos plazos por prioridad**, editables en Configuración:
+  - **Primera respuesta** (horas).
+  - **Resolución** (días).
+- **Valores por defecto:**
+  - Alta: 2 h / 2 días.
+  - Media: 8 h / 5 días.
+  - Baja: 24 h / 10 días.
+- **Resolución:** no cuenta el tiempo En espera.
+- **"En riesgo":** el próximo plazo vence en menos de 4 h (respuesta) o 24 h
+  (resolución). Es fijo por ahora (`SLA_RIESGO_MS`).
+- **Dónde se ve:**
+  - Columna "Vence" de la lista.
+  - Bloque "Reloj del SLA" del detalle.
+  - Vista **SLA** (staff) con las listas Vencidos y En riesgo, más un contador en el
+    menú lateral.
 
 ## Otras funciones de help desk
-- Cualquier rol puede crear tickets (Admin/Empleado con "reportado por" para
-  reportes telefónicos).
+- Cualquier rol puede crear tickets.
+  - Admin/Empleado los crean a su propio nombre ("Yo") o a nombre de un locatario
+    (reportes telefónicos).
+  - Formulario en 2 pasos (Fase C, 2026-10):
+    - **¿Dónde y qué?:** edificio, tipo de incidencia (oficina de un inquilino / área
+      común) y categoría.
+    - **Detalles:** área o ubicación en texto libre (obligatoria en área común),
+      título, descripción, prioridad y fecha.
+  - **Sin catálogo de espacios**, por decisión de Jose (2026-10-29).
 - Hilo de comentarios en cada ticket.
 - Reabrir ticket cerrado si el problema persiste.
 - Exportación de tickets a CSV.
 
 ## Secciones del panel de escritorio (Admin/Empleado, ≥1024px)
 - **Tickets** — vista principal.
+  - Pestañas por estado con conteo.
+  - Filtro "Solo en riesgo o vencidos".
+  - Tabla con columna "Vence" (Fase D).
+- **SLA** (staff, Fase D, 2026-10) — tickets abiertos vencidos o en riesgo, por
+  plazo y edificio. No lleva tarjetas de indicadores.
 - **Usuarios** — las 3 cuentas (Admin, Empleado, Locatario) juntas; cada locatario
   muestra su empresa.
 - **Empresas** — catálogo de compañías clientes (sin personas): nombre,
@@ -155,6 +191,19 @@ Campos opcionales `asignado_a` (nombre para mostrar), `asignado_tipo`
 (`'interno'` | `'suplidor'` | `'manual'` | vacío) y `asignado_id` (correo del
 empleado o id del suplidor) — ver "Suplidores como catálogo de responsables".
 
+**Desde 2026-10**, campos opcionales nuevos (los tickets anteriores no los tienen y
+`sanitizeTicket()` les pone valores por defecto):
+- **"En espera" (Fase A):**
+  - `espera_motivo`: `cliente` | `proveedor` | `aprobacion`.
+  - `espera_desde`: ISO.
+  - `sla_pausado_ms`: número.
+- **Formulario (Fase C):**
+  - `titulo`: si falta, se muestra categoría · subcategoría.
+  - `tipo_incidencia`: `inquilino` | `area_comun`; por defecto `inquilino`.
+  - `ubicacion_detalle`: texto libre.
+- **Historial:** las entradas pueden traer `espera_motivo`.
+- **Tipos de notificación nuevos:** `espera_cliente`, `cliente_respondio`.
+
 ### `suplidores/{suplidorId}`
 Claves requeridas: `id`, `nombre`. Opcionales: `especialidad`, `telefono`,
 `email` (contacto del suplidor, no es una cuenta de acceso — un suplidor nunca
@@ -179,7 +228,9 @@ que se conecta a un proyecto de Firebase nuevo:
 - Incidencias de agua → Filtración / Lluvias
 
 ## Locaciones
-D1–D4 = DIX Business Center 1–4 (Red de Oficinas Felices). Específicas de este primer
+D1–D4 = DIX Business Center 1–4, más **IUK = iUKEN Business Center**. IUK ya existía
+en producción y se agregó a los valores por defecto el 2026-10-29 (Red de Oficinas
+Felices). Específicas de este primer
 despliegue — no genéricas de ASIGNA como producto.
 
 ## Identidad visual

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Nuevo ticket — Paso 1</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#8A6508}a:hover{color:#221E1F}
+</style>
+</helmet>
+<div style="width: 880px; height: 820px; box-sizing: border-box; background: #FFFFFF; display: flex; flex-direction: column; font-family: 'Inter', sans-serif; color: #221E1F;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 32px; border-bottom: 1px solid #ECE4C8;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6F675F;">Tickets / Nuevo ticket</div>
+      <h1 style="margin: 0; font-family: 'Public Sans', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.15;">Nuevo ticket</h1>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: #4A4544;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 100px; background: #E0C01A; color: #000000; font-size: 12px; font-weight: 700;">1</span>
+        <span>¿Dónde y qué?</span>
+        <span style="width: 28px; height: 2px; background: #ECE4C8;"></span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 100px; background: #F2EEE2; color: #6F675F; font-size: 12px; font-weight: 700;">2</span>
+        <span style="color: #6F675F;">Detalles</span>
+      </div>
+      <button type="button" aria-label="Cerrar" style="width: 44px; height: 44px; border-radius: 11px; border: 1px solid #ECE4C8; background: #FBF6DE; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 22px; padding: 24px 32px;">
+    <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 11px; background: #FBF6DE; border: 1px solid #ECE4C8; font-size: 13px; line-height: 1.5; color: #4A4544;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A6508" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+      <span>Indica dónde está el problema y de qué tipo es. En el siguiente paso agregas la ubicación exacta y la descripción.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9px; background: #F7EFC0; font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 700;">01</span>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <h2 style="margin: 0; font-family: 'Public Sans', sans-serif; font-weight: 800; font-size: 16.5px;">¿Dónde?</h2>
+          <div style="font-size: 12.5px; color: #6F675F;">Edificio y tipo de lugar afectado.</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="c1-edificio" style="font-size: 13px; font-weight: 600;">Edificio <span style="color: #B71C1C;">*</span></label>
+          <select id="c1-edificio" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
+            <option>D1 — DIX Business Center 1</option>
+            <option>D2 — DIX Business Center 2</option>
+            <option>D3 — DIX Business Center 3</option>
+            <option>D4 — DIX Business Center 4</option>
+            <option>IUK — iUKEN Business Center</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="c1-reporta" style="font-size: 13px; font-weight: 600;">Reportado por <span style="color: #B71C1C;">*</span></label>
+          <select id="c1-reporta" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
+            <option>Yo (Administración)</option>
+            <option>Un locatario — reporte por teléfono</option>
+          </select>
+          <div style="font-size: 12px; color: #6F675F;">Solo staff ve este campo.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; font-weight: 600;">Tipo de incidencia <span style="color: #B71C1C;">*</span></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+          <button type="button" onClick="{{pickOficina}}" aria-pressed="{{oficinaPressed}}" style="{{oficinaStyle}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"></path></svg>
+            <span style="display: flex; flex-direction: column; gap: 3px; text-align: left;">
+              <span style="font-size: 14px; font-weight: 700;">Oficina de un inquilino</span>
+              <span style="font-size: 12.5px; line-height: 1.4; color: #4A4544;">Algo dentro de una oficina o espacio alquilado.</span>
+            </span>
+          </button>
+          <button type="button" onClick="{{pickComun}}" aria-pressed="{{comunPressed}}" style="{{comunStyle}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#221E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"></path></svg>
+            <span style="display: flex; flex-direction: column; gap: 3px; text-align: left;">
+              <span style="font-size: 14px; font-weight: 700;">Área común del edificio</span>
+              <span style="font-size: 12.5px; line-height: 1.4; color: #4A4544;">Parqueo, techo, cisterna, ascensor, pasillos, baños.</span>
+            </span>
+          </button>
+        </div>
+        <sc-if value="{{esComun}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 11px; background: #E3F2FD; font-size: 13px; line-height: 1.5; color: #0D47A1;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+            <span>No se asocia a ninguna empresa: el seguimiento es interno y ningún locatario recibe notificaciones.</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{esOficina}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 11px; background: #E3F2FD; font-size: 13px; line-height: 1.5; color: #0D47A1;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+            <span>La empresa de esa oficina recibe una notificación en cada cambio de estado.</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9px; background: #F7EFC0; font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 700;">02</span>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <h2 style="margin: 0; font-family: 'Public Sans', sans-serif; font-weight: 800; font-size: 16.5px;">¿Qué pasa?</h2>
+          <div style="font-size: 12.5px; color: #6F675F;">Categoría del catálogo de Áreas.</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="c1-cat" style="font-size: 13px; font-weight: 600;">Categoría <span style="color: #B71C1C;">*</span></label>
+          <select id="c1-cat" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
+            <option>Incidencias de agua</option>
+            <option>Aires Acondicionados</option>
+            <option>Internet</option>
+            <option>Limpieza</option>
+            <option>Luces</option>
+            <option>Puertas, llavines y ventanas</option>
+            <option>Valet Parking</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="c1-sub" style="font-size: 13px; font-weight: 600;">Incidente</label>
+          <select id="c1-sub" style="height: 44px; box-sizing: border-box; border: 1px solid #DCD0A0; border-radius: 11px; padding: 0 14px; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; color: #221E1F;">
+            <option>Filtración</option>
+            <option>Lluvias</option>
+          </select>
+          <div style="font-size: 12px; color: #6F675F;">Aparece solo si la categoría tiene subcategorías.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; gap: 12px; padding: 18px 32px; border-top: 1px solid #ECE4C8; background: #FAFAF7;">
+    <button type="button" style="height: 46px; padding: 0 22px; border-radius: 11px; border: 1px solid #DCD0A0; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: #221E1F; cursor: pointer;">Cancelar</button>
+    <a href="NuevoTicketPaso2.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 24px; border-radius: 11px; background: #E0C01A; font-size: 14px; font-weight: 700; color: #000000; text-decoration: none;">Continuar
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tipo: 'comun' };
+  }
+  renderVals() {
+    const base = 'display: flex; gap: 12px; align-items: flex-start; min-height: 76px; padding: 14px 16px; border-radius: 11px; font-family: Inter, sans-serif; color: #221E1F; cursor: pointer; ';
+    const on = base + 'background: #FBF6DE; border: 2px solid #E0C01A;';
+    const off = base + 'background: #FFFFFF; border: 2px solid #ECE4C8;';
+    const comun = this.state.tipo === 'comun';
+    return {
+      esComun: comun,
+      esOficina: !comun,
+      comunStyle: comun ? on : off,
+      oficinaStyle: comun ? off : on,
+      comunPressed: comun ? 'true' : 'false',
+      oficinaPressed: comun ? 'false' : 'true',
+      pickComun: () => this.setState({ tipo: 'comun' }),
+      pickOficina: () => this.setState({ tipo: 'oficina' })
+    };
+  }
+}
+</script>
+</body>
+</html>

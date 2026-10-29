@@ -5,7 +5,20 @@ empieza a trabajar en algo de aquí, mover el ítem a "En progreso"; cuando se t
 moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
 
 ## En progreso
-(nada por ahora — el plan de ajustes 2026-09 quedó completo con la Fase 6)
+- **Mejoras tomadas de la plataforma admin de Oficinas Felices (2026-10).** Detalle
+  en `07-REFERENCIA-PLATAFORMA-OF-2026-10.md`.
+  - **A** — "En espera" con motivo + pausa del SLA: **implementada** (`feat/en-espera`).
+  - **B** — Catálogo de espacios: **cancelada** (decisión de Jose, 2026-10-29).
+  - **C** — Formulario "¿Dónde y qué?" → Detalles: **implementada**
+    (`feat/form-donde-que`).
+  - **D** — Lista con "Vence" + vista SLA sin indicadores: **implementada**
+    (`feat/lista-vence-sla`).
+  - **E** — Dashboard con filtros de período y edificio, "Ahora mismo" y % de
+    cumplimiento del SLA: **mockup esperando aprobación**.
+  - **Siguiente:**
+    1. Jose prueba `feat/lista-vence-sla` (incluye A, C y D) contra Firebase.
+    2. Decide merge/push a `main`.
+    3. Aprueba o ajusta el mockup E.
 
 ## Completado (pendiente de revisar si vuelve a tocarse `firestore.rules`)
 - **Fase 1 (Firebase Authentication), Fase 2 (rol Empleado ampliado), seguridad
@@ -35,8 +48,15 @@ moverlo (con fecha) a `04-MILESTONES.md` y borrarlo de aquí o marcarlo hecho.
   toman elementos sueltos. Ver `design/README.md` para cómo verlas/editarlas.
 
 ## Ideas sin priorizar
-- (agregar aquí ideas sueltas que surjan en conversación, para no perderlas, antes de
-  decidir si entran al roadmap formal)
+- De la plataforma OF (Jose no dio preferencia, 2026-10-29): prioridad **Crítica**
+  (4 niveles), rol **Admin cliente** (ve los tickets de toda su empresa), **invitar
+  usuario por correo**, número de ticket secuencial `OF-2026-000012`. Detalle en
+  `07-REFERENCIA-PLATAFORMA-OF-2026-10.md`.
+- Restringir con `affectedKeys().hasOnly([...])` qué campos puede editar el
+  Locatario dueño de un ticket (hoy la regla `update` le permite cambiar
+  cualquiera).
+- Umbral de "en riesgo" del SLA (hoy fijo: 4 h respuesta / 24 h resolución) editable en
+  Configuración.
 
 ---
 Cuando el usuario pida algo nuevo que no se vaya a implementar de inmediato, registrarlo

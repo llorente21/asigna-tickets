@@ -45,6 +45,10 @@ opcional aparte.
   brief de producto (seguridad, roles, dashboard) dado por Jose y prompt de revisión
   para alinear ASIGNA a él. **Borrador con decisiones pendientes de Jose** — no
   implementar sus puntos de conflicto sin confirmación explícita.
+- [`07-REFERENCIA-PLATAFORMA-OF-2026-10.md`](07-REFERENCIA-PLATAFORMA-OF-2026-10.md) —
+  análisis de la plataforma admin de Oficinas Felices (grabación de 2026-10),
+  decisiones de alcance de Jose y propuesta por fases A–D (En espera, espacios,
+  formulario, lista + vista SLA).
 
 ## Para el agente de diseño
 
