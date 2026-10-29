@@ -140,10 +140,30 @@ input,select,textarea{font-family:'Inter',sans-serif;}
 /* Paso 1/2 del formulario de "Nuevo ticket" — categoría primero, detalles después */
 .form-step-title{font-family:'Public Sans',sans-serif; font-weight:800; font-size:19px; margin:0 0 4px; letter-spacing:-.3px;}
 .form-step-sub{font-size:13px; color:var(--text2); line-height:1.45; margin:0 0 16px;}
-.form-step-chip{background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:8px;}
+.form-step-chip{display:flex; flex-wrap:wrap; gap:6px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:9px 10px; font-size:13px; margin-bottom:8px;}
+.form-chip{display:inline-block; padding:4px 10px; border-radius:100px; background:var(--surface); border:1px solid var(--border2); font-size:12.5px; font-weight:600; color:var(--text);}
 .form-step-chip .chip-label{color:var(--text3); font-weight:600;}
 .btn-link-back{background:none; border:none; padding:0; margin:0 0 16px; color:var(--accent2); font-size:12.5px; font-weight:700; cursor:pointer;}
 .btn-link-back:hover{text-decoration:underline;}
+/* Formulario "¿Dónde y qué?" (Fase C, 2026-10): secciones numeradas, tipo de
+   incidencia como tarjetas, banner que cambia según el tipo y vista previa del SLA */
+.form-sec{display:flex; align-items:center; gap:10px; margin:6px 0 12px;}
+.form-sec-num{display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; flex:none; border-radius:9px; background:var(--accent-light); font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; color:var(--text);}
+.form-sec-t{font-family:'Public Sans',sans-serif; font-weight:800; font-size:15.5px; color:var(--text);}
+.form-sec-s{font-size:12px; color:#6F675F;}
+.req{color:var(--danger);}
+.tipo-cards{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.tipo-card{display:flex; gap:10px; align-items:flex-start; text-align:left; min-height:72px; padding:12px 14px; border-radius:var(--radius-sm); border:2px solid var(--border); background:var(--surface); color:var(--text); font-family:'Inter',sans-serif; cursor:pointer;}
+.tipo-card svg{width:22px; height:22px; flex:none; stroke:var(--text);}
+.tipo-card b{display:block; font-size:13.5px; font-weight:700;}
+.tipo-card small{display:block; margin-top:2px; font-size:12px; line-height:1.4; color:var(--text2);}
+.tipo-card[aria-checked="true"]{border-color:var(--accent); background:var(--surface2);}
+.tipo-card:focus-visible{outline:2px solid var(--accent2); outline-offset:2px;}
+.form-tipo-banner{display:flex; gap:9px; align-items:flex-start; margin-top:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--info-bg); color:#0D47A1; font-size:12.5px; line-height:1.45;}
+.form-tipo-banner svg{width:16px; height:16px; flex:none; margin-top:1px; stroke:currentColor;}
+.sla-preview{display:flex; gap:9px; align-items:center; margin:2px 0 14px; padding:10px 12px; border:1px dashed var(--border2); border-radius:var(--radius-sm); font-size:12.5px; color:var(--text2);}
+.sla-preview svg{width:16px; height:16px; flex:none; stroke:currentColor;}
+@media (max-width:520px){ .tipo-cards{grid-template-columns:1fr;} }
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
   border:none; border-radius:var(--radius-sm); padding:13px 18px; font-size:14.5px; font-weight:700;
@@ -878,68 +898,109 @@ main.view.active{display:block;}
     <button class="drawer-close" onclick="closeDrawer('form')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="drawer-body">
-    <!-- Paso 1: primero se elige QUÉ tipo de incidencia es — el resto del
-         formulario aparece después, ya con el contexto de la categoría. -->
+    <!-- Formulario en 2 pasos (Fase C, 2026-10 — ver Plan/07):
+         Paso 1 "¿Dónde y qué?": edificio, tipo de incidencia (oficina de un
+         inquilino / área común) y categoría. Paso 2 "Detalles": ubicación
+         exacta, título, descripción, prioridad y fecha. -->
     <div id="form-step1">
-      <div class="form-step-title">¿Qué tipo de incidencia es?</div>
-      <p class="form-step-sub">Elige primero la categoría — así el resto del formulario se ajusta a lo que estás reportando.</p>
-      <div class="field">
-        <label>Categoría de Incidente</label>
-        <select id="f-categoria" onchange="onCategoriaChange()"></select>
+      <div class="form-step-title">¿Dónde y qué?</div>
+      <p class="form-step-sub">Indica dónde está el problema y de qué tipo es. En el siguiente paso agregas la ubicación exacta y la descripción.</p>
+
+      <div class="form-sec"><span class="form-sec-num">01</span><div><div class="form-sec-t">¿Dónde?</div><div class="form-sec-s">Edificio y tipo de lugar afectado.</div></div></div>
+      <div class="form-grid">
+        <div class="field" id="f-reportante-wrap" style="display:none;">
+          <label for="f-reportante">Reportado por <span class="req">*</span></label>
+          <select id="f-reportante" onchange="onReportanteChange()"></select>
+          <div class="field-hint">Si un locatario lo reportó por teléfono, elígelo: recibirá las actualizaciones.</div>
+        </div>
+        <div class="field" id="f-locacion-wrap">
+          <label for="f-locacion">Edificio <span class="req">*</span></label>
+          <select id="f-locacion" onchange="onLocacionFormChange()"></select>
+        </div>
+        <div class="field" id="f-reportante-info-wrap">
+          <label>Tu empresa</label>
+          <div class="readonly-box" id="form-user-box"></div>
+        </div>
       </div>
-      <div class="field" id="f-subcategoria-wrap" style="display:none;">
-        <label>Incidente</label>
-        <select id="f-subcategoria"></select>
+      <div class="field">
+        <label id="f-tipo-label">Tipo de incidencia <span class="req">*</span></label>
+        <div class="tipo-cards" role="radiogroup" aria-labelledby="f-tipo-label">
+          <button type="button" class="tipo-card" id="f-tipo-inquilino" role="radio" aria-checked="true" onclick="setTipoIncidencia('inquilino')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"/></svg>
+            <span><b id="f-tipo-inquilino-t">Oficina de un inquilino</b><small>Algo dentro de una oficina o espacio alquilado.</small></span>
+          </button>
+          <button type="button" class="tipo-card" id="f-tipo-area_comun" role="radio" aria-checked="false" onclick="setTipoIncidencia('area_comun')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
+            <span><b>Área común del edificio</b><small>Parqueo, techo, cisterna, ascensor, pasillos, baños.</small></span>
+          </button>
+        </div>
+        <input type="hidden" id="f-tipo" value="inquilino">
+        <div class="form-tipo-banner" id="f-tipo-banner"></div>
+      </div>
+
+      <div class="form-sec"><span class="form-sec-num">02</span><div><div class="form-sec-t">¿Qué pasa?</div><div class="form-sec-s">Categoría del catálogo de Áreas.</div></div></div>
+      <div class="form-grid">
+        <div class="field half">
+          <label for="f-categoria">Categoría <span class="req">*</span></label>
+          <select id="f-categoria" onchange="onCategoriaChange()"></select>
+        </div>
+        <div class="field half" id="f-subcategoria-wrap" style="display:none;">
+          <label for="f-subcategoria">Incidente</label>
+          <select id="f-subcategoria"></select>
+        </div>
       </div>
       <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="goFormStep2()">Continuar →</button>
     </div>
 
-    <!-- Paso 2: el resto de los detalles, ya con la categoría elegida. -->
+    <!-- Paso 2: detalles, con el resumen de lo elegido en el paso 1. -->
     <div id="form-step2" style="display:none;">
       <div class="form-step-chip" id="form-step-chip"></div>
-      <button class="btn-link-back" onclick="backFormStep1()">← Cambiar tipo de incidencia</button>
+      <button class="btn-link-back" onclick="backFormStep1()">← Cambiar dónde o qué</button>
       <div class="form-info-banner">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
         <span>Completa los datos del incidente. Entre más detalle des, más rápido podrá atenderlo el equipo.</span>
       </div>
+
+      <div class="form-sec"><span class="form-sec-num">03</span><div><div class="form-sec-t">Ubicación exacta</div><div class="form-sec-s">Para que quien atienda llegue directo al lugar.</div></div></div>
       <div class="form-grid">
-        <div class="field half">
-          <label>Fecha de notificación</label>
-          <input type="datetime-local" id="f-fecha">
+        <div class="field half" id="f-empresa-wrap" style="display:none;">
+          <label for="f-empresa">Empresa afectada</label>
+          <select id="f-empresa"></select>
+          <div class="field-hint">La oficina/empresa con el problema — no siempre coincide con quién reporta.</div>
         </div>
-        <div class="field half" id="f-reportante-wrap" style="display:none;">
-          <label>Reportado por</label>
-          <select id="f-reportante" onchange="onReportanteChange()"></select>
-          <div class="field-hint">La persona que reporta — puede ser distinta a la oficina afectada (ej. reportes por teléfono).</div>
+        <div class="field" id="f-ubicacion-wrap">
+          <label for="f-ubicacion" id="f-ubicacion-label">Área o ubicación</label>
+          <input type="text" id="f-ubicacion" maxlength="120" placeholder="Ej.: parqueo nivel 1, baño del 2º piso, cuarto eléctrico">
+          <div class="field-hint" id="f-ubicacion-hint"></div>
         </div>
-        <div class="field half" id="f-reportante-info-wrap">
-          <label>Reportado por</label>
-          <div class="readonly-box" id="form-user-box"></div>
-        </div>
+      </div>
+
+      <div class="form-sec"><span class="form-sec-num">04</span><div><div class="form-sec-t">Detalle</div><div class="form-sec-s">Lo que se ve en la lista y lo que lee el equipo.</div></div></div>
+      <div class="field">
+        <label for="f-titulo">Título <span class="req">*</span></label>
+        <input type="text" id="f-titulo" maxlength="90" oninput="this.dataset.editado='1'">
+        <div class="field-hint">Se prellena con la categoría. Ajústalo para que se entienda en una línea.</div>
+      </div>
+      <div class="field">
+        <label for="f-descripcion">Descripción <span class="req">*</span></label>
+        <textarea id="f-descripcion" placeholder="Describe qué está ocurriendo, desde cuándo, y cualquier detalle útil..."></textarea>
       </div>
       <div class="form-grid">
         <div class="field half">
-          <label>Oficina</label>
-          <select id="f-locacion"></select>
-        </div>
-        <div class="field half">
-          <label>Cliente / Empresa</label>
-          <select id="f-empresa"></select>
-        </div>
-        <div class="field-hint" style="grid-column:span 2; margin:-6px 0 4px;">La oficina/empresa que tiene el problema — no siempre coincide con quién reporta.</div>
-        <div class="field">
-          <label>Descripción del problema</label>
-          <textarea id="f-descripcion" placeholder="Describe qué está ocurriendo, desde cuándo, y cualquier detalle útil..."></textarea>
-        </div>
-        <div class="field">
-          <label>Prioridad</label>
-          <select id="f-prioridad">
+          <label for="f-prioridad">Prioridad <span class="req">*</span></label>
+          <select id="f-prioridad" onchange="renderSlaPreview()">
             <option value="baja">Baja</option>
             <option value="media" selected>Media</option>
             <option value="alta">Alta</option>
           </select>
         </div>
+        <div class="field half">
+          <label for="f-fecha">Fecha de notificación</label>
+          <input type="datetime-local" id="f-fecha">
+          <div class="field-hint">Hora de Santo Domingo. Por defecto, ahora.</div>
+        </div>
       </div>
+      <div class="sla-preview" id="f-sla-preview"></div>
       <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="saveTicket()">Enviar ticket</button>
     </div>
   </div>
@@ -1774,7 +1835,20 @@ function sanitizeTicket(t){
     espera_motivo: ESPERA_MOTIVOS[t.espera_motivo] ? t.espera_motivo : '',
     espera_desde: t.espera_desde || '',
     sla_pausado_ms: Number(t.sla_pausado_ms) > 0 ? Number(t.sla_pausado_ms) : 0,
+    // Formulario "¿Dónde y qué?" (2026-10): tickets anteriores se tratan como
+    // de oficina de inquilino, sin ubicación ni título propio (se muestra la
+    // categoría en su lugar — ver tituloTicket()).
+    tipo_incidencia: t.tipo_incidencia === 'area_comun' ? 'area_comun' : 'inquilino',
+    ubicacion_detalle: t.ubicacion_detalle || '',
+    titulo: t.titulo || '',
   };
+}
+function tituloTicket(t){ return t.titulo || (t.categoria + (t.subcategoria ? ' · '+t.subcategoria : '')); }
+function catTicket(t){ return t.categoria + (t.subcategoria ? ' · '+t.subcategoria : ''); }
+// Ubicación en una línea: "D1 · Área común · Parqueo nivel 1" / "D2 · 8 Logos · Oficina 2B"
+function ubicacionTicket(t){
+  const partes = [t.locacion, t.tipo_incidencia === 'area_comun' ? 'Área común' : (t.empresa || ''), t.ubicacion_detalle].filter(Boolean);
+  return partes.join(' · ');
 }
 // Milisegundos que el ticket pasó En espera hasta `hastaISO` (por defecto,
 // ahora): las esperas ya terminadas (sla_pausado_ms) más el tramo en curso.
@@ -1857,13 +1931,12 @@ function buildStaticSelects(){
 }
 
 function buildReportanteOptions(){
-  const locatarios = USERS_LIST.filter(u=>u.role==='locatario');
+  // Staff puede reportar a su propio nombre (ej. un área común que vio en una
+  // ronda) o a nombre de un locatario (reporte por teléfono).
+  const locatarios = USERS_LIST.filter(u=>u.role==='locatario').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   const sel = document.getElementById('f-reportante');
-  if(!locatarios.length){
-    sel.innerHTML = '<option value="">— No hay locatarios registrados —</option>';
-    return;
-  }
-  sel.innerHTML = locatarios.map(u=>`<option value="${esc(u.email)}">${esc(u.name)} · ${u.locacion||'—'}</option>`).join('');
+  sel.innerHTML = `<option value="__yo__">Yo (${esc(currentUser.name)} — ${ROLE_LABELS[currentUser.role]||currentUser.role})</option>` +
+    (locatarios.length ? `<optgroup label="A nombre de un locatario">${locatarios.map(u=>`<option value="${esc(u.email)}">${esc(u.name)} · ${esc(u.empresa||u.locacion||'—')}</option>`).join('')}</optgroup>` : '');
 }
 
 function onCategoriaChange(){
@@ -2091,7 +2164,7 @@ function getFilteredTickets(){
   const q = (isStaff() ? F.search : EF.search) || '';
   if(q){
     const s = q.toLowerCase();
-    list = list.filter(t => [t.numero,t.descripcion,t.categoria,t.empleado_nombre].map(v=>(v||'').toLowerCase()).join(' ').includes(s));
+    list = list.filter(t => [t.numero,t.titulo,t.descripcion,t.categoria,t.subcategoria,t.empleado_nombre,t.empresa,t.ubicacion_detalle,t.responsable_nombre,t.asignado_a].map(v=>(v||'').toLowerCase()).join(' ').includes(s));
   }
   return list.sort((a,b)=> new Date(b.fecha_creacion) - new Date(a.fecha_creacion));
 }
@@ -2139,7 +2212,7 @@ function ticketsTableHTML(list){
       <td class="mono">${esc(t.numero)}</td>
       <td>${t.empresa ? esc(t.empresa) : '—'}</td>
       <td>${esc(t.locacion)}</td>
-      <td>${esc(t.categoria)}${t.subcategoria?' · '+esc(t.subcategoria):''}</td>
+      <td>${esc(tituloTicket(t))}</td>
       <td>${t.asignado_a ? esc(t.asignado_a) : '—'}</td>
       <td><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></td>
       <td><span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>${isVencido(t) ? ' <span class="vencido-badge">Vencido</span>' : ''}</td>
@@ -2166,13 +2239,13 @@ function renderTicketCard(t){
     <div class="row-top">
       <div>
         <div class="numero mono">${esc(t.numero)}</div>
-        <div class="cat">${esc(t.categoria)}${t.subcategoria?' · '+esc(t.subcategoria):''}</div>
+        <div class="cat">${esc(tituloTicket(t))}</div>
       </div>
       <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
     </div>
     <div class="desc">${esc(t.descripcion)}</div>
     <div class="meta-row">
-      <div class="meta-item">${ICONS.pin}${esc(t.locacion)}</div>
+      <div class="meta-item">${ICONS.pin}${esc(t.locacion)}${t.tipo_incidencia==='area_comun' ? ' · Área común' : ''}${t.ubicacion_detalle ? ' · '+esc(t.ubicacion_detalle) : ''}</div>
       ${t.empresa ? `<div class="meta-item">${ICONS.building}${esc(t.empresa)}</div>` : ''}
       ${isStaff() ? `<div class="meta-item">${ICONS.user}${esc(t.empleado_nombre)}</div>` : ''}
       ${days}
@@ -2206,42 +2279,86 @@ function resetFilters(){
    ====================================================================== */
 function openTicketForm(){
   if(isStaff()){
-    const locatarios = USERS_LIST.filter(u=>u.role==='locatario');
-    if(!locatarios.length){
-      showToast('Crea primero un usuario locatario en "Usuarios"');
-      switchView('usuarios');
-      return;
-    }
     document.getElementById('f-reportante-wrap').style.display = 'block';
+    document.getElementById('f-locacion-wrap').style.display = 'block';
     document.getElementById('f-reportante-info-wrap').style.display = 'none';
     buildReportanteOptions();
     onReportanteChange();
   } else {
+    // El locatario reporta desde su propia empresa y edificio (vienen de su cuenta).
     document.getElementById('f-reportante-wrap').style.display = 'none';
+    document.getElementById('f-locacion-wrap').style.display = 'none';
     document.getElementById('f-reportante-info-wrap').style.display = 'block';
-    document.getElementById('form-user-box').innerHTML = `<b>${esc(currentUser.name)}</b> · ${esc(currentUser.email)}`;
-    document.getElementById('f-locacion').value = currentUser.locacion || 'D1';
+    const loc = currentUser.locacion || Object.keys(LOCACIONES)[0];
+    document.getElementById('form-user-box').innerHTML = `<b>${esc(currentUser.empresa || currentUser.name)}</b> · ${esc(loc)} — ${esc(LOCACIONES[loc]||'')}`;
+    document.getElementById('f-locacion').value = loc;
     document.getElementById('f-empresa').value = currentUser.empresa || '';
   }
   document.getElementById('f-fecha').value = nowLocalInputValue();
   document.getElementById('f-categoria').value = Object.keys(CATEGORIAS)[0];
   onCategoriaChange();
   document.getElementById('f-descripcion').value = '';
+  document.getElementById('f-ubicacion').value = '';
+  const titulo = document.getElementById('f-titulo');
+  titulo.value = ''; delete titulo.dataset.editado;
   document.getElementById('f-prioridad').value = 'media';
+  setTipoIncidencia('inquilino');
   document.getElementById('form-step1').style.display = 'block';
   document.getElementById('form-step2').style.display = 'none';
   openDrawer('form');
 }
 
-// Paso 1 → 2 del formulario de nuevo ticket: la categoría/subcategoría ya
-// quedaron elegidas en el paso 1, aquí solo se muestra el resto de los campos
-// y un resumen (chip) de lo elegido, con opción de volver a cambiarlo.
+// Tipo de incidencia: 'inquilino' (oficina/espacio alquilado) o 'area_comun'
+// (parqueo, techo, cisterna...). Cambia el banner, si se pide la empresa y si
+// la ubicación es obligatoria.
+function setTipoIncidencia(tipo){
+  if(tipo !== 'area_comun') tipo = 'inquilino';
+  document.getElementById('f-tipo').value = tipo;
+  ['inquilino','area_comun'].forEach(k=>{
+    document.getElementById('f-tipo-'+k).setAttribute('aria-checked', k===tipo ? 'true' : 'false');
+  });
+  document.getElementById('f-tipo-inquilino-t').textContent = isStaff() ? 'Oficina de un inquilino' : 'En mi oficina';
+  const icon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+  let txt;
+  if(tipo === 'area_comun'){
+    txt = isStaff() && document.getElementById('f-reportante').value === '__yo__'
+      ? 'No se asocia a ninguna empresa: el seguimiento es interno y ningún locatario recibe notificaciones.'
+      : 'Lo atiende el equipo de administración del edificio. Quien reporta recibe las actualizaciones.';
+  } else {
+    txt = isStaff()
+      ? 'La empresa de esa oficina queda asociada al ticket; quien reporta recibe una notificación en cada cambio de estado.'
+      : 'Te avisaremos en cada cambio de estado de tu ticket.';
+  }
+  document.getElementById('f-tipo-banner').innerHTML = icon + `<span>${txt}</span>`;
+}
+
+function onLocacionFormChange(){ /* el edificio se muestra en el resumen del paso 2 */ }
+
+// Paso 1 → 2: valida lo elegido, arma el resumen (chips), prellena el título
+// con la categoría y ajusta la sección de ubicación según el tipo.
 function goFormStep2(){
   const cat = document.getElementById('f-categoria').value;
   const subs = CATEGORIAS[cat] || [];
   const sub = subs.length ? document.getElementById('f-subcategoria').value : '';
+  const loc = document.getElementById('f-locacion').value;
+  const tipo = document.getElementById('f-tipo').value;
+  if(!loc){ showToast('Elige el edificio'); return; }
+  if(!cat){ showToast('Elige la categoría'); return; }
+  const chip = s => `<span class="form-chip">${s}</span>`;
   document.getElementById('form-step-chip').innerHTML =
-    `<span class="chip-label">Incidencia:</span> <b>${esc(cat)}</b>${sub ? ' — '+esc(sub) : ''}`;
+    chip(`${esc(loc)} — ${esc(LOCACIONES[loc]||'')}`) +
+    chip(tipo === 'area_comun' ? 'Área común' : (isStaff() ? 'Oficina de un inquilino' : 'En mi oficina')) +
+    chip(`${esc(cat)}${sub ? ' · '+esc(sub) : ''}`);
+  const titulo = document.getElementById('f-titulo');
+  if(!titulo.dataset.editado) titulo.value = sub ? `${cat} · ${sub}` : cat;
+  const comun = tipo === 'area_comun';
+  document.getElementById('f-empresa-wrap').style.display = (isStaff() && !comun) ? 'block' : 'none';
+  document.getElementById('f-ubicacion-wrap').className = (isStaff() && !comun) ? 'field half' : 'field';
+  document.getElementById('f-ubicacion-label').innerHTML = comun ? 'Área o ubicación <span class="req">*</span>' : 'Área o ubicación <span style="font-weight:400; color:#6F675F;">(opcional)</span>';
+  document.getElementById('f-ubicacion-hint').textContent = comun
+    ? 'Obligatorio en áreas comunes. Ej.: parqueo nivel 1 junto a la rampa, techo del bloque A.'
+    : 'Ej.: sala de reuniones interna, cocina, puesto 4.';
+  renderSlaPreview();
   document.getElementById('form-step1').style.display = 'none';
   document.getElementById('form-step2').style.display = 'block';
 }
@@ -2250,15 +2367,29 @@ function backFormStep1(){
   document.getElementById('form-step1').style.display = 'block';
 }
 
+// "Con prioridad Media: primera respuesta en 8 h · resolución en 5 días."
+function renderSlaPreview(){
+  const p = document.getElementById('f-prioridad').value || 'media';
+  const sla = getSlaFor(p);
+  document.getElementById('f-sla-preview').innerHTML =
+    `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>` +
+    `<span>Con prioridad <b>${PRIORIDAD_LABELS[p]}</b>: primera respuesta en <b>${sla.respuesta_horas} h</b> · resolución en <b>${sla.resolucion_dias} días</b>.</span>`;
+}
+
 function onReportanteChange(){
   const email = document.getElementById('f-reportante').value;
+  if(email === '__yo__'){
+    document.getElementById('f-empresa').value = '';
+    if(document.getElementById('f-tipo')) setTipoIncidencia(document.getElementById('f-tipo').value);
+    return;
+  }
   const u = USERS_LIST.find(x=>x.email===email);
-  if(!u){ document.getElementById('form-user-box').innerHTML = '—'; return; }
-  document.getElementById('form-user-box').innerHTML = `<b>${esc(u.name)}</b> · ${esc(u.email)}`;
-  // Precarga la oficina/empresa de quien reporta como punto de partida — el
+  if(!u) return;
+  // Precarga el edificio/empresa de quien reporta como punto de partida — el
   // problema puede ser de otra oficina, así que queda libre para cambiarla.
-  document.getElementById('f-locacion').value = u.locacion || 'D1';
+  if(u.locacion && LOCACIONES[u.locacion]) document.getElementById('f-locacion').value = u.locacion;
   document.getElementById('f-empresa').value = u.empresa || '';
+  if(document.getElementById('f-tipo')) setTipoIncidencia(document.getElementById('f-tipo').value);
 }
 
 async function saveTicket(){
@@ -2269,31 +2400,42 @@ async function saveTicket(){
   const prioridad = document.getElementById('f-prioridad').value || 'media';
   const fechaInput = document.getElementById('f-fecha').value;
   const fechaNotif = fechaInput ? new Date(fechaInput) : new Date();
+  const tipo_incidencia = document.getElementById('f-tipo').value === 'area_comun' ? 'area_comun' : 'inquilino';
+  const ubicacion_detalle = document.getElementById('f-ubicacion').value.trim();
+  const titulo = document.getElementById('f-titulo').value.trim() || (subcategoria ? `${categoria} · ${subcategoria}` : categoria);
 
+  if(tipo_incidencia === 'area_comun' && !ubicacion_detalle){ showToast('Indica el área o ubicación del área común'); document.getElementById('f-ubicacion').focus(); return; }
   if(!descripcion){ showToast('Describe el problema antes de enviar'); return; }
   if(isNaN(fechaNotif)){ showToast('La fecha de notificación no es válida'); return; }
 
   let reportante = currentUser;
   if(isStaff()){
     const email = document.getElementById('f-reportante').value;
-    const u = USERS_LIST.find(x=>x.email===email);
-    if(!u){ showToast('Selecciona a nombre de quién se reporta'); return; }
-    reportante = u;
+    if(email !== '__yo__'){
+      const u = USERS_LIST.find(x=>x.email===email);
+      if(!u){ showToast('Selecciona a nombre de quién se reporta'); return; }
+      reportante = u;
+    }
   }
+  const reportaStaffPropio = isStaff() && reportante.email === currentUser.email;
   const locacion = document.getElementById('f-locacion').value;
-  const empresa = document.getElementById('f-empresa').value.trim();
+  // Área común: no se asocia a ninguna empresa (seguimiento interno).
+  const empresa = tipo_incidencia === 'area_comun' ? '' : (isStaff() ? document.getElementById('f-empresa').value.trim() : (currentUser.empresa || ''));
 
   const id = String(Date.now());
   const ts = nowISO();
-  const notaCreacion = isStaff()
-    ? `Ticket creado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name}) a nombre de ${reportante.name}`
-    : 'Ticket creado por el usuario';
+  const notaCreacion = !isStaff()
+    ? 'Ticket creado por el usuario'
+    : reportaStaffPropio
+      ? `Ticket creado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name})`
+      : `Ticket creado por ${ROLE_LABELS[currentUser.role]} (${currentUser.name}) a nombre de ${reportante.name}`;
   const fechaNotifISO = fechaNotif.toISOString();
   const ticket = {
     id, numero:'OF-'+id.slice(-7),
     empleado_email: reportante.email, empleado_nombre: reportante.name,
     empresa, locacion,
     categoria, subcategoria, descripcion,
+    titulo, tipo_incidencia, ubicacion_detalle,
     prioridad,
     asignado_a: '',
     responsable_email: '', responsable_nombre: '',
@@ -2311,10 +2453,12 @@ async function saveTicket(){
   renderTicketsView();
   showToast('Ticket enviado ✓ '+ticket.numero);
 
-  crearNotif('staff', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${reportante.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}): ${categoria}`);
-  crearNotif(reportante.email, 'confirmacion', id, isStaff()
-    ? `${ROLE_LABELS[currentUser.role]} registró un ticket a tu nombre: ${ticket.numero}. Te avisaremos cuando tengamos novedades.`
-    : `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
+  crearNotif('staff', 'nuevo_ticket', id, `Nuevo ticket ${ticket.numero} de ${reportante.name} (${LOCACIONES[ticket.locacion]||ticket.locacion}${tipo_incidencia==='area_comun'?' · área común':''}): ${titulo}`);
+  if(!reportaStaffPropio){
+    crearNotif(reportante.email, 'confirmacion', id, isStaff()
+      ? `${ROLE_LABELS[currentUser.role]} registró un ticket a tu nombre: ${ticket.numero} — ${titulo}. Te avisaremos cuando tengamos novedades.`
+      : `Tu ticket ${ticket.numero} fue recibido. Te avisaremos cuando tengamos novedades.`);
+  }
 
   fbSetWithRetry('tickets', id, ticket).catch(e=>{
     // Antes esto se perdía en silencio (solo console.warn) — ver nota de
@@ -2444,7 +2588,8 @@ function renderDetailBody(t){
     <div class="detail-hero">
       <div>
         <div class="numero mono">${esc(t.numero)}</div>
-        <div class="detail-cat">${esc(t.categoria)}${t.subcategoria?' · '+esc(t.subcategoria):''}</div>
+        <div class="detail-cat">${esc(tituloTicket(t))}</div>
+        ${t.titulo ? `<div style="font-size:12.5px; color:var(--text2); margin-top:2px;">${esc(catTicket(t))}</div>` : ''}
       </div>
       <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
     </div>
@@ -2456,7 +2601,9 @@ function renderDetailBody(t){
       <div class="detail-main">
         <div class="detail-grid">
           <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
-          <div class="detail-item"><div class="l">Locación</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
+          <div class="detail-item"><div class="l">Edificio</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
+          <div class="detail-item"><div class="l">Tipo</div><div class="v">${t.tipo_incidencia==='area_comun' ? 'Área común' : 'Oficina de inquilino'}</div></div>
+          ${t.ubicacion_detalle ? `<div class="detail-item"><div class="l">Ubicación</div><div class="v">${esc(t.ubicacion_detalle)}</div></div>` : ''}
           ${t.empresa ? `<div class="detail-item"><div class="l">Empresa</div><div class="v">${esc(t.empresa)}</div></div>` : ''}
           <div class="detail-item"><div class="l">Creado</div><div class="v">${fmtDate(t.fecha_creacion)}</div></div>
           <div class="detail-item"><div class="l">Prioridad</div><div class="v"><span class="prio-badge prio-${t.prioridad}">${PRIORIDAD_LABELS[t.prioridad]}</span></div></div>
@@ -3698,7 +3845,7 @@ function exportTicketsCSV(){
   if(!isStaff()) return;
   const list = getFilteredTickets();
   if(!list.length){ showToast('No hay tickets para exportar'); return; }
-  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable_interno','Ejecuta','Tipo_ejecuta','Esperando','Horas_en_espera'];
+  const headers = ['Numero','Categoria','Subcategoria','Descripcion','Locacion','Locatario','Empresa','Prioridad','Estatus','Vencido','Creado','Actualizado','Cerrado','Dias_solucion','Calificacion','Responsable_interno','Ejecuta','Tipo_ejecuta','Esperando','Horas_en_espera','Titulo','Tipo','Ubicacion'];
   const RESP_LABELS = { interno:'Personal interno', suplidor:'Suplidor', manual:'Otro' };
   const rows = list.map(t => [
     t.numero, t.categoria, t.subcategoria||'', t.descripcion, t.locacion, t.empleado_nombre, t.empresa||'',
@@ -3707,7 +3854,8 @@ function exportTicketsCSV(){
     t.fecha_resolucion ? diffDays(t.fecha_creacion, t.fecha_resolucion) : '',
     t.calificacion ? `${t.calificacion}/5` : '',
     t.responsable_nombre || '', t.asignado_a || '', RESP_LABELS[t.asignado_tipo] || '',
-    t.status==='en_espera' ? (ESPERA_MOTIVOS[t.espera_motivo]||'') : '', (msEnEspera(t, t.fecha_resolucion||undefined)/3600000).toFixed(1)
+    t.status==='en_espera' ? (ESPERA_MOTIVOS[t.espera_motivo]||'') : '', (msEnEspera(t, t.fecha_resolucion||undefined)/3600000).toFixed(1),
+    tituloTicket(t), t.tipo_incidencia==='area_comun' ? 'Área común' : 'Oficina de inquilino', t.ubicacion_detalle || ''
   ]);
   const csv = '﻿' + [headers, ...rows].map(r => r.map(csvEsc).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
