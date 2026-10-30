@@ -414,39 +414,6 @@ main.view.active{display:block;}
 .comment-item .msg{font-size:12.5px; color:var(--text2); line-height:1.4;}
 
 /* ---------- Dashboard ---------- */
-.kpi-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;}
-.kpi-card{background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:var(--radius); padding:16px 15px 14px; box-shadow:var(--shadow-sm);}
-.kpi-card .v{font-size:28px; font-weight:800; font-family:'Public Sans',sans-serif; line-height:1; letter-spacing:-.2px;}
-.kpi-card .l{font-size:11.5px; color:var(--text3); font-weight:700; margin-top:6px; text-transform:uppercase; letter-spacing:.3px;}
-/* Variantes de color del KPI — la tarjeta "hero" destaca el número principal
-   (estilo tarjeta oscura del dashboard de referencia); el resto usa un borde
-   superior de color semántico en vez de todas iguales en amarillo. */
-.kpi-card.kpi-hero{background:var(--dark); border-color:var(--dark); border-top-color:var(--accent);}
-.kpi-card.kpi-hero .v{color:#fff;}
-.kpi-card.kpi-hero .l{color:rgba(255,255,255,.65);}
-.kpi-card.kpi-danger{border-top-color:var(--danger);}
-.kpi-card.kpi-info{border-top-color:var(--info);}
-.kpi-card.kpi-success{border-top-color:var(--success);}
-.kpi-card.kpi-purple{border-top-color:var(--purple);}
-.kpi-card.kpi-teal{border-top-color:var(--teal);}
-.chart-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 20px 18px; margin-bottom:16px; box-shadow:var(--shadow-sm);}
-.chart-card h4{font-family:'Public Sans',sans-serif; font-weight:800; font-size:12.5px; margin:0 0 16px; text-transform:uppercase; letter-spacing:.5px; color:var(--text3);}
-.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:11px; max-width:520px;}
-.bar-row:last-child{margin-bottom:0;}
-.bar-label{width:118px; flex:0 0 118px; font-size:12px; font-weight:600; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.bar-track{flex:1; height:12px; background:var(--surface2); border-radius:100px; overflow:hidden;}
-.bar-fill{height:100%; border-radius:100px; min-width:3px; transition:width .5s ease;}
-.bar-value{width:26px; flex:0 0 26px; text-align:right; font-size:12px; font-weight:700; font-family:'Roboto Mono',monospace;}
-.donut-wrap{display:flex; align-items:center; gap:20px;}
-.donut{width:120px; height:120px; flex:0 0 120px; transform:rotate(-90deg);}
-.donut-legend{flex:1; display:flex; flex-direction:column; gap:8px;}
-.legend-item{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text2); font-weight:600;}
-.legend-dot{width:10px; height:10px; border-radius:3px; flex:0 0 auto;}
-.legend-item b{margin-left:auto; font-family:'Roboto Mono',monospace; color:var(--text);}
-.solved-table{width:100%; border-collapse:collapse; font-size:12.5px;}
-.solved-table th{text-align:left; color:var(--text3); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; padding-bottom:8px; border-bottom:1px solid var(--border);}
-.solved-table td{padding:9px 0; border-bottom:1px solid var(--border);}
-.solved-table tr:last-child td{border-bottom:none;}
 
 /* ---------- Users ---------- */
 .user-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:13px 14px; margin-bottom:9px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-sm); cursor:pointer;}
@@ -564,11 +531,6 @@ main.view.active{display:block;}
 .desktop-content{padding:24px 28px 40px; max-width:1400px;}
 #desktop-content-slot main.view{padding:0; max-width:none; min-height:0;}
 
-.desktop-content .kpi-grid{grid-template-columns:repeat(4,1fr);}
-.desktop-content #view-dashboard.active{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;}
-.desktop-content #view-dashboard .kpi-grid{grid-column:1 / -1;}
-.desktop-content #view-dashboard .chart-card{margin-bottom:0;}
-.desktop-content #view-dashboard .bar-row{max-width:none;}
 .desktop-content #tickets-list, .desktop-content #users-list, .desktop-content #empresas-list{
   display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:10px; align-content:start;
 }
@@ -601,7 +563,7 @@ main.view.active{display:block;}
 .settings-row .v{font-weight:700;}
 
 @media (hover:hover) and (pointer:fine){
-  .ticket-card, .user-card, .kpi-card, .chart-card, .catalog-card{transition:box-shadow .15s ease, transform .15s ease, border-color .15s ease;}
+  .ticket-card, .user-card, .catalog-card{transition:box-shadow .15s ease, transform .15s ease, border-color .15s ease;}
   .ticket-card:hover, .user-card:hover{box-shadow:var(--shadow-md); transform:translateY(-1px); border-color:var(--border2);}
   .catalog-card:hover{box-shadow:var(--shadow-md); border-color:var(--border2);}
 }
@@ -673,14 +635,6 @@ main.view.active{display:block;}
 #desktop-content-slot .tk-filterbar #filter-btn, #desktop-content-slot .tk-filterbar #export-btn{display:none !important;}
 #desktop-content-slot .tk-inline-filters{display:contents;}
 #desktop-content-slot .tk-inline-filters select{flex:0 1 auto; width:auto; min-width:0; max-width:220px; height:44px; margin:0; border:1px solid var(--border2); border-radius:11px; padding:0 8px 0 12px; background-color:var(--surface); font-family:'Inter',sans-serif; font-size:14px; color:var(--text);}
-/* Dashboard: tarjetas KPI "hero + acento" con la etiqueta arriba */
-.kpi-card{display:flex; flex-direction:column-reverse; justify-content:flex-end; gap:8px; border:none; border-top:4px solid var(--accent); padding:18px;}
-.kpi-card .v{font-size:34px;}
-.kpi-card .l{margin-top:0; font-size:10.5px; letter-spacing:.6px; color:#4A4544;}
-.kpi-card.kpi-hero{border-top:none;}
-.kpi-card.kpi-hero .l{color:var(--accent);}
-.chart-card{border:none; padding:20px;}
-.chart-card h4{font-size:15px; text-transform:none; letter-spacing:0; color:var(--text); margin-bottom:14px;}
 .catalog-card, .user-card, .settings-block{border-color:var(--border);}
 /* Encabezado móvil: oscuro sólido, como los mockups */
 .header{background:var(--dark); border-bottom:none;}
@@ -730,6 +684,107 @@ main.view.active{display:block;}
 body.in-nuevo .header > :not(.header-back){display:none !important;}
 body.in-nuevo .header-back{display:flex;}
 #mobile-content-slot #view-nuevo .nt-crumb, #mobile-content-slot #view-nuevo .page-title{display:none;}
+
+/* ======================================================================
+   Dashboard — Fase E (2026-10-30), mockup "E · Dashboard (propuesta)"
+   ====================================================================== */
+.db-filters{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 18px;}
+.topbar .db-filters{margin:0;}
+#desktop-content-slot #db-filters-inline{display:none;}
+.db-seg{display:inline-flex; padding:4px; border-radius:100px; background:var(--surface); border:1px solid var(--border2);}
+.db-seg button{height:36px; padding:0 14px; border-radius:100px; border:none; background:transparent; font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:#4A4544; cursor:pointer; white-space:nowrap;}
+.db-seg button[aria-pressed="true"]{background:var(--dark); color:#fff;}
+.db-seg button:focus-visible, .db-filters select:focus-visible, .db-card-btn:focus-visible{outline:2px solid var(--accent2); outline-offset:2px;}
+.db-filters select{height:44px; border:1px solid var(--border2); border-radius:11px; padding:0 8px 0 12px; background:var(--surface); font-family:'Inter',sans-serif; font-size:14px; color:var(--text);}
+.db-sec{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+.db-eyebrow{margin:0; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#4A4544;}
+.db-grid-4{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px;}
+.db-grid-3{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px,100%),1fr)); gap:14px;}
+.db-grid-2{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(420px,100%),1fr)); gap:14px; margin-bottom:14px;}
+.db-card{padding:18px; border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow-sm); color:var(--text); min-width:0;}
+.db-card-btn{display:block; width:100%; text-align:left; border:none; font:inherit; cursor:pointer; transition:box-shadow .15s ease, transform .15s ease;}
+.db-card-btn:hover{box-shadow:var(--shadow-md); transform:translateY(-1px);}
+.db-top-danger{border-top:4px solid var(--danger);}
+.db-top-warning{border-top:4px solid var(--warning);}
+.db-top-teal{border-top:4px solid var(--teal);}
+.db-top-purple{border-top:4px solid var(--purple);}
+.db-top-accent{border-top:4px solid var(--accent);}
+.db-hero{background:var(--dark); color:#fff;}
+.db-kpi-l{font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#4A4544;}
+.db-kpi-v{margin-top:6px; font-family:'Public Sans',sans-serif; font-weight:800; font-size:36px; line-height:1.1;}
+.db-kpi-s{margin-top:4px; font-size:12.5px; color:#4A4544; line-height:1.45;}
+.db-hero .db-kpi-l{color:var(--accent);}
+.db-hero .db-kpi-s{color:#D8D2C8;}
+.db-h{margin:0; font-family:'Public Sans',sans-serif; font-weight:800; font-size:15px;}
+.db-h-row{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+.db-h-note{font-size:12px; color:#6F675F;}
+.db-sla{display:flex; flex-direction:column; gap:10px;}
+.db-sla-h{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+.db-pct{font-family:'Public Sans',sans-serif; font-weight:800; font-size:28px; line-height:1;}
+.db-meter{height:10px; border-radius:100px; background:#FDECEA; overflow:hidden;}
+.db-meter.vacio{background:#F2EEE2;}
+.db-meter div{height:100%; border-radius:100px;}
+.db-mini{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;}
+.db-mini .db-card{padding:14px;}
+.db-mini .db-kpi-v{font-size:26px; margin-top:4px;}
+.db-mini .db-kpi-v small{font-family:'Inter',sans-serif; font-weight:600; font-size:12px; color:#6F675F;}
+.db-table{width:100%; min-width:380px; border-collapse:collapse; font-size:13px;}
+.db-table th{text-align:right; padding:8px 6px; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#4A4544; border-bottom:1px solid var(--border);}
+.db-table th:first-child, .db-table td:first-child{text-align:left;}
+.db-table td{padding:9px 6px; border-bottom:1px solid #F2EEE2; text-align:right; font-weight:700;}
+.db-table tr:last-child td{border-bottom:none;}
+.db-table td:first-child{font-weight:400;}
+.db-table tr.sel td{background:var(--surface2);}
+.db-table .cod{font-family:'Roboto Mono',monospace; font-weight:700;}
+.db-table .nom{color:#4A4544;}
+.db-table .esp{color:#0B6E62;}
+.db-pill-red{display:inline-block; min-width:18px; padding:2px 8px; border-radius:100px; background:#FDECEA; color:#B71C1C; font-weight:700; text-align:center;}
+.db-scroll{overflow-x:auto;}
+.db-donut-row{display:flex; align-items:center; gap:22px; flex-wrap:wrap;}
+.db-donut{position:relative; width:132px; height:132px; flex:0 0 132px;}
+.db-donut svg{width:132px; height:132px; transform:rotate(-90deg);}
+.db-donut circle[data-tip]{cursor:default;}
+.db-donut-c{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;}
+.db-donut-c b{font-family:'Public Sans',sans-serif; font-weight:800; font-size:24px; line-height:1;}
+.db-donut-c span{font-size:11px; color:#6F675F; margin-top:2px;}
+.db-legend{display:flex; flex-direction:column; gap:8px; font-size:13px; min-width:150px;}
+.db-legend div{display:flex; align-items:center; gap:8px;}
+.db-legend i{width:10px; height:10px; border-radius:3px; flex:0 0 10px;}
+.db-legend b{margin-left:auto; padding-left:18px;}
+.db-split{display:flex; flex-direction:column; gap:8px; margin-top:16px;}
+.db-split-t{font-size:12.5px; font-weight:600;}
+.db-split-bar{display:flex; gap:2px; height:12px; border-radius:100px; overflow:hidden; background:#F2EEE2;}
+.db-split-bar div{height:100%;}
+.db-split-l{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12.5px; color:#4A4544;}
+.db-key{display:inline-flex; align-items:center; gap:6px;}
+.db-key i{width:10px; height:10px; border-radius:3px;}
+.db-months{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; align-items:end;}
+.db-month{display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0;}
+.db-month-bars{display:flex; align-items:flex-end; justify-content:center; gap:3px; height:130px; width:100%;}
+.db-month-bars div{width:16px; border-radius:4px 4px 0 0; min-height:2px;}
+.db-month-l{font-size:12px; color:#4A4544;}
+.db-month-v{font-family:'Roboto Mono',monospace; font-size:11px; color:#6F675F; white-space:nowrap;}
+.db-bars{display:flex; flex-direction:column; gap:9px;}
+.db-bar-row{display:grid; grid-template-columns:minmax(0,150px) minmax(0,1fr) 34px; gap:10px; align-items:center; font-size:13px;}
+.db-bar-row.x{grid-template-columns:minmax(0,150px) minmax(0,1fr) 34px 56px;}
+.db-bar-l{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.db-bar-l.warn{color:#8A6508; font-weight:700;}
+.db-track{height:10px; border-radius:100px; background:#F2EEE2;}
+.db-track div{height:100%; border-radius:100px; min-width:3px;}
+.db-bar-v{text-align:right;}
+.db-bar-x{text-align:right; font-family:'Roboto Mono',monospace; font-size:12px; color:#4A4544;}
+.db-empty{padding:14px 0; font-size:13px; color:#6F675F;}
+.db-tip{position:fixed; z-index:400; pointer-events:none; padding:7px 10px; border-radius:9px; background:var(--dark); color:#fff; font-size:12.5px; font-weight:600; box-shadow:var(--shadow-md); max-width:260px;}
+.db-tip[hidden]{display:none;}
+@media(max-width:600px){
+  .db-bar-row{grid-template-columns:minmax(0,110px) minmax(0,1fr) 30px;}
+  .db-bar-row.x{grid-template-columns:minmax(0,110px) minmax(0,1fr) 30px 50px;}
+  .db-month-bars div{width:11px;}
+  .db-kpi-v{font-size:30px;}
+  .db-table{min-width:0;}
+  .db-table .nom{display:none;} /* en el teléfono basta el código del edificio */
+  .db-table th{letter-spacing:.3px;}
+}
 </style>
 </head>
 <body>
@@ -880,6 +935,7 @@ body.in-nuevo .header-back{display:flex;}
           <p id="topbar-sub"></p>
         </div>
         <div class="topbar-actions">
+          <div class="db-filters" id="db-filters-top" style="display:none;"></div>
           <button class="icon-btn-light" id="view-toggle-btn" onclick="toggleViewMode()" style="display:none;" aria-label="Cambiar vista"></button>
           <button class="btn btn-outline" id="topbar-export" onclick="exportTicketsCSV()" style="display:none;">Exportar CSV</button>
           <button class="btn btn-primary" id="topbar-new-ticket" onclick="openTicketForm()" style="display:none;">+ Nuevo ticket</button>
@@ -1009,43 +1065,9 @@ body.in-nuevo .header-back{display:flex;}
   <!-- ---------- Dashboard (admin) ---------- -->
   <main class="view" id="view-dashboard">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-sub">Métricas del sistema de tickets — Oficinas Felices</p>
-    <div class="kpi-grid" id="kpi-grid"></div>
-
-    <div class="chart-card">
-      <h4>Tickets por categoría</h4>
-      <div id="chart-categoria"></div>
-    </div>
-    <div class="chart-card">
-      <h4>Tickets por locación</h4>
-      <div id="chart-locacion"></div>
-    </div>
-    <div class="chart-card">
-      <h4>Distribución por estatus</h4>
-      <div class="donut-wrap">
-        <div id="chart-status-donut"></div>
-        <div class="donut-legend" id="chart-status-legend"></div>
-      </div>
-    </div>
-    <div class="chart-card">
-      <h4>Tendencia — tickets creados por mes</h4>
-      <div id="chart-tendencia"></div>
-    </div>
-    <div class="chart-card">
-      <h4>Promedio de días de solución por categoría</h4>
-      <table class="solved-table">
-        <thead><tr><th>Categoría</th><th>Resueltos</th><th>Prom. días</th></tr></thead>
-        <tbody id="solved-table-body"></tbody>
-      </table>
-    </div>
-    <div class="chart-card">
-      <h4>Carga por responsable interno (tickets abiertos)</h4>
-      <div id="chart-responsable"></div>
-    </div>
-    <div class="chart-card">
-      <h4>Tickets con proveedor externo (abiertos)</h4>
-      <div id="chart-suplidores"></div>
-    </div>
+    <div class="db-filters" id="db-filters-inline"></div>
+    <div id="db-root"></div>
+    <div class="db-tip" id="db-tip" role="tooltip" hidden></div>
   </main>
 
   <!-- ---------- Usuarios (admin) ---------- -->
@@ -2273,7 +2295,10 @@ function goHome(){ switchView(isStaff() ? 'dashboard' : 'tickets'); }
 function switchView(name){
   if(ADMIN_ONLY_VIEWS.includes(name) && !isAdmin()) name = 'tickets';
   if(STAFF_VIEWS.includes(name) && !isStaff()) name = 'tickets';
-  if(currentView !== name) window.scrollTo(0,0); // cada vista abre desde arriba
+  if(currentView !== name){ // cada vista abre desde arriba (en escritorio el que se desplaza es .desktop-main)
+    window.scrollTo(0,0);
+    const dm = document.querySelector('.desktop-main'); if(dm) dm.scrollTop = 0;
+  }
   currentView = name;
   document.body.classList.toggle('in-nuevo', name==='nuevo');
   document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
@@ -2291,6 +2316,7 @@ function switchView(name){
   document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
   const topNewTicket = document.getElementById('topbar-new-ticket'); if(topNewTicket) topNewTicket.style.display = (name==='tickets') ? 'inline-flex' : 'none';
   const topExport = document.getElementById('topbar-export'); if(topExport) topExport.style.display = (name==='tickets' && isStaff()) ? 'inline-flex' : 'none';
+  const dbTop = document.getElementById('db-filters-top'); if(dbTop) dbTop.style.display = (name==='dashboard' && isDesktopLayout()) ? 'flex' : 'none';
   const topTitle = document.getElementById('topbar-title'); if(topTitle) topTitle.textContent = VIEW_TITLES[name] || '';
   const topSub = document.getElementById('topbar-sub'); if(topSub) topSub.textContent = VIEW_SUBS[name] || '';
   updateViewToggleBtn();
@@ -3909,30 +3935,6 @@ function renderProfile(){
    ====================================================================== */
 const CHART_COLORS = ['#E0C01A','#221E1F','#1565C0','#6A4C93','#0F9D8C','#B8860B','#D32F2F','#2E7D32'];
 
-function barRows(data){
-  const max = Math.max(1, ...data.map(d=>d.value));
-  if(!data.length) return `<div class="empty-state" style="padding:20px;"><div class="s">Sin datos aún</div></div>`;
-  return data.map(d=>`
-    <div class="bar-row">
-      <div class="bar-label">${esc(d.label)}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(d.value/max*100).toFixed(1)}%;background:${d.color}"></div></div>
-      <div class="bar-value mono">${d.value}</div>
-    </div>`).join('');
-}
-function donutSVG(data){
-  const total = data.reduce((s,d)=>s+d.value,0);
-  if(!total) return `<svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--border)" stroke-width="7"/></svg>`;
-  let acc = 0;
-  const circles = data.filter(d=>d.value>0).map(d=>{
-    const pct = d.value/total*100;
-    const dash = `${pct.toFixed(2)} ${(100-pct).toFixed(2)}`;
-    const offset = (25 - acc).toFixed(2);
-    acc += pct;
-    return `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="${d.color}" stroke-width="7" stroke-dasharray="${dash}" stroke-dashoffset="${offset}"/>`;
-  }).join('');
-  return `<svg viewBox="0 0 42 42" class="donut">${circles}</svg>`;
-}
-
 /* ======================================================================
    Vista SLA (staff) — Fase D, 2026-10
    ====================================================================== */
@@ -3977,119 +3979,330 @@ function updateSlaBadge(){
   el.textContent = ids.size ? String(ids.size) : '';
 }
 
+/* ======================================================================
+   Dashboard — Fase E (2026-10-30)
+   - Filtros: período (este mes / 3 meses / este año / todo) y edificio.
+   - "Ahora mismo": abiertos, vencidos, en riesgo y en espera. No depende del
+     período (sí del edificio). Vencidos/en riesgo usan las mismas reglas que
+     la vista SLA (slaListas), así los números coinciden con ella.
+   - Período: SLA de primera respuesta (tickets creados en el período) y de
+     resolución (tickets cerrados en el período, sin contar el tiempo en espera),
+     reapertura y calificación.
+   - Por edificio, abiertos por estado, oficinas vs áreas comunes, creados vs
+     cerrados (6 meses), por categoría y carga por responsable / proveedor.
+   ====================================================================== */
+const DB_PERIODOS = { mes:'Este mes', '3m':'3 meses', anio:'Este año', todo:'Todo' };
+// Colores de la dona: validados para daltonismo (azul más claro que el de la
+// etiqueta "Nuevo" para separarlo del morado).
+const DB_COLOR_ESTADO = { nuevo:'#4A90E2', en_proceso:'#6A4C93', en_espera:'#0F9D8C' };
+let DB = { periodo:'mes', loc:'' };
+try{
+  const g = JSON.parse(localStorage.getItem('of_db_filtros') || 'null');
+  if(g && DB_PERIODOS[g.periodo]) DB.periodo = g.periodo;
+  if(g && typeof g.loc === 'string') DB.loc = g.loc;
+}catch(e){}
+function dbGuardarFiltros(){ try{ localStorage.setItem('of_db_filtros', JSON.stringify(DB)); }catch(e){} }
+function setDbPeriodo(p){ if(!DB_PERIODOS[p]) return; DB.periodo = p; dbGuardarFiltros(); renderDashboard(); }
+function setDbLoc(loc){ DB.loc = LOCACIONES[loc] ? loc : ''; dbGuardarFiltros(); renderDashboard(); }
+
+function dbCap(x){ return x.charAt(0).toUpperCase() + x.slice(1); }
+function dbMesCorto(d){ return dbCap(d.toLocaleDateString('es-DO',{month:'short'}).replace('.','')); }
+function dbPeriodoInicio(p){
+  const n = new Date();
+  if(p==='mes') return new Date(n.getFullYear(), n.getMonth(), 1);
+  if(p==='3m') return new Date(n.getFullYear(), n.getMonth()-2, 1);
+  if(p==='anio') return new Date(n.getFullYear(), 0, 1);
+  return null;
+}
+function dbPeriodoLabel(p){
+  const n = new Date();
+  if(p==='mes') return `${dbCap(n.toLocaleDateString('es-DO',{month:'long'}))} ${n.getFullYear()}`;
+  if(p==='3m'){
+    const a = new Date(n.getFullYear(), n.getMonth()-2, 1);
+    return a.getFullYear()===n.getFullYear() ? `${dbMesCorto(a)}–${dbMesCorto(n)} ${n.getFullYear()}` : `${dbMesCorto(a)} ${a.getFullYear()} – ${dbMesCorto(n)} ${n.getFullYear()}`;
+  }
+  if(p==='anio') return `Año ${n.getFullYear()}`;
+  return 'Todo el historial';
+}
+function dbEnPeriodo(iso, inicio){
+  if(!iso) return false;
+  if(!inicio) return true;
+  const d = new Date(iso); return !isNaN(d) && d >= inicio;
+}
+// Primera respuesta de staff: el dato real (fecha_primera_respuesta) y, para
+// tickets viejos que no lo tienen, el primer cambio de historial o el primer
+// comentario de staff.
+function primeraRespuestaISO(t){
+  if(t.fecha_primera_respuesta) return t.fecha_primera_respuesta;
+  const c = [];
+  if(Array.isArray(t.historial) && t.historial.length>1) c.push(new Date(t.historial[1].fecha));
+  const pc = (t.comentarios||[]).find(x=>x.rol==='admin'||x.rol==='empleado');
+  if(pc) c.push(new Date(pc.fecha));
+  const v = c.filter(d=>!isNaN(d)); if(!v.length) return '';
+  const m = new Date(Math.min(...v)), cr = new Date(t.fecha_creacion);
+  return (isNaN(cr) || m < cr) ? '' : m.toISOString();
+}
+function msResolucionSinEspera(t){
+  return Math.max(0, new Date(t.fecha_resolucion) - new Date(t.fecha_creacion) - msEnEspera(t, t.fecha_resolucion));
+}
+function dbFmtHoras(h){ return h < 48 ? `${h.toFixed(1)} h` : `${(h/24).toFixed(1)} días`; }
+function dbNivel(pct){ // color de estado según el % a tiempo
+  if(pct >= 90) return { fill:'#2E7D32', ink:'#1B5E20' };
+  if(pct >= 75) return { fill:'#B8860B', ink:'#8A6508' };
+  return { fill:'#D32F2F', ink:'#B71C1C' };
+}
+// Vencidos y en riesgo "ahora", sin repetir tickets entre los dos plazos.
+function dbSlaAhora(loc){
+  const venc = new Map(), riesgo = new Map();
+  ['resolucion','respuesta'].forEach(tipo => {
+    const l = slaListas(tipo, loc);
+    l.vencidos.forEach(x => { if(!venc.has(x.t.id)) venc.set(x.t.id, tipo); });
+    l.riesgo.forEach(x => { if(!riesgo.has(x.t.id)) riesgo.set(x.t.id, tipo); });
+  });
+  venc.forEach((_, id) => riesgo.delete(id));
+  return { venc, riesgo };
+}
+function dbIrASla(cual){
+  const { venc, riesgo } = dbSlaAhora(DB.loc);
+  const m = cual === 'venc' ? venc : riesgo;
+  const tipos = Array.from(m.values());
+  SLA_TIPO = (!tipos.length || tipos.includes('resolucion')) ? 'resolucion' : 'respuesta';
+  switchView('sla');
+  const sel = document.getElementById('sla-edificio');
+  if(sel){ sel.value = DB.loc; renderSlaView(); }
+}
+function dbFiltrosHTML(){
+  return `<div class="db-seg" role="group" aria-label="Período">${Object.entries(DB_PERIODOS).map(([k,l]) => `<button type="button" aria-pressed="${DB.periodo===k}" onclick="setDbPeriodo('${k}')">${l}</button>`).join('')}</div>
+    <select aria-label="Edificio" onchange="setDbLoc(this.value)"><option value="">Todos los edificios</option>${Object.entries(LOCACIONES).map(([k,v]) => `<option value="${k}" title="${esc(v)}" ${DB.loc===k?'selected':''}>${k}</option>`).join('')}</select>`;
+}
+function dbBarRows(items, color, conExtra){
+  if(!items.length) return '<div class="db-empty">Sin datos.</div>';
+  const max = Math.max(1, ...items.map(i=>i.n));
+  return `<div class="db-bars">${items.map(i => `
+    <div class="db-bar-row${conExtra?' x':''}">
+      <span class="db-bar-l ${i.cls||''}" title="${esc(i.label)}">${esc(i.label)}</span>
+      <div class="db-track"><div style="width:${(i.n/max*100).toFixed(1)}%; background:${i.color||color};"></div></div>
+      <strong class="db-bar-v">${i.n}</strong>
+      ${conExtra ? `<span class="db-bar-x">${esc(i.extra)}</span>` : ''}
+    </div>`).join('')}</div>`;
+}
+function dbDonutSVG(data){
+  const total = data.reduce((a,d)=>a+d.n, 0);
+  if(!total) return `<svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="15.915" fill="none" stroke="#F2EEE2" stroke-width="7.5"/></svg>`;
+  const vivos = data.filter(d=>d.n>0);
+  const hueco = vivos.length > 1 ? 0.8 : 0; // 2px de superficie entre segmentos
+  let acc = 0;
+  return `<svg viewBox="0 0 42 42" aria-hidden="true">${vivos.map(d => {
+    const pct = d.n/total*100, largo = Math.max(0.01, pct - hueco);
+    const c = `<circle cx="21" cy="21" r="15.915" fill="none" stroke="${d.color}" stroke-width="7.5" stroke-dasharray="${largo.toFixed(2)} ${(100-largo).toFixed(2)}" stroke-dashoffset="${(-acc).toFixed(2)}" data-tip="${esc(d.label)}: ${d.n}"/>`;
+    acc += pct; return c;
+  }).join('')}</svg>`;
+}
+function dbTipInit(){
+  const root = document.getElementById('view-dashboard'), tip = document.getElementById('db-tip');
+  if(!root || !tip || root.dataset.tip) return;
+  root.dataset.tip = '1';
+  const mostrar = e => {
+    const el = e.target.closest && e.target.closest('[data-tip]');
+    if(!el || !root.contains(el)){ tip.hidden = true; return; }
+    tip.textContent = el.getAttribute('data-tip'); tip.hidden = false;
+    const r = el.getBoundingClientRect();
+    tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, Math.max(8, r.left + r.width/2 - tip.offsetWidth/2)) + 'px';
+    tip.style.top = Math.max(8, r.top - tip.offsetHeight - 8) + 'px';
+  };
+  root.addEventListener('pointerover', mostrar);
+  root.addEventListener('pointerleave', () => { tip.hidden = true; });
+  window.addEventListener('scroll', () => { tip.hidden = true; }, { passive:true });
+}
+
 function renderDashboard(){
-  const t = tickets;
-  const total = t.length;
-  const abiertos = t.filter(x=>x.status!=='cerrado').length;
-  const cerrados = total - abiertos;
-  const resueltosConFecha = t.filter(x=>x.fecha_resolucion);
-  const promDias = resueltosConFecha.length
-    ? (resueltosConFecha.reduce((s,x)=>s+diffDays(x.fecha_creacion,x.fecha_resolucion),0)/resueltosConFecha.length).toFixed(1)
-    : '—';
-  // "Vencidos" ya es en tiempo real: isVencido() se calcula contra la fecha
-  // actual en cada render del Dashboard, no contra un valor guardado.
-  const vencidos = t.filter(isVencido).length;
+  const root = document.getElementById('db-root');
+  if(!root) return;
+  if(DB.loc && !LOCACIONES[DB.loc]) DB.loc = '';
+  ['db-filters-top','db-filters-inline'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = dbFiltrosHTML(); });
+  dbTipInit();
 
-  // Tasa de reapertura (Fase 6): de los tickets que llegaron a estar cerrados
-  // alguna vez (tienen fecha_resolucion, o ya se reabrieron), ¿qué porcentaje
-  // se reabrió al menos una vez?
-  const tocaronCerrado = t.filter(x=>x.fecha_resolucion || x.reaperturas>0);
-  const reabiertos = t.filter(x=>x.reaperturas>0);
-  const tasaReapertura = tocaronCerrado.length ? (reabiertos.length/tocaronCerrado.length*100).toFixed(0) : null;
+  const loc = DB.loc;
+  const T = tickets.filter(t => !loc || t.locacion === loc);
+  const ini = dbPeriodoInicio(DB.periodo);
+  const periodo = dbPeriodoLabel(DB.periodo);
 
-  // Tiempo de primera respuesta (Fase 6, aproximado): tiempo entre la creación
-  // del ticket y la primera señal de que staff lo tocó — el primer cambio de
-  // historial después de la creación, o el primer comentario de staff, lo que
-  // ocurra antes. No es un timestamp dedicado (no existía antes de esta fase),
-  // así que es una aproximación a partir de datos que ya se guardaban.
-  const primeraRespuestaHoras = t.map(x=>{
-    const candidatos = [];
-    if(Array.isArray(x.historial) && x.historial.length>1) candidatos.push(new Date(x.historial[1].fecha));
-    const primerComentarioStaff = (x.comentarios||[]).find(c=>c.rol==='admin'||c.rol==='empleado');
-    if(primerComentarioStaff) candidatos.push(new Date(primerComentarioStaff.fecha));
-    if(!candidatos.length) return null;
-    const primera = new Date(Math.min(...candidatos));
-    const creacion = new Date(x.fecha_creacion);
-    if(isNaN(primera) || isNaN(creacion) || primera < creacion) return null;
-    return (primera - creacion) / 3600000;
-  }).filter(h=>h!=null);
-  const promPrimeraRespuesta = primeraRespuestaHoras.length
-    ? (primeraRespuestaHoras.reduce((s,h)=>s+h,0)/primeraRespuestaHoras.length)
-    : null;
-  const primeraRespuestaLabel = promPrimeraRespuesta==null ? '—'
-    : promPrimeraRespuesta < 48 ? `${promPrimeraRespuesta.toFixed(1)}h`
-    : `${(promPrimeraRespuesta/24).toFixed(1)}d`;
+  // ---------- Ahora mismo ----------
+  const abiertos = T.filter(t => t.status !== 'cerrado');
+  const nEstado = s => abiertos.filter(t => t.status === s).length;
+  const enEspera = abiertos.filter(t => t.status === 'en_espera');
+  const nMotivo = m => enEspera.filter(t => t.espera_motivo === m).length;
+  const { venc, riesgo } = dbSlaAhora(loc);
 
-  // Calificación promedio (Fase 4/6): solo cuenta tickets ya calificados.
-  const calificados = t.filter(x=>x.calificacion);
-  const promCalificacion = calificados.length
-    ? (calificados.reduce((s,x)=>s+x.calificacion,0)/calificados.length).toFixed(1)
-    : null;
+  const ahora = `
+    <section class="db-sec" aria-labelledby="db-ahora">
+      <h2 class="db-eyebrow" id="db-ahora">Ahora mismo${loc ? ' · '+esc(loc) : ''} · no depende del período</h2>
+      <div class="db-grid-4">
+        <div class="db-card db-hero">
+          <div class="db-kpi-l">Tickets abiertos</div>
+          <div class="db-kpi-v">${abiertos.length}</div>
+          <div class="db-kpi-s">${nEstado('nuevo')} ${nEstado('nuevo')===1?'nuevo':'nuevos'} · ${nEstado('en_proceso')} en proceso · ${enEspera.length} en espera</div>
+        </div>
+        <button type="button" class="db-card db-card-btn db-top-danger" onclick="dbIrASla('venc')">
+          <div class="db-kpi-l">Vencidos</div>
+          <div class="db-kpi-v" style="color:${venc.size ? '#B71C1C' : 'var(--text)'};">${venc.size}</div>
+          <div class="db-kpi-s">Ver en SLA →</div>
+        </button>
+        <button type="button" class="db-card db-card-btn db-top-warning" onclick="dbIrASla('riesgo')">
+          <div class="db-kpi-l">En riesgo</div>
+          <div class="db-kpi-v" style="color:${riesgo.size ? '#8A6508' : 'var(--text)'};">${riesgo.size}</div>
+          <div class="db-kpi-s">Vencen en menos de 24 h →</div>
+        </button>
+        <div class="db-card db-top-teal">
+          <div class="db-kpi-l">En espera · reloj pausado</div>
+          <div class="db-kpi-v" style="color:#0B6E62;">${enEspera.length}</div>
+          <div class="db-kpi-s">${nMotivo('proveedor')} proveedor · ${nMotivo('cliente')} cliente · ${nMotivo('aprobacion')} aprobación</div>
+        </div>
+      </div>
+    </section>`;
 
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card kpi-hero"><div class="v">${total}</div><div class="l">Tickets totales</div></div>
-    <div class="kpi-card kpi-info"><div class="v">${abiertos}</div><div class="l">Abiertos</div></div>
-    <div class="kpi-card kpi-success"><div class="v">${cerrados}</div><div class="l">Cerrados</div></div>
-    <div class="kpi-card kpi-danger"><div class="v" style="${vencidos>0?'color:var(--danger)':''}">${vencidos}</div><div class="l">Vencidos (fuera de SLA)</div></div>
-    <div class="kpi-card"><div class="v">${promDias}${promDias!=='—'?'d':''}</div><div class="l">Prom. días de solución</div></div>
-    <div class="kpi-card kpi-purple"><div class="v">${tasaReapertura==null?'—':tasaReapertura+'%'}</div><div class="l">Tasa de reapertura</div></div>
-    <div class="kpi-card kpi-teal"><div class="v">${primeraRespuestaLabel}</div><div class="l">Prom. primera respuesta</div></div>
-    <div class="kpi-card"><div class="v">${promCalificacion==null?'—':promCalificacion+' ★'}</div><div class="l">Calificación promedio${calificados.length?' ('+calificados.length+')':''}</div></div>
-  `;
+  // ---------- Período ----------
+  const creados = T.filter(t => dbEnPeriodo(t.fecha_creacion, ini));
+  const cerradosP = T.filter(t => t.status === 'cerrado' && (ini ? dbEnPeriodo(t.fecha_resolucion, ini) : true));
 
-  const porCategoria = Object.keys(CATEGORIAS).map((c,i)=>({label:c, value:t.filter(x=>x.categoria===c).length, color:CHART_COLORS[i%CHART_COLORS.length]})).sort((a,b)=>b.value-a.value);
-  document.getElementById('chart-categoria').innerHTML = barRows(porCategoria);
-
-  const porLocacion = Object.entries(LOCACIONES).map(([k],i)=>({label:k, value:t.filter(x=>x.locacion===k).length, color:CHART_COLORS[i%CHART_COLORS.length]}));
-  document.getElementById('chart-locacion').innerHTML = barRows(porLocacion);
-
-  const statusData = STATUS_FLOW.map(s=>({label:STATUS_LABELS[s], value:t.filter(x=>x.status===s).length, color:getComputedStyle(document.documentElement).getPropertyValue(statusVar(s)).trim()}));
-  document.getElementById('chart-status-donut').innerHTML = donutSVG(statusData);
-  document.getElementById('chart-status-legend').innerHTML = statusData.map(d=>`<div class="legend-item"><span class="legend-dot" style="background:${d.color}"></span>${d.label}<b>${d.value}</b></div>`).join('');
-
-  const months = [];
-  const now = new Date();
-  for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push(d); }
-  const tendencia = months.map((d,i)=>{
-    const label = d.toLocaleDateString('es-DO',{month:'short'});
-    const count = t.filter(x=>{ const xd=new Date(x.fecha_creacion); return xd.getFullYear()===d.getFullYear() && xd.getMonth()===d.getMonth(); }).length;
-    return {label: label.charAt(0).toUpperCase()+label.slice(1), value:count, color:CHART_COLORS[0]};
+  let respEval = 0, respOk = 0; const respHoras = [];
+  creados.forEach(t => {
+    const lim = getSlaFor(t.prioridad).respuesta_horas * 3600000;
+    const cr = new Date(t.fecha_creacion); if(isNaN(cr)) return;
+    const pr = primeraRespuestaISO(t);
+    if(pr){ const ms = new Date(pr) - cr; respEval++; if(ms <= lim) respOk++; respHoras.push(ms/3600000); }
+    else if(t.status !== 'cerrado' && Date.now() - cr > lim) respEval++; // sin respuesta y ya vencido
   });
-  document.getElementById('chart-tendencia').innerHTML = barRows(tendencia);
+  const conFecha = cerradosP.filter(t => t.fecha_resolucion && !isNaN(new Date(t.fecha_resolucion)));
+  const resOk = conFecha.filter(t => !isVencidoResolucion(t)).length;
+  const resDias = conFecha.map(t => msResolucionSinEspera(t)/86400000);
+  const prom = a => a.reduce((x,y)=>x+y,0) / a.length;
 
-  const rows = Object.keys(CATEGORIAS).map(c=>{
-    const resueltos = t.filter(x=>x.categoria===c && x.fecha_resolucion);
-    const prom = resueltos.length ? (resueltos.reduce((s,x)=>s+diffDays(x.fecha_creacion,x.fecha_resolucion),0)/resueltos.length).toFixed(1) : '—';
-    return `<tr><td>${esc(c)}</td><td>${resueltos.length}</td><td>${prom}${prom!=='—'?' d':''}</td></tr>`;
+  const slaCard = (titulo, ok, total, detalle) => {
+    if(!total) return `<div class="db-card db-sla"><div class="db-sla-h"><span class="db-h">${titulo}</span><span class="db-pct">—</span></div><div class="db-meter vacio"></div><div class="db-kpi-s">Sin tickets para medir en el período.</div></div>`;
+    const pct = Math.round(ok/total*100), n = dbNivel(pct);
+    return `<div class="db-card db-sla"><div class="db-sla-h"><span class="db-h">${titulo}</span><span class="db-pct" style="color:${n.ink};">${pct}%</span></div>
+      <div class="db-meter" role="img" aria-label="${pct} por ciento a tiempo"><div style="width:${pct}%; background:${n.fill};"></div></div>
+      <div class="db-kpi-s">${detalle}</div></div>`;
+  };
+  const respTxt = `${respOk} de ${respEval} respondidos a tiempo${respHoras.length ? ` · promedio <strong>${dbFmtHoras(prom(respHoras))}</strong>` : ''}`;
+  const resTxt = `${resOk} de ${conFecha.length} cerrados a tiempo${resDias.length ? ` · promedio <strong>${prom(resDias).toFixed(1)} días</strong> sin contar la espera` : ''}`;
+
+  const tocaron = creados.filter(t => t.fecha_resolucion || t.reaperturas > 0);
+  const reab = tocaron.filter(t => t.reaperturas > 0).length;
+  const calif = T.filter(t => t.calificacion && dbEnPeriodo(t.fecha_resolucion || t.fecha_creacion, ini)); // calificados, por fecha de cierre
+  const promCalif = calif.length ? prom(calif.map(t => Number(t.calificacion))).toFixed(1) : null;
+
+  const periodoSec = `
+    <section class="db-sec" aria-labelledby="db-periodo">
+      <h2 class="db-eyebrow" id="db-periodo">${esc(periodo)} · ${creados.length} ${creados.length===1?'creado':'creados'} · ${cerradosP.length} ${cerradosP.length===1?'cerrado':'cerrados'}</h2>
+      <div class="db-grid-3">
+        ${slaCard('SLA de primera respuesta', respOk, respEval, respTxt)}
+        ${slaCard('SLA de resolución', resOk, conFecha.length, resTxt)}
+        <div class="db-mini">
+          <div class="db-card db-top-purple"><div class="db-kpi-l">Reapertura</div><div class="db-kpi-v" style="color:#4A2F70;">${tocaron.length ? Math.round(reab/tocaron.length*100)+'%' : '—'}</div></div>
+          <div class="db-card db-top-accent"><div class="db-kpi-l">Calificación</div><div class="db-kpi-v">${promCalif ? promCalif+' ★' : '—'} ${calif.length ? `<small>(${calif.length})</small>` : ''}</div></div>
+        </div>
+      </div>
+    </section>`;
+
+  // ---------- Por edificio (todos los edificios; resalta el filtrado) ----------
+  const global = dbSlaAhora('');
+  const filasEdif = Object.entries(LOCACIONES).map(([k,v]) => {
+    const tk = tickets.filter(t => t.locacion === k);
+    const ab = tk.filter(t => t.status !== 'cerrado');
+    const vencN = ab.filter(t => global.venc.has(t.id)).length;
+    const cerr = tk.filter(t => t.status === 'cerrado' && t.fecha_resolucion && (!ini || dbEnPeriodo(t.fecha_resolucion, ini)));
+    const pct = cerr.length ? Math.round(cerr.filter(t => !isVencidoResolucion(t)).length / cerr.length * 100) + '%' : '—';
+    return `<tr class="${loc===k?'sel':''}"><td><span class="cod">${esc(k)}</span> <span class="nom">${esc(v)}</span></td><td>${ab.length}</td><td>${vencN ? `<span class="db-pill-red">${vencN}</span>` : '0'}</td><td class="esp">${ab.filter(t=>t.status==='en_espera').length}</td><td>${pct}</td></tr>`;
   }).join('');
-  document.getElementById('solved-table-body').innerHTML = rows;
+  const edifSec = `
+    <section class="db-card db-scroll" aria-labelledby="db-edificio">
+      <h2 class="db-h" id="db-edificio" style="margin-bottom:12px;">Por edificio</h2>
+      <table class="db-table">
+        <thead><tr><th scope="col">Edificio</th><th scope="col">Abiertos</th><th scope="col">Vencidos</th><th scope="col">En espera</th><th scope="col">SLA resolución</th></tr></thead>
+        <tbody>${filasEdif}</tbody>
+      </table>
+    </section>`;
 
-  // Carga por responsable INTERNO (Fase 7): solo tickets ABIERTOS, agrupados por
-  // quién da seguimiento (staff) — separado de a quién se le encargó ejecutar el
-  // trabajo, que puede ser un proveedor externo (ver chart-suplidores debajo).
-  const cargaMap = new Map();
-  t.filter(x=>x.status!=='cerrado' && x.responsable_nombre).forEach(x=>{
-    cargaMap.set(x.responsable_nombre, (cargaMap.get(x.responsable_nombre)||0) + 1);
-  });
-  const porResponsable = Array.from(cargaMap.entries())
-    .map(([label,value],i)=>({label, value, color:CHART_COLORS[i%CHART_COLORS.length]}))
-    .sort((a,b)=>b.value-a.value);
-  document.getElementById('chart-responsable').innerHTML = porResponsable.length
-    ? barRows(porResponsable)
-    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto tiene responsable interno asignado todavía</div></div>`;
+  // ---------- Abiertos por estado + oficinas vs áreas comunes ----------
+  const dona = ['nuevo','en_proceso','en_espera'].map(st => ({ label:STATUS_LABELS[st], n:nEstado(st), color:DB_COLOR_ESTADO[st] }));
+  const nOfi = creados.filter(t => t.tipo_incidencia !== 'area_comun').length, nArea = creados.length - nOfi;
+  const pOfi = creados.length ? nOfi/creados.length*100 : 0;
+  const estadoSec = `
+    <section class="db-card" aria-labelledby="db-estado">
+      <h2 class="db-h" id="db-estado" style="margin-bottom:14px;">Abiertos por estado</h2>
+      <div class="db-donut-row">
+        <div class="db-donut" role="img" aria-label="${dona.map(d=>`${d.label} ${d.n}`).join(', ')}">${dbDonutSVG(dona)}<div class="db-donut-c"><b>${abiertos.length}</b><span>abiertos</span></div></div>
+        <div class="db-legend">${dona.map(d => `<div><i style="background:${d.color};"></i>${d.label}<b>${d.n}</b></div>`).join('')}</div>
+      </div>
+      <div class="db-split">
+        <div class="db-split-t">Tipo de incidencia · ${esc(periodo)}</div>
+        ${creados.length ? `<div class="db-split-bar" role="img" aria-label="Oficinas ${nOfi}, áreas comunes ${nArea}">
+          ${nOfi ? `<div style="width:${pOfi.toFixed(1)}%; background:#221E1F;" data-tip="Oficinas de inquilinos: ${nOfi}"></div>` : ''}
+          ${nArea ? `<div style="flex:1; background:#E0C01A;" data-tip="Áreas comunes: ${nArea}"></div>` : ''}
+        </div>
+        <div class="db-split-l"><span class="db-key"><i style="background:#221E1F;"></i>Oficinas de inquilinos · <strong>${nOfi}</strong></span><span class="db-key"><i style="background:#E0C01A;"></i>Áreas comunes · <strong>${nArea}</strong></span></div>`
+        : '<div class="db-empty" style="padding:4px 0;">Sin tickets creados en el período.</div>'}
+      </div>
+    </section>`;
 
-  // Tickets con proveedor externo (abiertos), agrupados por suplidor — separado
-  // a propósito del responsable interno de arriba.
-  const suplidorMap = new Map();
-  t.filter(x=>x.status!=='cerrado' && x.asignado_tipo==='suplidor' && x.asignado_a).forEach(x=>{
-    suplidorMap.set(x.asignado_a, (suplidorMap.get(x.asignado_a)||0) + 1);
+  // ---------- Creados vs cerrados · 6 meses (no depende del período) ----------
+  const now = new Date();
+  const meses = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const mismoMes = iso => { const x = new Date(iso); return !isNaN(x) && x.getFullYear()===d.getFullYear() && x.getMonth()===d.getMonth(); };
+    meses.push({ label:dbMesCorto(d), c:T.filter(t => mismoMes(t.fecha_creacion)).length, r:T.filter(t => t.status==='cerrado' && t.fecha_resolucion && mismoMes(t.fecha_resolucion)).length });
+  }
+  const maxM = Math.max(1, ...meses.map(m => Math.max(m.c, m.r)));
+  const alto = v => v ? Math.max(3, Math.round(v/maxM*130)) : 2;
+  const tendSec = `
+    <section class="db-card" aria-labelledby="db-tend">
+      <div class="db-h-row"><h2 class="db-h" id="db-tend">Creados vs cerrados · 6 meses</h2>
+        <div class="db-split-l" style="gap:14px;"><span class="db-key"><i style="background:#221E1F;"></i>Creados</span><span class="db-key"><i style="background:#E0C01A;"></i>Cerrados</span></div></div>
+      <div class="db-months" role="img" aria-label="${meses.map(m=>`${m.label}: ${m.c} creados, ${m.r} cerrados`).join('; ')}">
+        ${meses.map(m => `<div class="db-month" data-tip="${m.label}: ${m.c} ${m.c===1?'creado':'creados'} · ${m.r} ${m.r===1?'cerrado':'cerrados'}">
+          <div class="db-month-bars"><div style="height:${alto(m.c)}px; background:${m.c?'#221E1F':'#F2EEE2'};"></div><div style="height:${alto(m.r)}px; background:${m.r?'#E0C01A':'#F2EEE2'};"></div></div>
+          <span class="db-month-l">${m.label}</span><span class="db-month-v">${m.c} · ${m.r}</span></div>`).join('')}
+      </div>
+    </section>`;
+
+  // ---------- Por categoría (período) ----------
+  const cats = new Map();
+  creados.forEach(t => { const c = t.categoria || 'Sin categoría'; cats.set(c, (cats.get(c)||0) + 1); });
+  const catItems = Array.from(cats.entries()).sort((a,b) => b[1]-a[1]).map(([label,n]) => {
+    const dias = conFecha.filter(t => (t.categoria||'Sin categoría') === label).map(t => msResolucionSinEspera(t)/86400000);
+    return { label, n, extra: dias.length ? `${prom(dias).toFixed(1)} d` : '—' };
   });
-  const porSuplidor = Array.from(suplidorMap.entries())
-    .map(([label,value],i)=>({label, value, color:CHART_COLORS[i%CHART_COLORS.length]}))
-    .sort((a,b)=>b.value-a.value);
-  document.getElementById('chart-suplidores').innerHTML = porSuplidor.length
-    ? barRows(porSuplidor)
-    : `<div class="empty-state" style="padding:20px;"><div class="s">Ningún ticket abierto está a cargo de un proveedor externo</div></div>`;
+  const catSec = `
+    <section class="db-card" aria-labelledby="db-cat">
+      <div class="db-h-row"><h2 class="db-h" id="db-cat">Por categoría</h2><span class="db-h-note">tickets · prom. solución</span></div>
+      ${catItems.length ? dbBarRows(catItems, '#221E1F', true) : '<div class="db-empty">Sin tickets creados en el período.</div>'}
+    </section>`;
+
+  // ---------- Carga actual: responsable interno y proveedores externos ----------
+  const resp = new Map(); let sinResp = 0;
+  abiertos.forEach(t => { if(t.responsable_nombre) resp.set(t.responsable_nombre, (resp.get(t.responsable_nombre)||0) + 1); else sinResp++; });
+  const respItems = Array.from(resp.entries()).sort((a,b) => b[1]-a[1]).map(([label,n]) => ({ label, n }));
+  if(sinResp) respItems.push({ label:'Sin responsable', n:sinResp, color:'#B8860B', cls:'warn' });
+  const prov = new Map();
+  abiertos.filter(t => t.asignado_tipo === 'suplidor' && t.asignado_a).forEach(t => prov.set(t.asignado_a, (prov.get(t.asignado_a)||0) + 1));
+  const provItems = Array.from(prov.entries()).sort((a,b) => b[1]-a[1]).map(([label,n]) => ({ label, n }));
+  const cargaSec = `
+    <section class="db-card" aria-labelledby="db-resp">
+      <div class="db-h-row"><h2 class="db-h" id="db-resp">Carga por responsable interno</h2><span class="db-h-note">tickets abiertos</span></div>
+      ${respItems.length ? dbBarRows(respItems, '#6A4C93') : '<div class="db-empty">No hay tickets abiertos.</div>'}
+    </section>
+    <section class="db-card" aria-labelledby="db-prov">
+      <div class="db-h-row"><h2 class="db-h" id="db-prov">Proveedores externos</h2><span class="db-h-note">tickets abiertos</span></div>
+      ${provItems.length ? dbBarRows(provItems, '#0F9D8C') : '<div class="db-empty">Ningún ticket abierto está a cargo de un proveedor externo.</div>'}
+    </section>`;
+
+  root.innerHTML = ahora + periodoSec
+    + `<div class="db-grid-2">${edifSec}${estadoSec}</div>`
+    + `<div class="db-grid-2">${tendSec}${catSec}</div>`
+    + `<div class="db-grid-2">${cargaSec}</div>`;
 }
 function statusVar(s){ return { nuevo:'--info', en_proceso:'--purple', en_espera:'--teal', cerrado:'--success' }[s]; }
 

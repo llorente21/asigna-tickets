@@ -6,6 +6,27 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Fase E: Dashboard nuevo (rama `feat/dashboard-fase-e`, sin push)
+Jose aprobó la propuesta del mockup "E · Dashboard". Reemplaza al Dashboard anterior:
+- **Filtros** en el encabezado (escritorio) o arriba de la vista (teléfono): período
+  (este mes / 3 meses / este año / todo) y edificio. Se recuerdan en el navegador
+  (`of_db_filtros`).
+- **Ahora mismo** (no depende del período): abiertos por estado, vencidos y en riesgo
+  (mismas reglas que la vista SLA; al tocarlos abre SLA con ese edificio), en espera
+  por motivo.
+- **Período:** SLA de primera respuesta (creados en el período; usa
+  `fecha_primera_respuesta` y, en tickets viejos, la aproximación por historial o
+  comentario), SLA de resolución (cerrados en el período, sin contar la espera),
+  reapertura y calificación. Verde ≥ 90 %, ámbar ≥ 75 %, rojo debajo.
+- **Por edificio** (todos, resalta el filtrado), **abiertos por estado** (dona) con
+  oficinas vs áreas comunes, **creados vs cerrados** de 6 meses, **por categoría**
+  con promedio de solución, **carga por responsable** (incluye "Sin responsable") y
+  **proveedores externos**.
+- Colores de la dona validados para daltonismo (Nuevo en `#4A90E2`).
+- Cambiar de vista ahora también vuelve arriba el área de contenido en escritorio.
+Probado con Playwright (1440 y 390, datos de 6 meses): filtros, guardado, salto a SLA,
+tooltip; sin errores ni desplazamiento horizontal. Falta la prueba de Jose.
+
 ## 2026-10-30 — Diseño del canvas aplicado a toda la app (rama `diseno/aplicar-canvas-of`, sin push)
 Jose señaló que solo se había pasado la funcionalidad de los mockups y no su diseño.
 Se aplicó el design system ASIGNA del canvas "Propuesta referencia OF":

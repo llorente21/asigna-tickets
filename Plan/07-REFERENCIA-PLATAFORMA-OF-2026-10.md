@@ -1,10 +1,11 @@
 # Referencia: plataforma admin de Oficinas Felices → mejoras para ASIGNA (2026-10)
 
-**Estado (2026-10-29):**
-- **Fases A, C y D: implementadas** en ramas locales, sin push. Falta que Jose las pruebe
-  contra Firebase.
+**Estado (2026-10-30):**
+- **Fases A, C y D: en producción** (desde el 2026-10-29). El formulario de la Fase C
+  se rehízo después en una sola pantalla.
+- **Diseño del canvas aplicado a toda la app** (2026-10-30).
 - **Fase B (catálogo de espacios): cancelada.**
-- **Fase E (Dashboard): propuesta en mockup**, esperando aprobación.
+- **Fase E (Dashboard): aprobada e implementada** (2026-10-30, rama `feat/dashboard-fase-e`).
 
 Mockups: canvas de Claude Design "ASIGNA — Propuesta referencia OF"
 (https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX), con el design system ASIGNA. Las
@@ -144,7 +145,7 @@ que puede editar el locatario, hay que permitirle `status`, `espera_*`,
 - 4 h para la primera respuesta y 24 h para la resolución.
 - Es fijo (`SLA_RIESGO_MS`); todavía no se edita desde Configuración.
 
-## Fase E — Dashboard (propuesta, sin implementar)
+## Fase E — Dashboard (aprobada e implementada 2026-10-30)
 
 Mockup "E · Dashboard (propuesta)" en el canvas. Cambios respecto al Dashboard actual:
 
