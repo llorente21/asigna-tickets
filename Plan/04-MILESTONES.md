@@ -6,6 +6,21 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Fix crítico: crear un usuario cambiaba la sesión del admin (rama `fix/crear-usuario`, sin push)
+Al revisar "¿cuál es la manera correcta de crear un usuario?" se encontró que
+**Usuarios → + Nuevo** usaba `firebaseSignUp`, que guarda los tokens de la cuenta
+creada. Desde ese momento la app trabajaba con la sesión de la persona nueva:
+- su perfil en Firestore se rechazaba (las reglas solo dejan a una cuenta nueva crearse
+  a sí misma como locatario pendiente) → no se guardaba y esa persona no podía entrar
+  ("Tu cuenta no está registrada en ASIGNA");
+- todo lo que el admin leía o guardaba después fallaba en silencio por permisos, hasta
+  cerrar sesión. **Probable causa de los suplidores perdidos.**
+Arreglo: `firebaseCrearCuentaDeOtro` crea el acceso sin tocar la sesión; el perfil se
+guarda con `fbSetWithRetry` y avisa si falla; valida correo, contraseña ≥ 6 y locación
+del locatario; avisa si el correo ya tenía acceso (conserva su contraseña). Además el
+perfil ya no guarda la contraseña en texto (`password:''`). Verificado con Playwright
+contra la versión anterior (reproduce el bug) y la nueva (sesión del admin intacta).
+
 ## 2026-10-30 — Fix: pantallas cortadas en laptops con zoom — en producción (`b773a55`)
 Jose reportó pantallas que no se veían completas (captura del Dashboard a ~1525×704 px
 CSS, laptop con zoom 125 %). Causas y arreglos:

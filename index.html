@@ -1415,6 +1415,16 @@ async function firebaseSignUp(email, password){
   saveAuthTokensLocal({ idToken:data.idToken, refreshToken:data.refreshToken, expiresAt: Date.now() + (parseInt(data.expiresIn||'3600',10)*1000) - 60000 });
   return data;
 }
+// Crea la cuenta de acceso de OTRA persona (Admin/Empleado en Usuarios → + Nuevo)
+// SIN tocar la sesión de quien la crea. firebaseSignUp sí guarda los tokens: es
+// para el auto-registro y la migración, donde la persona entra con su propia cuenta.
+// Bug corregido 2026-10-30: saveUser usaba firebaseSignUp, así que después de crear
+// un usuario la app seguía trabajando con la sesión de la cuenta NUEVA — Firestore
+// rechazaba su perfil (no se guardaba y esa persona no podía entrar) y todo lo
+// que se leía o guardaba después fallaba en silencio por falta de permisos.
+async function firebaseCrearCuentaDeOtro(email, password){
+  return authFetch(AUTH_SIGNUP_URL, { email, password, returnSecureToken:true }); // los tokens que devuelve se descartan
+}
 async function firebaseSendPasswordReset(email){
   return authFetch(AUTH_RESETPW_URL, { requestType:'PASSWORD_RESET', email });
 }
@@ -3866,21 +3876,30 @@ async function saveUser(){
 
   if(!puedeEditarUsuario(role)){ showToast('No tienes permiso para guardar esta cuenta'); return; }
   if(!name || !email || (isNew && !password)){ showToast('Completa nombre, correo y contraseña'); return; }
+  if(!EMAIL_RE.test(email)){ showToast('Correo inválido'); return; }
+  if(isNew && password.length < 6){ showToast('La contraseña debe tener al menos 6 caracteres'); return; }
+  if(role==='locatario' && !locacion){ showToast('Elige la locación del locatario'); return; }
   if(isNew && USERS_LIST.some(u=>u.email===email)){ showToast('Ya existe un usuario con ese correo'); return; }
 
   const emailChanged = !isNew && editingUserEmail !== email;
+  let accesoYaExistia = false;
   if(isNew || emailChanged){
     // Cuenta nueva en Firebase Authentication (un cambio de correo, para efectos
     // de login, también es una cuenta nueva).
     try{
-      await firebaseSignUp(email, password || Math.random().toString(36).slice(2)+'Aa1!');
+      await firebaseCrearCuentaDeOtro(email, password || Math.random().toString(36).slice(2)+'Aa1!');
     }catch(signUpErr){
-      if(!String(signUpErr.message).includes('EMAIL_EXISTS')){
-        showToast('No se pudo crear el acceso de esta cuenta: '+signUpErr.message);
+      const m = String(signUpErr.message);
+      if(!m.includes('EMAIL_EXISTS')){
+        showToast(/WEAK_PASSWORD/.test(m) ? 'La contraseña debe tener al menos 6 caracteres'
+          : /INVALID_EMAIL/.test(m) ? 'Correo inválido'
+          : 'No se pudo crear el acceso de esta cuenta: '+m);
         return;
       }
-      // Ya existía en Firebase Authentication (por ejemplo, se había migrado antes
-      // con esta misma contraseña heredada) — no es un error, seguimos.
+      // Ya existía en Firebase Authentication (por ejemplo, la persona se había
+      // registrado antes o se borró solo su perfil) — seguimos, pero conserva su
+      // contraseña anterior.
+      accesoYaExistia = true;
     }
   }
 
@@ -3891,7 +3910,9 @@ async function saveUser(){
   // trata como aprobado en toda la app). Solo queda en false si ya lo estaba
   // y no se aprobó explícitamente con el botón "Aprobar cuenta".
   const aprobado = isNew ? true : (prevDoc && prevDoc.aprobado === false ? false : true);
-  const user = { email, name, role, locacion, empresa, password: isNew ? password : (prevDoc?.password || ''), aprobado };
+  // La contraseña la guarda Firebase Authentication; en Firestore el campo va vacío
+  // (las reglas exigen que exista, pero no debe tener la contraseña en texto).
+  const user = { email, name, role, locacion, empresa, password: '', aprobado };
   if(!isNew){
     const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
     if(emailChanged) USERS_LIST.splice(idx,1); else USERS_LIST[idx] = user;
@@ -3899,11 +3920,19 @@ async function saveUser(){
   if(isNew || emailChanged) USERS_LIST.push(user);
 
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
+  const viejoEmail = editingUserEmail;
   closeDrawer('userform');
   renderUsersList();
-  showToast('Usuario guardado ✓');
-  fbSet('usuarios', user.email, user).catch(e=>console.warn('user sync', e));
-  if(emailChanged) fbDelete('usuarios', editingUserEmail).catch(e=>console.warn(e));
+  try{
+    await fbSetWithRetry('usuarios', user.email, user);
+    showToast(accesoYaExistia
+      ? 'Usuario guardado ✓ — ese correo ya tenía acceso: conserva su contraseña anterior (puede usar "¿Olvidaste tu contraseña?")'
+      : (isNew ? 'Usuario creado ✓ — ya puede entrar con su correo y contraseña' : 'Usuario guardado ✓'));
+    if(emailChanged) fbDelete('usuarios', viejoEmail).catch(e=>console.warn(e));
+  }catch(e){
+    console.warn('user sync', e);
+    showToast(avisoNoGuardado(e) + ' — esta persona todavía no podrá entrar');
+  }
 }
 
 async function deleteUser(){
