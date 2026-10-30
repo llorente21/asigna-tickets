@@ -838,6 +838,10 @@ body.in-nuevo .header-back{display:flex;}
 .imp-actions .btn{flex:1;}
 @media(min-width:720px){ #drawer-import{width:680px; margin-left:-340px;} }
 .imp-prev td:first-child, .imp-prev th:first-child{width:1%; padding-right:0;}
+
+/* Registro: tipo de cuenta */
+.reg-tipo{display:flex; flex-wrap:wrap; gap:8px;}
+.reg-tipo .chip-radio span{min-height:44px; font-size:14px;}
 </style>
 </head>
 <body>
@@ -886,8 +890,7 @@ body.in-nuevo .header-back{display:flex;}
       </div>
       <div class="auth-forgot"><button type="button" class="auth-forgot-btn" id="auth-forgot-btn" onclick="olvideContrasena()">¿Olvidaste tu contraseña?</button></div>
       <button class="btn btn-primary" id="auth-btn" style="width:100%;" onclick="handleAuth()">Ingresar →</button>
-      <p class="auth-hint">¿Eres Locatario y no tienes cuenta? <a href="javascript:void(0)" onclick="showRegisterScreen()">Crea tu cuenta aquí</a>.</p>
-      <p class="auth-hint">¿No tienes acceso y no eres Locatario? Solicítalo a la administración de tu locación para que te cree un usuario.</p>
+      <p class="auth-hint">¿No tienes cuenta? <a href="javascript:void(0)" onclick="showRegisterScreen()">Crea tu cuenta aquí</a>.</p>
     </div>
   </div>
 </div>
@@ -901,8 +904,15 @@ body.in-nuevo .header-back{display:flex;}
     </div>
     <div class="auth-eyebrow">Nueva cuenta</div>
     <h1 class="auth-title">Crear cuenta</h1>
-    <p class="auth-desc">Cuenta para Locatarios. Un administrador debe aprobarla antes de que puedas usarla.</p>
+    <p class="auth-desc">Administración la aprueba antes de que puedas usarla.</p>
     <div id="register-error" class="auth-error"></div>
+    <div class="field">
+      <label id="reg-tipo-label">Soy *</label>
+      <div class="chip-radios reg-tipo" role="radiogroup" aria-labelledby="reg-tipo-label">
+        <label class="chip-radio"><input type="radio" name="reg-tipo" value="locatario" onchange="onRegTipoChange()"><span>Locatario</span></label>
+        <label class="chip-radio"><input type="radio" name="reg-tipo" value="empleado" onchange="onRegTipoChange()"><span>Personal de Oficinas Felices</span></label>
+      </div>
+    </div>
     <div class="field">
       <label>Nombre completo</label>
       <input id="reg-name" type="text" placeholder="Tu nombre">
@@ -915,13 +925,16 @@ body.in-nuevo .header-back{display:flex;}
       <label for="reg-password">Contraseña</label>
       <div class="pw-wrap"><input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="pw-toggle" onclick="togglePw(this)" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
     </div>
-    <div class="field">
-      <label>Locación</label>
-      <select id="reg-locacion"></select>
-    </div>
-    <div class="field">
-      <label>Empresa</label>
-      <select id="reg-empresa"></select>
+    <div id="reg-locatario-fields" style="display:none;">
+      <div class="field">
+        <label for="reg-locacion">Edificio</label>
+        <select id="reg-locacion"></select>
+      </div>
+      <div class="field">
+        <label for="reg-empresa">Empresa</label>
+        <input id="reg-empresa" type="text" list="reg-empresas-list" placeholder="Nombre de tu empresa" autocomplete="organization">
+        <datalist id="reg-empresas-list"></datalist>
+      </div>
     </div>
     <button class="btn btn-primary" id="register-btn" style="width:100%;" onclick="handleRegister()">Crear cuenta →</button>
     <p class="auth-hint">¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="showAuthScreen()">Inicia sesión</a>.</p>
@@ -937,7 +950,7 @@ body.in-nuevo .header-back{display:flex;}
     </div>
     <div class="auth-eyebrow">En espera</div>
     <h1 class="auth-title">Cuenta pendiente</h1>
-    <p class="auth-desc">Tu cuenta fue creada y está esperando la aprobación de un administrador o empleado. Te avisaremos cuando puedas ingresar — intenta iniciar sesión de nuevo más tarde.</p>
+    <p class="auth-desc">Tu cuenta fue creada y está esperando la aprobación de Administración. Intenta iniciar sesión de nuevo más tarde.</p>
     <button class="btn btn-outline" style="width:100%;" onclick="logout()">Cerrar sesión</button>
   </div>
 </div>
@@ -1281,8 +1294,8 @@ body.in-nuevo .header-back{display:flex;}
       <div class="field"><label>Empresa (arrendataria)</label><select id="u-empresa"></select></div>
     </div>
     <div class="field" id="u-approve-field" style="display:none;">
-      <p style="font-size:13px; color:#856404; background:#fff3cd; padding:8px 10px; border-radius:8px; margin:0 0 8px;">Esta cuenta se registró sola y está pendiente de aprobación. No podrá ingresar hasta que la apruebes.</p>
-      <button type="button" class="btn btn-primary" style="width:100%;" onclick="approveUser()">Aprobar cuenta</button>
+      <p id="u-approve-msg" style="font-size:13px; color:#856404; background:#fff3cd; padding:8px 10px; border-radius:8px; margin:0 0 8px;">Pendiente de aprobación.</p>
+      <button type="button" class="btn btn-primary" id="u-approve-btn" style="width:100%;" onclick="approveUser()">Aprobar cuenta</button>
     </div>
     <div class="field-hint" id="u-readonly-hint" style="display:none; margin-bottom:10px;">Solo Administración puede modificar esta cuenta.</div>
     <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" id="u-save-btn" onclick="saveUser()">Guardar usuario</button>
@@ -1920,19 +1933,30 @@ function logout(){
   showAuthScreen();
 }
 
+// Registro abierto a todos (2026-10-30, pedido de Jose): locatarios y personal.
+// Por seguridad nadie se da a sí mismo un rol de staff: el perfil se crea como
+// locatario pendiente (es lo único que permiten las reglas de Firestore) y el rol
+// pedido queda en `rol_solicitado`; Administración lo confirma al aprobar.
+function regTipo(){ const r = document.querySelector('input[name="reg-tipo"]:checked'); return r ? r.value : ''; }
+function onRegTipoChange(){
+  document.getElementById('reg-locatario-fields').style.display = regTipo()==='locatario' ? 'block' : 'none';
+}
 async function handleRegister(){
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim().toLowerCase();
   const password = document.getElementById('reg-password').value.trim();
-  const locacion = document.getElementById('reg-locacion').value;
-  const empresa = document.getElementById('reg-empresa').value.trim();
+  const tipo = regTipo();
+  const locacion = tipo==='locatario' ? document.getElementById('reg-locacion').value : '';
+  const empresa = tipo==='locatario' ? document.getElementById('reg-empresa').value.trim() : '';
   const btn = document.getElementById('register-btn');
   const err = document.getElementById('register-error');
   err.style.display = 'none';
 
   if(!name || !email || !password){ err.textContent='Completa nombre, correo y contraseña.'; err.style.display='block'; return; }
   if(password.length < 6){ err.textContent='La contraseña debe tener al menos 6 caracteres.'; err.style.display='block'; return; }
-  if(!empresa){ err.textContent='Selecciona tu empresa.'; err.style.display='block'; return; }
+  if(!tipo){ err.textContent='Elige si eres locatario o personal de Oficinas Felices.'; err.style.display='block'; return; }
+  if(!EMAIL_RE.test(email)){ err.textContent='Escribe un correo válido.'; err.style.display='block'; return; }
+  if(tipo==='locatario' && !empresa){ err.textContent='Escribe el nombre de tu empresa.'; err.style.display='block'; return; }
 
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
   try{
@@ -1967,7 +1991,7 @@ async function handleRegister(){
     return;
   }
 
-  const user = { email, name, role:'locatario', locacion, empresa, password:'', aprobado:false };
+  const user = { email, name, role:'locatario', rol_solicitado:tipo, locacion, empresa, password:'', aprobado:false };
   try{
     await fbSet('usuarios', email, user);
   }catch(setErr){
@@ -1982,7 +2006,9 @@ async function handleRegister(){
   localStorage.setItem('of_user', JSON.stringify(currentUser));
   // Usamos el correo como "ticket_id" de esta notificación (no es un ticket real)
   // para poder ubicarla y marcarla leída en cuanto alguien apruebe la cuenta.
-  crearNotif('staff', 'nuevo_registro', email, `${name} (${empresa}) solicitó una cuenta de Locatario.`);
+  crearNotif('staff', 'nuevo_registro', email, tipo==='empleado'
+    ? `${name} solicitó una cuenta de Personal (Admin/Empleado).`
+    : `${name} (${empresa}) solicitó una cuenta de Locatario.`);
   btn.disabled = false; btn.textContent = 'Crear cuenta →';
   showPendingScreen();
 }
@@ -3258,6 +3284,8 @@ openDrawer = function(name){ if(name==='notifs') renderNotifsDrawerContent(); _o
    ====================================================================== */
 
 const ROLE_ORDER = { admin:0, empleado:1, locatario:2 };
+// Rol que se muestra: en una cuenta pendiente, el que pidió al registrarse.
+function rolMostrado(u){ return (u.aprobado===false && u.rol_solicitado) ? u.rol_solicitado : u.role; }
 function userCardHTML(u){
   const pendienteTag = u.aprobado===false ? '<span class="role-tag" style="background:#fff3cd; color:#856404;">Pendiente</span>' : '';
   return `
@@ -3268,7 +3296,7 @@ function userCardHTML(u){
         <div class="email">${esc(u.email)}${u.locacion?' · '+esc(u.locacion):''}${u.empresa?' · '+esc(u.empresa):''}</div>
       </div>
       ${pendienteTag}
-      <span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>
+      <span class="role-tag role-${rolMostrado(u)}">${ROLE_TAG[rolMostrado(u)]||rolMostrado(u)}</span>
     </div>`;
 }
 
@@ -3277,7 +3305,7 @@ function usersTableHTML(list){
     <tr onclick="openUserForm('${esc(u.email)}')">
       <td><div class="name-cell"><div class="avatar">${initials(u.name)}</div>${esc(u.name)}</div></td>
       <td>${esc(u.email)}</td>
-      <td><span class="role-tag role-${u.role}">${ROLE_TAG[u.role]||u.role}</span>${u.aprobado===false ? ' <span class="role-tag" style="background:#fff3cd; color:#856404;">Pendiente</span>' : ''}</td>
+      <td><span class="role-tag role-${rolMostrado(u)}">${ROLE_TAG[rolMostrado(u)]||rolMostrado(u)}</span>${u.aprobado===false ? ' <span class="role-tag" style="background:#fff3cd; color:#856404;">Pendiente</span>' : ''}</td>
       <td>${u.locacion ? esc(u.locacion) : '—'}</td>
       <td>${u.empresa ? esc(u.empresa) : '—'}</td>
     </tr>`).join('');
@@ -3289,7 +3317,7 @@ function usersTableHTML(list){
 
 function renderUsersList(){
   const el = document.getElementById('users-list');
-  const sorted = USERS_LIST.slice().sort((a,b)=> ROLE_ORDER[a.role]-ROLE_ORDER[b.role] || a.name.localeCompare(b.name));
+  const sorted = USERS_LIST.slice().sort((a,b)=> (a.aprobado===false?0:1)-(b.aprobado===false?0:1) || ROLE_ORDER[rolMostrado(a)]-ROLE_ORDER[rolMostrado(b)] || a.name.localeCompare(b.name));
   const tableMode = listViewMode==='list' && isDesktopLayout();
   el.classList.toggle('table-mode', tableMode);
   if(!sorted.length){ el.innerHTML = `<div class="empty-state">${ICONS.users}<div class="t">Sin usuarios</div></div>`; return; }
@@ -3308,7 +3336,8 @@ function buildEmpresaOptions(){
     EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e=>`<option value="${esc(e.nombre)}">${esc(e.nombre)}</option>`).join('');
   const fEmpresa = document.getElementById('f-empresa'); if(fEmpresa) fEmpresa.innerHTML = opts;
   const uEmpresa = document.getElementById('u-empresa'); if(uEmpresa) uEmpresa.innerHTML = opts;
-  const regEmpresa = document.getElementById('reg-empresa'); if(regEmpresa) regEmpresa.innerHTML = opts;
+  const regEmpresas = document.getElementById('reg-empresas-list');
+  if(regEmpresas) regEmpresas.innerHTML = EMPRESAS.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e=>`<option value="${esc(e.nombre)}">`).join('');
 }
 
 function empresaSubtitle(e){
@@ -3776,8 +3805,8 @@ function puedeEditarUsuario(targetRole){
 function openUserForm(email, forcedRole){
   editingUserEmail = email || null;
   const existing = email ? USERS_LIST.find(x=>x.email===email) : null;
-  const targetRole = existing ? existing.role : (forcedRole || 'locatario');
-  const readOnly = !puedeEditarUsuario(targetRole);
+  const targetRole = existing ? rolMostrado(existing) : (forcedRole || 'locatario');
+  const readOnly = !puedeEditarUsuario(targetRole); // una solicitud de Personal solo la aprueba Administración
   const isNew = !email;
 
   document.getElementById('userform-title').textContent = email ? 'Editar usuario' : 'Nuevo usuario';
@@ -3792,9 +3821,16 @@ function openUserForm(email, forcedRole){
     document.getElementById('u-name').value = existing.name;
     document.getElementById('u-email').value = existing.email;
     document.getElementById('u-password').value = '';
-    document.getElementById('u-role').value = existing.role;
+    document.getElementById('u-role').value = rolMostrado(existing);
     document.getElementById('u-locacion').value = existing.locacion || 'D1';
-    document.getElementById('u-empresa').value = existing.empresa || '';
+    const selEmp = document.getElementById('u-empresa');
+    selEmp.value = existing.empresa || '';
+    if(existing.empresa && selEmp.value !== existing.empresa){
+      // Empresa escrita a mano al registrarse y que aún no está en la lista: se
+      // conserva como opción para no perderla al guardar o aprobar.
+      const o = document.createElement('option'); o.value = existing.empresa; o.textContent = existing.empresa + ' (no está en Empresas)';
+      selEmp.appendChild(o); selEmp.value = existing.empresa;
+    }
   } else {
     document.getElementById('u-name').value = '';
     document.getElementById('u-email').value = '';
@@ -3816,6 +3852,12 @@ function openUserForm(email, forcedRole){
   if(currentUser.role==='empleado' && !readOnly) roleSelect.value = 'locatario';
 
   onRoleFieldChange();
+  // Con una cuenta pendiente, la acción principal es Aprobar; Guardar pasa a secundario.
+  document.getElementById('u-save-btn').classList.toggle('btn-primary', !(existing && existing.aprobado===false));
+  document.getElementById('u-save-btn').classList.toggle('btn-outline', !!(existing && existing.aprobado===false));
+  if(existing && existing.aprobado===false){
+    document.getElementById('u-approve-msg').textContent = `Se registró como ${existing.rol_solicitado==='empleado' ? 'Personal de Oficinas Felices' : 'Locatario'}. Revisa el rol y apruébala; hasta entonces no puede entrar.`;
+  }
   openDrawer('userform');
 }
 function onRoleFieldChange(){
@@ -3827,24 +3869,42 @@ function onRoleFieldChange(){
     locatario: 'Inquilino que reporta incidencias y da seguimiento a sus propios tickets.'
   };
   document.getElementById('u-role-hint').textContent = hints[role] || '';
+  const ab = document.getElementById('u-approve-btn');
+  if(ab) ab.textContent = `Aprobar como ${ROLE_LABELS[role] || role}`;
 }
 
 async function approveUser(){
   if(!editingUserEmail) return;
-  const idx = USERS_LIST.findIndex(u=>u.email===editingUserEmail);
+  const email = editingUserEmail;
+  const idx = USERS_LIST.findIndex(u=>u.email===email);
   if(idx<0) return;
-  if(!puedeEditarUsuario(USERS_LIST[idx].role)){ showToast('No tienes permiso para aprobar esta cuenta'); return; }
-  USERS_LIST[idx] = { ...USERS_LIST[idx], aprobado:true };
+  // Se aprueba con el rol elegido en el formulario (por defecto, el que pidió).
+  const role = document.getElementById('u-role').value;
+  if(!puedeEditarUsuario(role)){ showToast('Solo Administración puede aprobar cuentas de Personal'); return; }
+  const locacion = role==='locatario' ? document.getElementById('u-locacion').value : '';
+  const empresa = role==='locatario' ? document.getElementById('u-empresa').value.trim() : '';
+  if(role==='locatario' && !locacion){ showToast('Elige el edificio del locatario'); return; }
+  const { rol_solicitado:_pedido, ...resto } = USERS_LIST[idx];
+  const antes = USERS_LIST[idx];
+  USERS_LIST[idx] = { ...resto, name: document.getElementById('u-name').value.trim() || resto.name, role, locacion, empresa, password:'', aprobado:true };
+  try{
+    await fbSetWithRetry('usuarios', email, USERS_LIST[idx]);
+  }catch(e){
+    console.warn('approveUser fbSet', e);
+    USERS_LIST[idx] = antes;
+    showToast(avisoNoGuardado(e) + ' — la cuenta sigue pendiente');
+    return;
+  }
   localStorage.setItem('of_users', JSON.stringify(USERS_LIST));
   document.getElementById('u-approve-field').style.display = 'none';
+  closeDrawer('userform');
   renderUsersList();
-  showToast('Cuenta aprobada ✓');
-  try{ await fbSet('usuarios', editingUserEmail, USERS_LIST[idx]); }catch(e){ console.warn('approveUser fbSet', e); }
+  showToast(`Cuenta aprobada como ${ROLE_LABELS[role] || role} ✓`);
 
   // La notificación de "nuevo_registro" de esta persona (ticket_id guarda su
   // correo, ver handleRegister) ya no necesita seguir mostrando la alerta en
   // la campanita una vez que se aprueba la cuenta que la generó.
-  const pendingNotifs = NOTIFS.filter(n=>n.tipo==='nuevo_registro' && n.ticket_id===editingUserEmail && !n.leida);
+  const pendingNotifs = NOTIFS.filter(n=>n.tipo==='nuevo_registro' && n.ticket_id===email && !n.leida);
   if(pendingNotifs.length){
     pendingNotifs.forEach(n=> n.leida = true);
     saveNotifsLocal();
@@ -4665,6 +4725,9 @@ function showRegisterScreen(){
   document.getElementById('reg-name').value = '';
   document.getElementById('reg-email').value = '';
   document.getElementById('reg-password').value = '';
+  document.getElementById('reg-empresa').value = '';
+  document.querySelectorAll('input[name="reg-tipo"]').forEach(r => r.checked = false);
+  onRegTipoChange();
   buildStaticSelects();
   document.getElementById('reg-locacion').value = 'D1';
   document.getElementById('register-screen').style.display = 'flex';

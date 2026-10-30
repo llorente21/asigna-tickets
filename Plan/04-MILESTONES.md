@@ -6,6 +6,25 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Registro abierto a todos: locatarios y personal (rama `feat/registro-para-todos`, sin push)
+Decisión de Jose: la forma principal de crear cuentas es que cada persona se registre
+("Crea tu cuenta aquí") y Administración la apruebe — para empleados y locatarios.
+- **Inicio de sesión:** un solo enlace, "¿No tienes cuenta? Crea tu cuenta aquí".
+- **Registro:** "Soy *" → *Locatario* (pide edificio y empresa; la empresa es texto con
+  sugerencias, porque sin sesión la lista de Empresas no se puede leer) o *Personal de
+  Oficinas Felices* (solo nombre, correo y contraseña).
+- **Seguridad sin cambiar reglas de Firestore:** nadie se asigna un rol de staff. El
+  perfil se crea como `locatario` con `aprobado:false` (lo único que permiten las
+  reglas) y lo pedido queda en `rol_solicitado`. La notificación a staff dice qué pidió.
+- **Aprobar:** en Usuarios las pendientes salen primero con el rol pedido; el formulario
+  trae ese rol preseleccionado y el botón dice "Aprobar como Empleado/Locatario" (se
+  puede cambiar antes). Las solicitudes de Personal solo las aprueba un Admin; un
+  Empleado aprueba locatarios. Al aprobar se guarda verificado y se quita
+  `rol_solicitado`. Una empresa escrita a mano que no está en Empresas se conserva.
+- **Usuarios → + Nuevo** sigue disponible (con el fix de sesión) como alternativa.
+Probado con Playwright: registro de personal y de locatario, validaciones, aprobación
+por Admin, Empleado sin permiso para aprobar personal.
+
 ## 2026-10-30 — Fix crítico: crear un usuario cambiaba la sesión del admin (rama `fix/crear-usuario`, sin push)
 Al revisar "¿cuál es la manera correcta de crear un usuario?" se encontró que
 **Usuarios → + Nuevo** usaba `firebaseSignUp`, que guarda los tokens de la cuenta
