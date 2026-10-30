@@ -796,6 +796,38 @@ body.in-nuevo .header-back{display:flex;}
 .pw-toggle .pw-eye-off{display:none;}
 .pw-toggle[aria-pressed="true"] .pw-eye{display:none;}
 .pw-toggle[aria-pressed="true"] .pw-eye-off{display:block;}
+
+/* Carga en bloque (CSV) */
+.imp-file{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:11px; background:var(--surface2); font-size:13.5px; font-weight:600; margin-bottom:14px; min-width:0;}
+.imp-file svg{width:20px; height:20px; flex:0 0 20px; color:#6F675F;}
+.imp-file span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.imp-file b{font-weight:700; color:#4A4544; white-space:nowrap;}
+.imp-stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px;}
+.imp-stat{padding:12px 10px; border-radius:11px; border:1px solid var(--border); text-align:center;}
+.imp-stat b{display:block; font-family:'Public Sans',sans-serif; font-weight:800; font-size:24px; line-height:1.1;}
+.imp-stat span{font-size:11.5px; color:#4A4544;}
+.imp-stat.warn{border-color:#F3C9C4; background:#FDECEA;}
+.imp-stat.warn b{color:#B71C1C;}
+.imp-prev{border:1px solid var(--border); border-radius:11px; overflow-x:auto; margin-bottom:14px;}
+.imp-prev table{width:100%; border-collapse:collapse; font-size:12.5px;}
+.imp-prev th{text-align:left; padding:8px 10px; background:var(--surface2); font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#4A4544; white-space:nowrap;}
+.imp-prev td{padding:8px 10px; border-top:1px solid var(--border); max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.imp-mas{padding:8px 10px; border-top:1px solid var(--border); font-size:12px; color:#6F675F;}
+.imp-tag{display:inline-block; padding:2px 8px; border-radius:100px; background:#E8F5E9; color:#1B5E20; font-size:11px; font-weight:700;}
+.imp-tag.upd{background:#E3F2FD; color:#0D47A1;}
+.imp-avisos{margin-bottom:14px; font-size:12.5px; color:#8A6508;}
+.imp-avisos summary{cursor:pointer; font-weight:700; padding:6px 0;}
+.imp-avisos ul{margin:4px 0 0; padding-left:18px; color:#4A4544; max-height:160px; overflow:auto;}
+.imp-avisos li{margin-bottom:3px;}
+.imp-error{padding:12px 14px; border-radius:11px; background:#FDECEA; color:#B71C1C; font-size:13.5px; line-height:1.5; margin-bottom:14px;}
+.imp-result{display:flex; flex-direction:column; gap:4px; padding:14px; border-radius:11px; margin-bottom:14px; font-size:13.5px; line-height:1.5;}
+.imp-result b{font-family:'Public Sans',sans-serif; font-weight:800; font-size:17px;}
+.imp-result.ok{background:#E8F5E9; color:#1B5E20;}
+.imp-result.warn{background:#FFF8DB; color:#8A6508;}
+.imp-actions{display:flex; gap:10px;}
+.imp-actions .btn{flex:1;}
+@media(min-width:720px){ #drawer-import{width:680px; margin-left:-340px;} }
+.imp-prev td:first-child, .imp-prev th:first-child{width:1%; padding-right:0;}
 </style>
 </head>
 <body>
@@ -1101,9 +1133,9 @@ body.in-nuevo .header-back{display:flex;}
         <p class="page-sub">Compañías clientes de la red — no confundir con las personas que reportan (eso vive en Usuarios)</p>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-outline btn-sm" onclick="downloadEmpresasCSVTemplate()">Plantilla CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="descargarPlantillaCSV('empresas')">Plantilla CSV</button>
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('empresas-csv-input').click()">Importar CSV</button>
-        <input type="file" id="empresas-csv-input" accept=".csv" style="display:none" onchange="handleEmpresasCSVImport(event)">
+        <input type="file" id="empresas-csv-input" accept=".csv,text/csv,.txt,.xlsx,.xls" style="display:none" onchange="importarCSV(event,'empresas')">
         <button class="btn btn-dark btn-sm" onclick="openEmpresaForm()">+ Nueva</button>
       </div>
     </div>
@@ -1112,12 +1144,17 @@ body.in-nuevo .header-back{display:flex;}
 
   <!-- ---------- Suplidores (admin) ---------- -->
   <main class="view" id="view-suplidores">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
       <div>
         <h1 class="page-title" style="margin-bottom:0;">Suplidores</h1>
         <p class="page-sub">Proveedores externos que dan seguimiento a incidencias — no tienen cuenta propia en ASIGNA, el equipo interno les da seguimiento</p>
       </div>
-      <button class="btn btn-dark btn-sm" onclick="openSuplidorForm()">+ Nuevo</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="descargarPlantillaCSV('suplidores')">Plantilla CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('suplidores-csv-input').click()">Importar CSV</button>
+        <input type="file" id="suplidores-csv-input" accept=".csv,text/csv,.txt,.xlsx,.xls" style="display:none" onchange="importarCSV(event,'suplidores')">
+        <button class="btn btn-dark btn-sm" onclick="openSuplidorForm()">+ Nuevo</button>
+      </div>
     </div>
     <div id="suplidores-list"></div>
   </main>
@@ -1257,6 +1294,15 @@ body.in-nuevo .header-back{display:flex;}
     <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="saveEmpresa()">Guardar empresa</button>
     <button class="btn btn-danger" style="width:100%; display:none;" id="e-delete-btn" onclick="deleteEmpresaForm()">Eliminar empresa</button>
   </div>
+</div>
+
+<!-- Carga en bloque (CSV): Empresas y Suplidores -->
+<div class="drawer" id="drawer-import">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head"><h3 id="import-title">Importar</h3>
+    <button class="drawer-close" onclick="cerrarImport()" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body" id="import-body"></div>
 </div>
 
 <!-- Suplidores -->
@@ -3331,7 +3377,7 @@ async function saveEmpresa(){
   renderEmpresasList();
   buildEmpresaOptions();
   showToast('Empresa guardada ✓');
-  fbSet('empresas', e.id, e).catch(err=>console.warn('empresa sync', err));
+  fbSetWithRetry('empresas', e.id, e).catch(err=>{ console.warn('empresa sync', err); showToast(avisoNoGuardado(err)); });
 }
 
 async function deleteEmpresaForm(){
@@ -3347,21 +3393,78 @@ async function deleteEmpresaForm(){
   fbDelete('empresas', id).catch(err=>console.warn(err));
 }
 
-/* ---------- Importación masiva de Empresas por CSV ---------- */
-function downloadEmpresasCSVTemplate(){
-  const csv = '\ufeff' + ['nombre,locacion,telefono,correo', '8LOGOS SRL,D1,809-555-1234,contacto@8logos.com'].join('\r\n');
-  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+/* ======================================================================
+   Carga en bloque por CSV — Empresas y Suplidores (2026-10-30)
+   1) Se lee el archivo (UTF-8, o Windows-1252 si viene de "CSV" de Excel) y se
+      detecta el separador (coma, punto y coma o tabulador).
+   2) Vista previa: cuántas son nuevas, cuántas se actualizan (por nombre, sin
+      importar mayúsculas ni acentos), cuáles se omiten y por qué.
+   3) Al confirmar se guarda cada registro en Firestore y se informa cuántos
+      fallaron. Así un problema de permisos no pasa en silencio (antes solo
+      quedaba en la consola y los datos se perdían en la siguiente sincronización).
+   Las celdas vacías no borran datos que ya existen.
+   ====================================================================== */
+const IMPORT_TIPOS = {
+  empresas: {
+    titulo:'Importar empresas', una:'empresa', varias:'empresas', nueva:'nueva', nuevas:'nuevas',
+    coleccion:'empresas', archivo:'plantilla_empresas.csv',
+    columnas:[
+      { k:'nombre',   t:'Nombre',   alias:['nombre','empresa','razon social','compania','compañia'] },
+      { k:'locacion', t:'Edificio', alias:['locacion','edificio','oficina','ubicacion'] },
+      { k:'telefono', t:'Teléfono', alias:['telefono','tel','celular','movil'] },
+      { k:'correo',   t:'Correo',   alias:['correo','email','e-mail','correo electronico'] }
+    ],
+    ejemplo:['8LOGOS SRL','D1','809-555-1234','contacto@8logos.com'],
+    lista:() => EMPRESAS,
+    agregar:o => { EMPRESAS.push(o); },
+    despues:() => { saveEmpresasLocal(); renderEmpresasList(); buildEmpresaOptions(); }
+  },
+  suplidores: {
+    titulo:'Importar suplidores', una:'suplidor', varias:'suplidores', nueva:'nuevo', nuevas:'nuevos',
+    coleccion:'suplidores', archivo:'plantilla_suplidores.csv',
+    columnas:[
+      { k:'nombre',       t:'Nombre',       alias:['nombre','suplidor','proveedor','empresa','razon social'] },
+      { k:'especialidad', t:'Especialidad', alias:['especialidad','servicio','area','rubro','tipo'] },
+      { k:'telefono',     t:'Teléfono',     alias:['telefono','tel','celular','movil'] },
+      { k:'email',        t:'Correo',       alias:['correo','email','e-mail','correo electronico'] }
+    ],
+    ejemplo:['Refrigeración Dominicana SRL','Aire acondicionado','809-555-1234','contacto@refridom.com'],
+    lista:() => SUPLIDORES_LIST,
+    agregar:o => { SUPLIDORES_LIST.push(o); },
+    despues:() => { saveSuplidoresLocal(); renderSuplidoresList(); }
+  }
+};
+let IMPORT_ACTUAL = null; // { tipo, archivo, plan, fallos }
+
+function normTxt(x){ return String(x==null?'':x).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[*"]/g,'').trim().replace(/\s+/g,' ').toLowerCase(); }
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function descargarPlantillaCSV(tipo){
+  const cfg = IMPORT_TIPOS[tipo];
+  const fila = v => v.map(x => /[",;\n]/.test(x) ? `"${x.replace(/"/g,'""')}"` : x).join(',');
+  const csv = '﻿' + [fila(cfg.columnas.map(c => c.k === 'email' ? 'correo' : c.k)), fila(cfg.ejemplo)].join('\r\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'plantilla_empresas.csv';
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8;' }));
+  a.download = cfg.archivo;
   document.body.appendChild(a); a.click(); a.remove();
 }
 
-function parseCSVText(text){
-  // Parser simple de CSV con soporte de comillas y comas dentro de campos.
+async function leerTextoArchivo(file){
+  const buf = await file.arrayBuffer();
+  try{ return new TextDecoder('utf-8', { fatal:true }).decode(buf); }
+  catch(e){ return new TextDecoder('windows-1252').decode(buf); } // "CSV (delimitado por comas)" de Excel
+}
+function detectarSeparador(text){
+  const linea = (text.replace(/^﻿/,'').split(/\r\n|\n|\r/).find(l => l.trim()) || '').replace(/"[^"]*"/g,'');
+  const cuenta = c => linea.split(c).length - 1;
+  return [';','\t',','].reduce((mejor, c) => cuenta(c) > cuenta(mejor) ? c : mejor, ',');
+}
+function parseCSVText(text, sep){
+  // CSV con comillas, separador configurable (coma por defecto).
+  sep = sep || ',';
   const rows = [];
   let row = [], field = '', inQuotes = false;
-  const t = text.replace(/^\ufeff/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const t = text.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   for(let i=0; i<t.length; i++){
     const c = t[i];
     if(inQuotes){
@@ -3370,7 +3473,7 @@ function parseCSVText(text){
       } else field += c;
     } else {
       if(c === '"') inQuotes = true;
-      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === sep){ row.push(field); field = ''; }
       else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
       else field += c;
     }
@@ -3378,63 +3481,164 @@ function parseCSVText(text){
   if(field.length || row.length){ row.push(field); rows.push(row); }
   return rows.filter(r => r.some(f => f.trim() !== ''));
 }
+// "D1", "d1" o "DIX Business Center 1" → "D1"
+function codigoLocacion(v){
+  const n = normTxt(v); if(!n) return '';
+  const k = Object.keys(LOCACIONES).find(c => normTxt(c) === n || normTxt(LOCACIONES[c]) === n);
+  return k || null;
+}
 
-async function handleEmpresasCSVImport(event){
+function planImport(tipo, rows){
+  const cfg = IMPORT_TIPOS[tipo];
+  const header = rows[0].map(normTxt);
+  const idx = {};
+  cfg.columnas.forEach(c => { idx[c.k] = header.findIndex(h => c.alias.map(normTxt).includes(h)); });
+  if(idx.nombre === -1) return { error:'La primera fila debe tener los títulos de las columnas, con una llamada "nombre". Descarga la plantilla para ver el formato.' };
+
+  const porNombre = new Map(cfg.lista().map(x => [normTxt(x.nombre), x]));
+  const vistos = new Map();
+  const nuevos = [], actualizar = [], avisos = [];
+  let sinCambios = 0, omitidas = 0;
+  const filas = rows.slice(1);
+
+  filas.forEach((r, i) => {
+    const fila = i + 2;
+    const val = k => idx[k] === -1 || idx[k] === undefined ? '' : String(r[idx[k]] == null ? '' : r[idx[k]]).trim();
+    const nombre = val('nombre').replace(/\s+/g,' ');
+    if(!nombre){ omitidas++; avisos.push(`Fila ${fila}: sin nombre, se omitió.`); return; }
+    const key = normTxt(nombre);
+    if(vistos.has(key)){ omitidas++; avisos.push(`Fila ${fila}: "${nombre}" se repite (fila ${vistos.get(key)}), se omitió.`); return; }
+    vistos.set(key, fila);
+
+    const datos = {};
+    cfg.columnas.forEach(c => { if(c.k !== 'nombre') datos[c.k] = val(c.k); });
+    if('locacion' in datos && datos.locacion){
+      const cod = codigoLocacion(datos.locacion);
+      if(cod === null){ avisos.push(`Fila ${fila}: el edificio "${datos.locacion}" no existe, se dejó vacío.`); datos.locacion = ''; }
+      else datos.locacion = cod;
+    }
+    ['correo','email'].forEach(k => {
+      if(datos[k] && !EMAIL_RE.test(datos[k])){ avisos.push(`Fila ${fila}: el correo "${datos[k]}" no es válido, se dejó vacío.`); datos[k] = ''; }
+    });
+
+    const existente = porNombre.get(key);
+    if(existente){
+      const cambios = {};
+      Object.entries(datos).forEach(([k,v]) => { if(v && v !== (existente[k] || '')) cambios[k] = v; });
+      if(Object.keys(cambios).length) actualizar.push({ obj:existente, cambios });
+      else sinCambios++;
+    } else {
+      nuevos.push(Object.assign({ nombre }, datos));
+    }
+  });
+  return { nuevos, actualizar, sinCambios, omitidas, avisos, total:filas.length };
+}
+
+async function importarCSV(event, tipo){
   const file = event.target.files[0];
   event.target.value = '';
   if(!file) return;
-  const text = await file.text();
-  const rows = parseCSVText(text);
-  if(!rows.length){ showToast('El archivo está vacío'); return; }
+  const cfg = IMPORT_TIPOS[tipo];
+  let plan;
+  if(/\.(xlsx|xls)$/i.test(file.name)){
+    plan = { error:'Ese es un archivo de Excel. En Excel elige Archivo → Guardar como → "CSV UTF-8 (delimitado por comas)" e importa ese archivo.' };
+  } else {
+    const text = await leerTextoArchivo(file);
+    const rows = parseCSVText(text, detectarSeparador(text));
+    plan = rows.length < 2 ? { error:'El archivo no tiene filas para importar.' } : planImport(tipo, rows);
+  }
+  IMPORT_ACTUAL = { tipo, archivo:file.name, plan, fallos:null };
+  document.getElementById('import-title').textContent = cfg.titulo;
+  renderImport();
+  openDrawer('import');
+}
+function cerrarImport(){ closeDrawer('import'); IMPORT_ACTUAL = null; }
 
-  const header = rows[0].map(h => h.trim().toLowerCase());
-  const idxNombre = header.findIndex(h => ['nombre','empresa'].includes(h));
-  const idxLocacion = header.findIndex(h => ['locacion','locación','oficina'].includes(h));
-  const idxTelefono = header.findIndex(h => ['telefono','teléfono','tel'].includes(h));
-  const idxCorreo = header.findIndex(h => ['correo','email','e-mail'].includes(h));
-  if(idxNombre === -1){ showToast('El CSV debe tener una columna "nombre"'); return; }
+const ICON_ARCHIVO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
 
-  const dataRows = rows.slice(1);
-  let creadas = 0, actualizadas = 0, omitidas = 0;
-  const errores = [];
-  const cambios = [];
+function renderImport(estado){
+  const body = document.getElementById('import-body');
+  const { tipo, archivo, plan, fallos } = IMPORT_ACTUAL;
+  const cfg = IMPORT_TIPOS[tipo];
+  const fileRow = `<div class="imp-file">${ICON_ARCHIVO}<span>${esc(archivo)}</span>${plan.total ? `<b>${plan.total} ${plan.total===1?'fila':'filas'}</b>` : ''}</div>`;
 
-  dataRows.forEach((r, i) => {
-    const nombre = (r[idxNombre] || '').trim();
-    if(!nombre){ omitidas++; errores.push(`Fila ${i+2}: sin nombre`); return; }
-    let locacion = idxLocacion !== -1 ? (r[idxLocacion] || '').trim().toUpperCase() : '';
-    if(locacion && !LOCACIONES[locacion]){ errores.push(`Fila ${i+2}: locación "${locacion}" no existe, se dejó vacía`); locacion = ''; }
-    const telefono = idxTelefono !== -1 ? (r[idxTelefono] || '').trim() : '';
-    const correo = idxCorreo !== -1 ? (r[idxCorreo] || '').trim() : '';
-    if(correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ errores.push(`Fila ${i+2}: correo "${correo}" inválido, se dejó vacío`); }
-    const correoFinal = (correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) ? correo : '';
-
-    const existente = EMPRESAS.find(x => x.nombre.toLowerCase() === nombre.toLowerCase());
-    if(existente){
-      existente.locacion = locacion; existente.telefono = telefono; existente.correo = correoFinal;
-      cambios.push(existente);
-      actualizadas++;
-    } else {
-      const nueva = { id: String(Date.now()) + '_' + i, nombre, locacion, telefono, correo: correoFinal };
-      EMPRESAS.push(nueva);
-      cambios.push(nueva);
-      creadas++;
-    }
-  });
-
-  if(!cambios.length){
-    showToast('No se importó ninguna fila válida');
-    if(errores.length) console.warn('Importación de empresas — errores:', errores);
+  if(plan.error){
+    body.innerHTML = fileRow + `<div class="imp-error">${esc(plan.error)}</div>
+      <div class="imp-actions"><button class="btn btn-outline" onclick="descargarPlantillaCSV('${tipo}')">Descargar plantilla</button><button class="btn btn-primary" onclick="document.getElementById('${tipo}-csv-input').click()">Elegir otro archivo</button></div>`;
     return;
   }
 
-  saveEmpresasLocal();
-  renderEmpresasList();
-  buildEmpresaOptions();
-  showToast(`Importadas: ${creadas} nuevas, ${actualizadas} actualizadas${omitidas?`, ${omitidas} omitidas`:''} ✓`);
-  if(errores.length) console.warn('Importación de empresas — avisos:', errores);
+  const n = plan.nuevos.length + plan.actualizar.length;
+  const avisosHTML = plan.avisos.length ? `<details class="imp-avisos"${plan.avisos.length<=4?' open':''}><summary>${plan.avisos.length} ${plan.avisos.length===1?'aviso':'avisos'}</summary><ul>${plan.avisos.slice(0,50).map(a=>`<li>${esc(a)}</li>`).join('')}${plan.avisos.length>50?`<li>… y ${plan.avisos.length-50} más</li>`:''}</ul></details>` : '';
 
-  cambios.forEach(e => fbSet('empresas', e.id, e).catch(err=>console.warn('empresa import sync', err)));
+  if(estado === 'listo'){
+    const ok = n - fallos.length;
+    const err = fallos.length ? String(fallos[0].e && fallos[0].e.message || '') : '';
+    const permisos = /PERMISSION_DENIED|insufficient permissions/i.test(err);
+    body.innerHTML = fileRow + `
+      <div class="imp-result ${fallos.length?'warn':'ok'}">
+        <b>${ok} ${ok===1?cfg.una:cfg.varias} ${ok===1?'guardado':'guardados'}</b>
+        ${fallos.length ? `<span>${fallos.length} no se ${fallos.length===1?'pudo':'pudieron'} guardar en el servidor. ${permisos ? `Firestore no tiene permiso para "${cfg.coleccion}": hay que actualizar sus reglas.` : 'Revisa tu conexión y vuelve a intentarlo.'}</span>` : ''}
+      </div>
+      <div class="imp-actions">${fallos.length ? `<button class="btn btn-outline" onclick="cerrarImport()">Cerrar</button><button class="btn btn-primary" onclick="ejecutarImport(true)">Reintentar ${fallos.length}</button>` : `<button class="btn btn-primary" onclick="cerrarImport()">Listo</button>`}</div>`;
+    return;
+  }
+
+  const muestra = plan.nuevos.map(o => ({ o, tag:cfg.nueva })).concat(plan.actualizar.map(u => ({ o:Object.assign({}, u.obj, u.cambios), tag:'actualiza' })));
+  const cols = cfg.columnas;
+  const tabla = muestra.length ? `<div class="imp-prev"><table><thead><tr><th></th>${cols.map(c=>`<th>${c.t}</th>`).join('')}</tr></thead><tbody>
+    ${muestra.slice(0,6).map(m => `<tr><td><span class="imp-tag ${m.tag==='actualiza'?'upd':''}">${m.tag}</span></td>${cols.map(c=>`<td>${esc(m.o[c.k]||'—')}</td>`).join('')}</tr>`).join('')}
+    </tbody></table>${muestra.length>6?`<div class="imp-mas">y ${muestra.length-6} más</div>`:''}</div>` : '';
+
+  body.innerHTML = fileRow + `
+    <div class="imp-stats">
+      <div class="imp-stat"><b>${plan.nuevos.length}</b><span>${plan.nuevos.length===1?cfg.nueva:cfg.nuevas}</span></div>
+      <div class="imp-stat"><b>${plan.actualizar.length}</b><span>se actualizan</span></div>
+      <div class="imp-stat"><b>${plan.sinCambios}</b><span>sin cambios</span></div>
+      <div class="imp-stat ${plan.omitidas?'warn':''}"><b>${plan.omitidas}</b><span>omitidas</span></div>
+    </div>
+    ${tabla}${avisosHTML}
+    <div class="imp-actions"><button class="btn btn-outline" onclick="cerrarImport()">Cancelar</button>
+      <button class="btn btn-primary" id="import-go" ${n?'':'disabled'} onclick="ejecutarImport()">${n ? `Importar ${n} ${n===1?cfg.una:cfg.varias}` : 'Nada que importar'}</button></div>`;
+}
+
+async function ejecutarImport(soloFallidos){
+  if(!IMPORT_ACTUAL) return;
+  const { tipo, plan } = IMPORT_ACTUAL;
+  const cfg = IMPORT_TIPOS[tipo];
+  let objs;
+  if(soloFallidos){
+    objs = IMPORT_ACTUAL.fallos.map(f => f.o);
+  } else {
+    const base = Date.now();
+    plan.nuevos.forEach((o, i) => { o.id = `${base}_${i}`; cfg.agregar(o); });
+    plan.actualizar.forEach(u => Object.assign(u.obj, u.cambios));
+    objs = plan.nuevos.concat(plan.actualizar.map(u => u.obj));
+    cfg.despues();
+  }
+  const btn = document.getElementById('import-go') || document.querySelector('#import-body .btn-primary');
+  if(btn) btn.disabled = true;
+  const fallos = [];
+  let hechos = 0;
+  const cola = objs.slice();
+  const trabajador = async () => {
+    while(cola.length){
+      const o = cola.shift();
+      try{ await fbSetWithRetry(cfg.coleccion, o.id, o); }catch(e){ fallos.push({ o, e }); console.warn(`importación ${tipo}`, o.nombre, e); }
+      hechos++;
+      if(btn) btn.textContent = `Guardando ${hechos} de ${objs.length}…`;
+    }
+  };
+  await Promise.all(Array.from({ length:Math.min(4, objs.length) }, trabajador));
+  IMPORT_ACTUAL.fallos = fallos; // en un reintento, solo quedan los que volvieron a fallar
+  const total = plan.nuevos.length + plan.actualizar.length;
+  if(!fallos.length) showToast(`${total} ${total===1?cfg.una:cfg.varias} ${total===1?'guardado':'guardados'} ✓`);
+  renderImport('listo');
+}
+function avisoNoGuardado(err){
+  return /PERMISSION_DENIED|insufficient permissions/i.test(String(err && err.message || ''))
+    ? '⚠ El servidor no permitió guardarlo (reglas de Firestore)'
+    : '⚠ No se guardó en el servidor: revisa tu conexión';
 }
 
 /* ======================================================================
@@ -3526,7 +3730,7 @@ async function saveSuplidor(){
   closeDrawer('suplidorform');
   renderSuplidoresList();
   showToast('Suplidor guardado ✓');
-  fbSet('suplidores', s.id, s).catch(err=>console.warn('suplidor sync', err));
+  fbSetWithRetry('suplidores', s.id, s).catch(err=>{ console.warn('suplidor sync', err); showToast(avisoNoGuardado(err)); });
 }
 
 async function deleteSuplidorForm(){

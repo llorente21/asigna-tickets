@@ -6,6 +6,25 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Carga en bloque (CSV) de Suplidores y Empresas (rama `feat/carga-masiva`, sin push)
+Pedido de Jose: poder subir suplidores y empresas en bloque. Un solo motor para los dos
+(`IMPORT_TIPOS`, `importarCSV`, `planImport`, `ejecutarImport`):
+- **Archivo:** CSV con coma, punto y coma o tabulador; UTF-8 o Windows-1252 ("CSV" de
+  Excel), así no se dañan los acentos. Un .xlsx muestra cómo guardarlo como CSV.
+  Plantilla descargable para cada uno. Títulos flexibles ("teléfono", "tel", "correo",
+  "email"…); el edificio acepta código o nombre ("D1" o "DIX Business Center 1").
+- **Vista previa antes de guardar:** nuevos, se actualizan, sin cambios y omitidos,
+  muestra de filas y avisos por fila (sin nombre, repetido, correo o edificio inválido).
+- **Actualización por nombre** (sin importar mayúsculas ni acentos). Las celdas vacías
+  no borran datos existentes (antes, importar Empresas sin una columna la vaciaba).
+- **Guardado verificado:** cada registro se guarda en Firestore y se informa cuántos
+  fallaron, con botón para reintentarlos. Si Firestore niega el permiso lo dice. Antes
+  los fallos solo iban a la consola y los datos desaparecían en la siguiente
+  sincronización (posible causa de los suplidores "perdidos").
+- Guardar un suplidor o empresa a mano también avisa si el servidor no lo guardó.
+Probado con Playwright (1440 y 390): archivos UTF-8 y Windows-1252, separadores, avisos,
+fallo de permisos y reintento, plantilla. Falta la prueba de Jose con datos reales.
+
 ## 2026-10-30 — Ver/ocultar contraseña al iniciar sesión (rama `feat/ver-contrasena`, sin push)
 Pedido de Jose. Botón con ícono de ojo dentro del campo de contraseña del inicio de
 sesión y del registro de locatarios (44px, `aria-pressed`, el foco y el cursor se
