@@ -6,7 +6,7 @@ para saber en qué punto está el proyecto.
 
 ---
 
-## 2026-10-30 — Carga en bloque (CSV) de Suplidores y Empresas (rama `feat/carga-masiva`, sin push)
+## 2026-10-30 — Carga en bloque (CSV) de Suplidores y Empresas — en producción (`02ec201`)
 Pedido de Jose: poder subir suplidores y empresas en bloque. Un solo motor para los dos
 (`IMPORT_TIPOS`, `importarCSV`, `planImport`, `ejecutarImport`):
 - **Archivo:** CSV con coma, punto y coma o tabulador; UTF-8 o Windows-1252 ("CSV" de
@@ -25,7 +25,7 @@ Pedido de Jose: poder subir suplidores y empresas en bloque. Un solo motor para 
 Probado con Playwright (1440 y 390): archivos UTF-8 y Windows-1252, separadores, avisos,
 fallo de permisos y reintento, plantilla. Falta la prueba de Jose con datos reales.
 
-## 2026-10-30 — Ver/ocultar contraseña al iniciar sesión (rama `feat/ver-contrasena`, sin push)
+## 2026-10-30 — Ver/ocultar contraseña al iniciar sesión — en producción (`02ec201`)
 Pedido de Jose. Botón con ícono de ojo dentro del campo de contraseña del inicio de
 sesión y del registro de locatarios (44px, `aria-pressed`, el foco y el cursor se
 mantienen). Al volver a la pantalla de acceso la contraseña empieza oculta.
