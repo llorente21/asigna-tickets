@@ -6,7 +6,7 @@ para saber en qué punto está el proyecto.
 
 ---
 
-## 2026-10-30 — Fase E: Dashboard nuevo (rama `feat/dashboard-fase-e`, sin push)
+## 2026-10-30 — Fase E: Dashboard nuevo — en producción (`bbb83b6`)
 Jose aprobó la propuesta del mockup "E · Dashboard". Reemplaza al Dashboard anterior:
 - **Filtros** en el encabezado (escritorio) o arriba de la vista (teléfono): período
   (este mes / 3 meses / este año / todo) y edificio. Se recuerdan en el navegador
@@ -25,9 +25,11 @@ Jose aprobó la propuesta del mockup "E · Dashboard". Reemplaza al Dashboard an
 - Colores de la dona validados para daltonismo (Nuevo en `#4A90E2`).
 - Cambiar de vista ahora también vuelve arriba el área de contenido en escritorio.
 Probado con Playwright (1440 y 390, datos de 6 meses): filtros, guardado, salto a SLA,
-tooltip; sin errores ni desplazamiento horizontal. Falta la prueba de Jose.
+tooltip; sin errores ni desplazamiento horizontal. Subido a main el 2026-10-30 junto con
+el diseño del canvas; despliegue de GitHub Pages verificado. Falta la prueba de Jose con
+datos reales.
 
-## 2026-10-30 — Diseño del canvas aplicado a toda la app (rama `diseno/aplicar-canvas-of`, sin push)
+## 2026-10-30 — Diseño del canvas aplicado a toda la app — en producción (`c69ec42`)
 Jose señaló que solo se había pasado la funcionalidad de los mockups y no su diseño.
 Se aplicó el design system ASIGNA del canvas "Propuesta referencia OF":
 

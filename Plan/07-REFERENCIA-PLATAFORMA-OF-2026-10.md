@@ -3,9 +3,9 @@
 **Estado (2026-10-30):**
 - **Fases A, C y D: en producción** (desde el 2026-10-29). El formulario de la Fase C
   se rehízo después en una sola pantalla.
-- **Diseño del canvas aplicado a toda la app** (2026-10-30).
+- **Diseño del canvas aplicado a toda la app:** en producción (2026-10-30).
 - **Fase B (catálogo de espacios): cancelada.**
-- **Fase E (Dashboard): aprobada e implementada** (2026-10-30, rama `feat/dashboard-fase-e`).
+- **Fase E (Dashboard): en producción** (2026-10-30, commit `bbb83b6`).
 
 Mockups: canvas de Claude Design "ASIGNA — Propuesta referencia OF"
 (https://claude.ai/artifact/RhFvzCZ7ffCTAdfonWf4DX), con el design system ASIGNA. Las
