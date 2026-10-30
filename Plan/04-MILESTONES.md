@@ -6,7 +6,7 @@ para saber en qué punto está el proyecto.
 
 ---
 
-## 2026-10-30 — Fix: pantallas cortadas en laptops con zoom (rama `fix/pantallas-completas`, sin push)
+## 2026-10-30 — Fix: pantallas cortadas en laptops con zoom — en producción (`b773a55`)
 Jose reportó pantallas que no se veían completas (captura del Dashboard a ~1525×704 px
 CSS, laptop con zoom 125 %). Causas y arreglos:
 - **Título y filtros cortados arriba:** `.desktop-main` es una columna flex con altura de
