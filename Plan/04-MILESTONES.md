@@ -6,7 +6,7 @@ para saber en qué punto está el proyecto.
 
 ---
 
-## 2026-10-30 — Registro abierto a todos: locatarios y personal (rama `feat/registro-para-todos`, sin push)
+## 2026-10-30 — Registro abierto a todos: locatarios y personal — en producción (`1f78785`)
 Decisión de Jose: la forma principal de crear cuentas es que cada persona se registre
 ("Crea tu cuenta aquí") y Administración la apruebe — para empleados y locatarios.
 - **Inicio de sesión:** un solo enlace, "¿No tienes cuenta? Crea tu cuenta aquí".
@@ -25,7 +25,7 @@ Decisión de Jose: la forma principal de crear cuentas es que cada persona se re
 Probado con Playwright: registro de personal y de locatario, validaciones, aprobación
 por Admin, Empleado sin permiso para aprobar personal.
 
-## 2026-10-30 — Fix crítico: crear un usuario cambiaba la sesión del admin (rama `fix/crear-usuario`, sin push)
+## 2026-10-30 — Fix crítico: crear un usuario cambiaba la sesión del admin — en producción (`1f78785`)
 Al revisar "¿cuál es la manera correcta de crear un usuario?" se encontró que
 **Usuarios → + Nuevo** usaba `firebaseSignUp`, que guarda los tokens de la cuenta
 creada. Desde ese momento la app trabajaba con la sesión de la persona nueva:
