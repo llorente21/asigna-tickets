@@ -6,6 +6,14 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Ver/ocultar contraseña al iniciar sesión (rama `feat/ver-contrasena`, sin push)
+Pedido de Jose. Botón con ícono de ojo dentro del campo de contraseña del inicio de
+sesión y del registro de locatarios (44px, `aria-pressed`, el foco y el cursor se
+mantienen). Al volver a la pantalla de acceso la contraseña empieza oculta.
+**Seguridad:** se quitó la contraseña del admin que estaba escrita en `DEFAULT_USERS`
+(visible para cualquiera en el código publicado). Sigue en el historial de git, así
+que hay que cambiarla. Probado con Playwright (1440 y 390).
+
 ## 2026-10-30 — Fase E: Dashboard nuevo — en producción (`bbb83b6`)
 Jose aprobó la propuesta del mockup "E · Dashboard". Reemplaza al Dashboard anterior:
 - **Filtros** en el encabezado (escritorio) o arriba de la vista (teléfono): período

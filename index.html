@@ -785,6 +785,17 @@ body.in-nuevo .header-back{display:flex;}
   .db-table .nom{display:none;} /* en el teléfono basta el código del edificio */
   .db-table th{letter-spacing:.3px;}
 }
+
+/* Ver / ocultar contraseña (inicio de sesión y registro) */
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:52px !important;}
+.pw-toggle{position:absolute; top:50%; right:4px; transform:translateY(-50%); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border:none; background:transparent; border-radius:9px; color:#6F675F; cursor:pointer;}
+.pw-toggle:hover{color:var(--text); background:rgba(34,30,31,.05);}
+.pw-toggle:focus-visible{outline:2px solid var(--accent2); outline-offset:1px;}
+.pw-toggle svg{width:20px; height:20px;}
+.pw-toggle .pw-eye-off{display:none;}
+.pw-toggle[aria-pressed="true"] .pw-eye{display:none;}
+.pw-toggle[aria-pressed="true"] .pw-eye-off{display:block;}
 </style>
 </head>
 <body>
@@ -829,7 +840,7 @@ body.in-nuevo .header-back{display:flex;}
       </div>
       <div class="field">
         <label for="password-input">Contraseña</label>
-        <input id="password-input" type="password" placeholder="••••••••" autocomplete="current-password">
+        <div class="pw-wrap"><input id="password-input" type="password" placeholder="••••••••" autocomplete="current-password"><button type="button" class="pw-toggle" onclick="togglePw(this)" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
       </div>
       <div class="auth-forgot"><button type="button" class="auth-forgot-btn" id="auth-forgot-btn" onclick="olvideContrasena()">¿Olvidaste tu contraseña?</button></div>
       <button class="btn btn-primary" id="auth-btn" style="width:100%;" onclick="handleAuth()">Ingresar →</button>
@@ -859,8 +870,8 @@ body.in-nuevo .header-back{display:flex;}
       <input id="reg-email" type="email" placeholder="tucorreo@empresa.com" autocomplete="username">
     </div>
     <div class="field">
-      <label>Contraseña</label>
-      <input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      <label for="reg-password">Contraseña</label>
+      <div class="pw-wrap"><input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="pw-toggle" onclick="togglePw(this)" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
     </div>
     <div class="field">
       <label>Locación</label>
@@ -1502,7 +1513,9 @@ function getSlaFor(prioridad){ return SLA_DIAS[prioridad] || SLA_DIAS.media; }
 const ROLE_LABELS = { admin:'Administración', empleado:'Empleado', locatario:'Locatario' };
 const ROLE_TAG = { admin:'Admin', empleado:'Empleado', locatario:'Locatario' };
 const DEFAULT_USERS = [
-  { email:'admin@oficinasfelices.com', password:'OficinasFelices2026', role:'admin', name:'Administración', locacion:'', empresa:'' }
+  // Sin contraseña: el acceso lo valida Firebase Authentication. (Antes la
+  // contraseña estaba escrita aquí, visible para cualquiera en el código de la página.)
+  { email:'admin@oficinasfelices.com', password:'', role:'admin', name:'Administración', locacion:'', empresa:'' }
 ];
 
 /* ======================================================================
@@ -4370,7 +4383,28 @@ setTimeout(async ()=>{
   setTimeout(showAuthScreen, 280);
 }, 2100);
 
+// Ver / ocultar la contraseña mientras se escribe. El foco vuelve al campo
+// para seguir escribiendo sin perder la posición del cursor.
+function togglePw(btn){
+  const input = btn.parentNode.querySelector('input');
+  if(!input) return;
+  const ver = input.type === 'password';
+  const pos = input.selectionStart;
+  input.type = ver ? 'text' : 'password';
+  btn.setAttribute('aria-pressed', ver ? 'true' : 'false');
+  btn.setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  input.focus();
+  try{ if(pos != null) input.setSelectionRange(pos, pos); }catch(e){}
+}
+function ocultarPasswords(){ // al volver a la pantalla de acceso, la contraseña siempre empieza oculta
+  document.querySelectorAll('.pw-toggle').forEach(b => {
+    const input = b.parentNode.querySelector('input');
+    if(input) input.type = 'password';
+    b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'Mostrar contraseña');
+  });
+}
 function showAuthScreen(){
+  ocultarPasswords();
   document.getElementById('register-screen').style.display = 'none';
   document.getElementById('register-screen').classList.remove('show');
   document.getElementById('pending-screen').style.display = 'none';
