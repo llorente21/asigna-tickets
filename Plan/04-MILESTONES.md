@@ -6,6 +6,33 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Diseño del canvas aplicado a toda la app (rama `diseno/aplicar-canvas-of`, sin push)
+Jose señaló que solo se había pasado la funcionalidad de los mockups y no su diseño.
+Se aplicó el design system ASIGNA del canvas "Propuesta referencia OF":
+
+**Escritorio**
+- Menú lateral oscuro (`--dark`), enlace activo amarillo, contador del SLA.
+- Encabezado de página: ruta en mayúsculas (`Operación / Tickets`) sobre el título en
+  Public Sans 800 26px; sin la franja amarilla. `VIEW_SUBS` ahora guarda esas rutas.
+- Botones "Exportar CSV" (contorno) y "+ Nuevo ticket" (amarillo) en el encabezado.
+- Lista de tickets: tarjeta blanca con buscador y filtros a la vista (Edificio, Estado,
+  Categoría y **Responsable**, nuevo: cualquiera / sin responsable / persona). En el
+  teléfono siguen el embudo y el panel de filtros.
+- Tablas: contenedor redondeado con sombra, cabecera crema en mayúsculas 10.5px.
+- Etiquetas de estado, prioridad y vencido en tipo oración con tinta oscura (AA).
+- Dashboard: KPI con la etiqueta arriba; títulos de gráficas en Public Sans 15px.
+- Detalle del ticket: encabezado con ruta + número, título 22px, estado y cerrar;
+  datos en 3 columnas (se suma "Categoría"); panel "Actualizar ticket" crema con
+  título Public Sans; botón "Guardar cambios".
+
+**Teléfono**
+- Encabezado oscuro sólido. En Nuevo ticket: flecha para volver + título, sin ruta.
+- Fix: el buscador ya no empuja el botón de exportar fuera de la pantalla (`min-width:0`).
+
+**General:** campos de los paneles blancos con borde fino; cada vista abre desde arriba.
+Probado con Playwright (escritorio 1440 y teléfono 390, staff y locatario, fuentes
+reales): sin errores, filtro de responsable verificado. Falta la prueba de Jose.
+
 ## 2026-10-29 — Nuevo ticket en una sola pantalla (rediseño aprobado por Jose)
 
 **Crítica de Jose al formulario de la Fase C:**

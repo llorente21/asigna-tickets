@@ -379,9 +379,6 @@ main.view.active{display:block;}
 .readonly-box{background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 13px; font-size:13.5px; color:var(--text2); margin-bottom:14px;}
 .readonly-box b{color:var(--text);}
 
-.detail-hero{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
-.detail-hero .numero{font-family:'Roboto Mono',monospace; font-weight:700; font-size:12.5px; color:var(--text3);}
-.detail-cat{font-size:18px; margin:2px 0 2px;}
 .detail-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
 .detail-item{background:var(--surface2); border-radius:var(--radius-sm); padding:10px 12px;}
 .detail-item .l{font-size:10.5px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px;}
@@ -610,6 +607,129 @@ main.view.active{display:block;}
 }
 
 /* Visibilidad mobile-vs-desktop la decide JS (applyLayoutMode), según rol + ancho */
+
+/* ======================================================================
+   Diseño del canvas "ASIGNA — Propuesta referencia OF" (2026-10-30)
+   Aplica a la app el design system ASIGNA usado en los mockups aprobados:
+   menú lateral oscuro, encabezado con ruta en mayúsculas + título en
+   Public Sans 800, tablas con cabecera crema, etiquetas en tipo oración,
+   tarjetas KPI "hero + acento" y botones planos. Va al final para
+   sobrescribir los estilos anteriores sin tocarlos uno por uno.
+   ====================================================================== */
+/* Menú lateral */
+.sidebar{width:240px; flex:0 0 240px; background:var(--dark); border-right:none;}
+.sidebar-brand{height:auto; padding:22px 22px 18px; border-bottom:none; color:#fff;}
+.sidebar-brand img{width:32px; height:32px; border-radius:9px;}
+.sidebar-brand span{color:#fff; font-size:18px;}
+.sidebar-nav{padding:4px 14px 14px;}
+.sidebar-link{min-height:44px; padding:0 12px; margin-bottom:4px; border-radius:11px; font-size:14px; font-weight:600; color:#E8E3DA;}
+.sidebar-link svg{stroke:#B9B1A6;}
+.sidebar-link:hover{background:rgba(255,255,255,.07);}
+.sidebar-link.active{background:var(--accent); color:#000; font-weight:700; box-shadow:none;}
+.sidebar-link.active svg{stroke:#000;}
+.sidebar-section{color:#B9B1A6; font-weight:700; letter-spacing:.6px; padding:18px 12px 6px;}
+.sidebar-user{border-top:1px solid rgba(255,255,255,.1); color:#fff;}
+.sidebar-user:hover{background:rgba(255,255,255,.07);}
+.sidebar-user-info .name{color:#fff;}
+.sidebar-user-info .role{color:#B9B1A6;}
+/* Encabezado de página: ruta en mayúsculas arriba, título grande abajo */
+.topbar{background:var(--bg); border-bottom:none; height:auto; min-height:0; padding:26px 32px 4px; align-items:flex-end;}
+.topbar-heading{margin-top:0; display:flex; flex-direction:column-reverse;}
+.topbar-heading h1{font-family:'Public Sans',sans-serif; font-weight:800; font-size:26px; letter-spacing:-.3px; line-height:1.15;}
+.topbar-heading p{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#6F675F;}
+.topbar-heading p:empty{display:none;}
+.topbar .btn{min-height:44px; padding:0 20px; font-size:14px; border-radius:11px;}
+.desktop-content{padding:18px 32px 40px;}
+#desktop-content-slot .nt-crumb{display:none;}
+.page-title{font-family:'Public Sans',sans-serif; font-weight:800; font-size:24px; letter-spacing:-.3px;}
+/* Botones planos (como los mockups) */
+#app-screen .btn-primary{box-shadow:none;}
+#app-screen .btn-primary:hover{filter:brightness(.97); box-shadow:none;}
+#app-screen .btn-outline{background:var(--surface); border:1px solid var(--border2);}
+.icon-btn-light{border-radius:11px;}
+/* Etiquetas de estado y prioridad: tipo oración, tinta oscura (contraste AA) */
+.status-badge{font-size:11.5px; font-weight:700; padding:4px 10px; text-transform:none; letter-spacing:0; box-shadow:none;}
+.badge-nuevo{color:#0D47A1;}
+.badge-en_proceso{color:#4A2F70;}
+.badge-cerrado{color:#1B5E20;}
+.prio-badge{font-size:11.5px; font-weight:700; padding:4px 10px;}
+.prio-baja{color:#1B5E20;}
+.prio-media{color:#8A6508;}
+.prio-alta{color:#B71C1C;}
+.vencido-badge{font-size:11px; font-weight:700; padding:3px 9px; text-transform:none; letter-spacing:0; color:#B71C1C;}
+/* Tablas: contenedor redondeado con sombra, cabecera crema en mayúsculas */
+.data-table{border-collapse:separate; border-spacing:0; font-size:13px; border:none; border-radius:var(--radius); box-shadow:var(--shadow-sm);}
+.data-table th{background:var(--surface2); color:#4A4544; font-size:10.5px; letter-spacing:.6px; padding:12px 16px; border-bottom:none;}
+.data-table td{padding:14px 16px; border-bottom:none; border-top:1px solid var(--border); vertical-align:top;}
+.data-table tbody tr:first-child td{border-top:1px solid var(--border);}
+.data-table .icon-btn-light.sm{width:40px; height:40px; border-radius:11px;}
+.data-table .icon-btn-light.sm svg{width:17px; height:17px;}
+/* Barra de búsqueda y filtros (staff en escritorio: tarjeta blanca con filtros a la vista) */
+.tk-filterbar{display:flex; flex-direction:column;}
+.tk-inline-filters{display:none;}
+#desktop-content-slot .tk-filterbar{flex-direction:row; flex-wrap:wrap; align-items:center; gap:10px; padding:14px; margin-bottom:18px; background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-sm);}
+#desktop-content-slot .tk-filterbar .search-bar{flex:1 1 220px; margin:0; min-height:44px; border:1px solid var(--border); background:var(--surface2);}
+#desktop-content-slot .tk-filterbar .search-bar input{font-size:14px; padding:10px 0;}
+#desktop-content-slot .tk-filterbar #filter-btn, #desktop-content-slot .tk-filterbar #export-btn{display:none !important;}
+#desktop-content-slot .tk-inline-filters{display:contents;}
+#desktop-content-slot .tk-inline-filters select{flex:0 1 auto; width:auto; min-width:0; max-width:220px; height:44px; margin:0; border:1px solid var(--border2); border-radius:11px; padding:0 8px 0 12px; background-color:var(--surface); font-family:'Inter',sans-serif; font-size:14px; color:var(--text);}
+/* Dashboard: tarjetas KPI "hero + acento" con la etiqueta arriba */
+.kpi-card{display:flex; flex-direction:column-reverse; justify-content:flex-end; gap:8px; border:none; border-top:4px solid var(--accent); padding:18px;}
+.kpi-card .v{font-size:34px;}
+.kpi-card .l{margin-top:0; font-size:10.5px; letter-spacing:.6px; color:#4A4544;}
+.kpi-card.kpi-hero{border-top:none;}
+.kpi-card.kpi-hero .l{color:var(--accent);}
+.chart-card{border:none; padding:20px;}
+.chart-card h4{font-size:15px; text-transform:none; letter-spacing:0; color:var(--text); margin-bottom:14px;}
+.catalog-card, .user-card, .settings-block{border-color:var(--border);}
+/* Encabezado móvil: oscuro sólido, como los mockups */
+.header{background:var(--dark); border-bottom:none;}
+
+/* Buscador: el campo puede encogerse (antes empujaba el botón Exportar fuera de la pantalla en el teléfono) */
+.search-bar input{min-width:0;}
+/* Campos de los paneles: blancos con borde fino, como en los mockups */
+.field label{font-size:13px; color:var(--text);}
+.field input, .field select, .field textarea{background:var(--surface); border:1px solid var(--border2); border-radius:11px; min-height:44px;}
+.field-hint{color:#6F675F;}
+.drawer-head h3{font-family:'Public Sans',sans-serif; font-weight:800; font-size:18px;}
+/* Detalle del ticket: ruta + título grande en el encabezado, estado y cerrar a la derecha */
+.detail-drawer-head{align-items:flex-start; gap:12px; padding:12px 18px 14px; border-bottom:1px solid var(--border); margin-bottom:6px;}
+.detail-head{min-width:0; display:flex; flex-direction:column; gap:4px;}
+.detail-head .dh-eyebrow{font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#6F675F;}
+.detail-head .dh-eyebrow .mono{font-family:'Roboto Mono',monospace; letter-spacing:0;}
+.detail-head h3{margin:0; font-family:'Public Sans',sans-serif; font-weight:800; font-size:20px; line-height:1.2;}
+.detail-head-actions{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+.detail-head-actions .status-badge{font-size:12px; padding:5px 12px;}
+#drawer-detail .drawer-close{width:40px; height:40px; border-radius:11px; border:1px solid var(--border); background:var(--surface2);}
+.detail-item{padding:10px 12px;}
+.detail-item .l{color:#6F675F; letter-spacing:.6px;}
+.detail-desc{background:var(--surface); border:1px solid var(--border); color:#4A4544; line-height:1.55;}
+.section-title{font-size:10.5px; color:#4A4544; letter-spacing:.6px; margin:22px 0 10px;}
+.sla-box .sla-head b{font-size:14px;}
+.sla-box .sla-head span{font-size:12px; color:#6F675F;}
+.sla-box .sla-bar{height:10px; background:#F2EEE2;}
+.sla-box .sla-meta{font-size:12.5px; color:#4A4544;}
+.action-box{background:var(--surface2); border:1px solid var(--border2); padding:18px;}
+.action-box .t{font-family:'Public Sans',sans-serif; font-weight:800; font-size:16px; margin-bottom:12px;}
+.action-box .field select, .action-box .field input{height:44px; font-size:14px; padding:0 12px;}
+.action-box .field textarea{font-size:14px;}
+.action-box #d-status{border:2px solid var(--accent); font-weight:600;}
+@media(min-width:900px){
+  #drawer-detail{width:min(1080px, calc(100vw - 48px)); margin-left:calc(min(1080px, calc(100vw - 48px)) / -2);}
+  #drawer-detail .drawer-head{padding:18px 28px 16px;}
+  #drawer-detail .drawer-body{padding:16px 28px 28px;}
+  #drawer-detail .detail-head h3{font-size:22px;}
+  .detail-layout{grid-template-columns:minmax(0,1fr) 350px;}
+  .detail-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .field input, .field select, .field textarea{font-size:14px;}
+}
+/* Teléfono, Nuevo ticket: encabezado oscuro con "volver" y el título, sin ruta */
+.header-back{display:none; align-items:center; gap:4px; flex:1; min-width:0;}
+.header-back h1{margin:0; color:#fff; font-family:'Public Sans',sans-serif; font-weight:800; font-size:19px;}
+.header-back .icon-btn{width:44px; height:44px; background:transparent;}
+body.in-nuevo .header > :not(.header-back){display:none !important;}
+body.in-nuevo .header-back{display:flex;}
+#mobile-content-slot #view-nuevo .nt-crumb, #mobile-content-slot #view-nuevo .page-title{display:none;}
 </style>
 </head>
 <body>
@@ -718,6 +838,10 @@ main.view.active{display:block;}
 <div id="app-screen">
   <!-- ---------- Chrome móvil (Locatario, y Admin/Empleado en pantallas angostas) ---------- -->
   <div class="header">
+    <div class="header-back">
+      <button class="icon-btn" onclick="cancelarNuevoTicket()" aria-label="Volver a tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <h1>Nuevo ticket</h1>
+    </div>
     <button class="header-home-btn" onclick="goHome()" aria-label="Ir al inicio" style="display:flex; align-items:center; gap:10px; background:none; border:none; padding:0; flex:1; text-align:left; cursor:pointer; font:inherit; color:inherit;">
       <img src="icon-192.png" alt="">
       <div class="brand">ASIGNA<small id="header-sub">Tickets</small></div>
@@ -757,7 +881,8 @@ main.view.active{display:block;}
         </div>
         <div class="topbar-actions">
           <button class="icon-btn-light" id="view-toggle-btn" onclick="toggleViewMode()" style="display:none;" aria-label="Cambiar vista"></button>
-          <button class="btn btn-primary btn-sm" id="topbar-new-ticket" onclick="openTicketForm()" style="display:none;">+ Nuevo Ticket</button>
+          <button class="btn btn-outline" id="topbar-export" onclick="exportTicketsCSV()" style="display:none;">Exportar CSV</button>
+          <button class="btn btn-primary" id="topbar-new-ticket" onclick="openTicketForm()" style="display:none;">+ Nuevo ticket</button>
           <button class="icon-btn-light" onclick="openDrawer('notifs')" aria-label="Notificaciones">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span class="badge-dot" id="bell-badge-desktop" style="display:none">0</span>
@@ -775,15 +900,23 @@ main.view.active{display:block;}
     <h1 class="page-title" id="tickets-title">Mis Tickets</h1>
     <p class="page-sub" id="tickets-sub">Reporta y da seguimiento a tus incidencias</p>
 
+    <div class="tk-filterbar">
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="search-input" placeholder="Buscar por número, descripción..." oninput="onSearch()">
+      <input id="search-input" placeholder="Buscar por número, título, empresa..." oninput="onSearch()" aria-label="Buscar tickets">
       <button class="filter-btn" id="filter-btn" onclick="openDrawer('filter')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       </button>
       <button class="filter-btn" id="export-btn" onclick="exportTicketsCSV()" style="display:none;" aria-label="Exportar CSV">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
       </button>
+    </div>
+    <div class="tk-inline-filters" id="tk-inline-filters">
+      <select id="flt-edificio" aria-label="Edificio" onchange="onInlineFilter()"></select>
+      <select id="flt-estado" aria-label="Estado" onchange="onInlineFilter()"></select>
+      <select id="flt-categoria" aria-label="Categoría" onchange="onInlineFilter()"></select>
+      <select id="flt-responsable" aria-label="Responsable" onchange="onInlineFilter()"></select>
+    </div>
     </div>
 
     <div class="chip-row" id="quick-chips"></div>
@@ -1009,8 +1142,9 @@ main.view.active{display:block;}
 <!-- Detalle de ticket -->
 <div class="drawer" id="drawer-detail">
   <div class="drawer-handle"></div>
-  <div class="drawer-head"><h3>Detalle del ticket</h3>
-    <button class="drawer-close" onclick="closeDrawer('detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <div class="drawer-head detail-drawer-head"><div class="detail-head" id="detail-head"><h3>Detalle del ticket</h3></div>
+    <div class="detail-head-actions"><span id="detail-head-status"></span>
+    <button class="drawer-close" onclick="closeDrawer('detail')" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
   </div>
   <div class="drawer-body" id="detail-body"></div>
 </div>
@@ -1485,7 +1619,7 @@ let editingSuplidorId = null;
 let currentDetailId = null;
 let currentReabrirId = null;
 let currentView = 'tickets';
-const F  = { status:'todos', categoria:'', locacion:'', search:'' };
+const F  = { status:'todos', categoria:'', locacion:'', search:'', responsable:'' };
 let SLA_TIPO = 'resolucion'; // vista SLA: 'respuesta' | 'resolucion'
 const EF = { tab:'todos' };
 let listViewMode = localStorage.getItem('of_view_mode') || 'cards'; // 'cards' | 'list' — solo aplica en el panel de escritorio
@@ -2035,19 +2169,19 @@ function onCategoriaChange(){
 }
 
 const VIEW_TITLES = { tickets:'Tickets', nuevo:'Nuevo ticket', sla:'SLA', dashboard:'Dashboard', usuarios:'Usuarios', empresas:'Empresas', suplidores:'Suplidores', areas:'Áreas', estados:'Estados', prioridades:'Prioridades', configuracion:'Configuración', perfil:'Perfil' };
-const VIEW_SUBS = {
-  tickets:'Todos los tickets entrantes de la red',
-  sla:'Tickets abiertos vencidos o por vencer',
-  nuevo:'',
-  dashboard:'Métricas del sistema de tickets — Oficinas Felices',
-  usuarios:'Todas las cuentas de acceso: Administración, Empleados y Locatarios',
-  empresas:'Compañías clientes de la red',
-  suplidores:'Proveedores externos que dan seguimiento a incidencias — no tienen cuenta propia en ASIGNA',
-  areas:'Categorías de incidencia que puede reportar un locatario',
-  estados:'Flujo de estatus por el que pasa un ticket',
-  prioridades:'Nivel de urgencia y SLA de solución esperado',
-  configuracion:'Información general de la aplicación',
-  perfil:''
+const VIEW_SUBS = { // ruta que se muestra en mayúsculas sobre el título (escritorio)
+  tickets:'Operación / Tickets',
+  nuevo:'Tickets / Nuevo ticket',
+  sla:'Operación / SLA',
+  dashboard:'Operación / Dashboard',
+  usuarios:'Administración / Usuarios',
+  empresas:'Administración / Empresas',
+  suplidores:'Administración / Suplidores',
+  areas:'Administración / Áreas',
+  estados:'Administración / Estados',
+  prioridades:'Administración / Prioridades',
+  configuracion:'Administración / Configuración',
+  perfil:'Cuenta / Perfil'
 };
 // Solo Administrador (nunca Empleado): catálogos que definen cómo opera ASIGNA.
 const ADMIN_ONLY_VIEWS = ['empresas','suplidores','areas','estados','prioridades','configuracion'];
@@ -2139,7 +2273,9 @@ function goHome(){ switchView(isStaff() ? 'dashboard' : 'tickets'); }
 function switchView(name){
   if(ADMIN_ONLY_VIEWS.includes(name) && !isAdmin()) name = 'tickets';
   if(STAFF_VIEWS.includes(name) && !isStaff()) name = 'tickets';
+  if(currentView !== name) window.scrollTo(0,0); // cada vista abre desde arriba
   currentView = name;
+  document.body.classList.toggle('in-nuevo', name==='nuevo');
   document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn, .sidebar-link').forEach(b=>b.classList.remove('active'));
@@ -2154,6 +2290,7 @@ function switchView(name){
   document.getElementById('fab-btn').style.display = (name==='tickets' && !isDesktopLayout()) ? 'flex' : 'none';
   document.getElementById('export-btn').style.display = (name==='tickets' && isStaff()) ? 'flex' : 'none';
   const topNewTicket = document.getElementById('topbar-new-ticket'); if(topNewTicket) topNewTicket.style.display = (name==='tickets') ? 'inline-flex' : 'none';
+  const topExport = document.getElementById('topbar-export'); if(topExport) topExport.style.display = (name==='tickets' && isStaff()) ? 'inline-flex' : 'none';
   const topTitle = document.getElementById('topbar-title'); if(topTitle) topTitle.textContent = VIEW_TITLES[name] || '';
   const topSub = document.getElementById('topbar-sub'); if(topSub) topSub.textContent = VIEW_SUBS[name] || '';
   updateViewToggleBtn();
@@ -2257,6 +2394,8 @@ function getFilteredTickets(){
     if(F.status !== 'todos') list = list.filter(t => t.status === F.status);
     if(F.categoria) list = list.filter(t => t.categoria === F.categoria);
     if(F.locacion) list = list.filter(t => t.locacion === F.locacion);
+    if(F.responsable === '__none__') list = list.filter(t => !t.responsable_email);
+    else if(F.responsable) list = list.filter(t => t.responsable_email === F.responsable);
   }
   const q = (isStaff() ? F.search : EF.search) || '';
   if(q){
@@ -2284,7 +2423,8 @@ function renderTicketsView(){
     // se filtra desde el botón de filtros y los vencidos/en riesgo, en la vista SLA.
     chipsWrap.innerHTML = '';
     chipsWrap.style.display = 'none';
-    const active = F.status!=='todos' || F.categoria || F.locacion;
+    syncInlineFilters();
+    const active = F.status!=='todos' || F.categoria || F.locacion || F.responsable;
     document.getElementById('filter-btn').classList.toggle('has-filters', !!active);
   } else {
     chipsWrap.style.display = '';
@@ -2294,6 +2434,26 @@ function renderTicketsView(){
   renderTicketsList();
 }
 function setEmpTab(tab){ EF.tab = tab; renderTicketsView(); }
+
+// Filtros a la vista (staff en escritorio, diseño del canvas): Edificio, Estado,
+// Categoría y Responsable. Comparten el estado F con el panel de filtros del móvil.
+function syncInlineFilters(){
+  const set = (id, html, val) => { const el = document.getElementById(id); if(!el) return; el.innerHTML = html; el.value = val; };
+  set('flt-edificio', '<option value="">Todos los edificios</option>' + Object.entries(LOCACIONES).map(([k,v]) => `<option value="${k}" title="${esc(v)}">${k}</option>`).join(''), F.locacion);
+  set('flt-estado', '<option value="todos">Todos los estados</option>' + STATUS_FLOW.map(s => `<option value="${s}">${STATUS_LABELS[s]}</option>`).join(''), F.status);
+  set('flt-categoria', '<option value="">Todas las categorías</option>' + Object.keys(CATEGORIAS).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join(''), F.categoria);
+  const staffUsers = USERS_LIST.filter(u => u.role==='admin' || u.role==='empleado').sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  set('flt-responsable', '<option value="">Cualquier responsable</option><option value="__none__">Sin responsable</option>' + staffUsers.map(u => `<option value="${esc(u.email)}">${esc(u.name)}</option>`).join(''), F.responsable);
+}
+function onInlineFilter(){
+  F.locacion = document.getElementById('flt-edificio').value;
+  F.status = document.getElementById('flt-estado').value || 'todos';
+  F.categoria = document.getElementById('flt-categoria').value;
+  F.responsable = document.getElementById('flt-responsable').value;
+  const ids = { 'tmp-locacion':F.locacion, 'tmp-status':F.status, 'tmp-categoria':F.categoria };
+  Object.entries(ids).forEach(([id,v]) => { const el = document.getElementById(id); if(el) el.value = v; });
+  renderTicketsList();
+}
 
 function renderTicketsList(){
   const list = getFilteredTickets();
@@ -2386,7 +2546,7 @@ function applyFilters(){
   renderTicketsView();
 }
 function resetFilters(){
-  F.status='todos'; F.categoria=''; F.locacion='';
+  F.status='todos'; F.categoria=''; F.locacion=''; F.responsable='';
   document.getElementById('tmp-status').value='todos';
   document.getElementById('tmp-categoria').value='';
   document.getElementById('tmp-locacion').value='';
@@ -2540,6 +2700,8 @@ function openTicketDetail(id){
   currentDetailId = id;
   const t = tickets.find(x=>x.id===id);
   if(!t) return;
+  document.getElementById('detail-head').innerHTML = `<div class="dh-eyebrow">Tickets / <span class="mono">${esc(t.numero)}</span></div><h3>${esc(tituloTicket(t))}</h3>`;
+  document.getElementById('detail-head-status').innerHTML = `<span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>`;
   document.getElementById('detail-body').innerHTML = renderDetailBody(t);
   openDrawer('detail');
 }
@@ -2557,8 +2719,8 @@ function renderDetailBody(t){
     const opts = STATUS_FLOW.map(s=>`<option value="${s}" ${s===t.status?'selected':''}>${STATUS_LABELS[s]}</option>`).join('');
     actionBox = `
     <div class="action-box">
-      <div class="t">Actualizar estatus</div>
-      <div class="field"><label>Nuevo estatus</label><select id="d-status" onchange="onDetailStatusChange('${t.status}')">${opts}</select></div>
+      <div class="t">Actualizar ticket</div>
+      <div class="field"><label for="d-status">Nuevo estado</label><select id="d-status" onchange="onDetailStatusChange('${t.status}')">${opts}</select></div>
       <div class="field" id="d-espera-field" style="display:${t.status==='en_espera'?'block':'none'};">
         <label id="d-espera-label">¿Qué se está esperando? *</label>
         <div class="chip-radios" role="radiogroup" aria-labelledby="d-espera-label">
@@ -2599,7 +2761,7 @@ function renderDetailBody(t){
         <input id="d-asignado-manual" value="${t.asignado_tipo==='manual'?esc(t.asignado_a||''):''}" placeholder="Ej. Mantenimiento / IT">
       </div>
       <div class="field"><label id="d-nota-label">Nota (opcional)</label><textarea id="d-nota" placeholder="Detalle del avance..."></textarea><div class="field-hint" id="d-nota-hint" style="display:none;">Obligatorio: explica el motivo del cambio de estatus.</div></div>
-      <button class="btn btn-primary" style="width:100%;" onclick="updateTicketStatus('${t.id}')">Actualizar ticket</button>
+      <button class="btn btn-primary" style="width:100%;" onclick="updateTicketStatus('${t.id}')">Guardar cambios</button>
     </div>`;
   } else if(t.status === 'cerrado'){
     actionBox = (isStaff() || t.empleado_email===currentUser.email) ? `
@@ -2645,15 +2807,7 @@ function renderDetailBody(t){
     </div>`).join('') || `<p style="font-size:12.5px; color:var(--text3); margin:0 0 12px;">Sin comentarios todavía.</p>`;
 
   return `
-    <div class="detail-hero">
-      <div>
-        <div class="numero mono">${esc(t.numero)}</div>
-        <div class="detail-cat">${esc(tituloTicket(t))}</div>
-        ${t.titulo ? `<div style="font-size:12.5px; color:var(--text2); margin-top:2px;">${esc(catTicket(t))}</div>` : ''}
-      </div>
-      <span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
-    </div>
-    ${(isVencidoRespuesta(t) || isVencidoResolucion(t)) ? `<div style="margin:-8px 0 14px; display:flex; gap:6px; flex-wrap:wrap;">
+    ${(isVencidoRespuesta(t) || isVencidoResolucion(t)) ? `<div style="margin:0 0 14px; display:flex; gap:6px; flex-wrap:wrap;">
       ${isVencidoRespuesta(t) ? `<span class="vencido-badge">Respuesta vencida (${getSlaFor(t.prioridad).respuesta_horas}h)</span>` : ''}
       ${isVencidoResolucion(t) ? `<span class="vencido-badge">Resolución vencida (${getSlaFor(t.prioridad).resolucion_dias}d)</span>` : ''}
     </div>` : ''}
@@ -2661,6 +2815,7 @@ function renderDetailBody(t){
       <div class="detail-main">
         <div class="detail-grid">
           <div class="detail-item"><div class="l">Solicitante</div><div class="v">${esc(t.empleado_nombre)}</div></div>
+          <div class="detail-item"><div class="l">Categoría</div><div class="v">${esc(catTicket(t))}</div></div>
           <div class="detail-item"><div class="l">Edificio</div><div class="v">${esc(t.locacion)} — ${esc(LOCACIONES[t.locacion]||'')}</div></div>
           <div class="detail-item"><div class="l">Tipo</div><div class="v">${t.tipo_incidencia==='area_comun' ? 'Área común' : 'Oficina de inquilino'}</div></div>
           ${t.ubicacion_detalle ? `<div class="detail-item"><div class="l">Ubicación</div><div class="v">${esc(t.ubicacion_detalle)}</div></div>` : ''}
