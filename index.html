@@ -583,7 +583,14 @@ main.view.active{display:block;}
 .sidebar-brand{height:auto; padding:22px 22px 18px; border-bottom:none; color:#fff;}
 .sidebar-brand img{width:32px; height:32px; border-radius:9px;}
 .sidebar-brand span{color:#fff; font-size:18px;}
-.sidebar-nav{padding:4px 14px 14px;}
+.sidebar-nav{padding:4px 14px 14px; min-height:0; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.25) transparent;} /* min-height:0 deja que el menú se desplace en pantallas bajas */
+.sidebar-brand, .sidebar-user{flex-shrink:0;}
+@media (max-height:760px){ /* laptops con zoom: menú más compacto para que se vea completo */
+  .sidebar-brand{padding:16px 22px 10px;}
+  .sidebar-link{min-height:38px; margin-bottom:2px;}
+  .sidebar-section{padding:12px 12px 4px;}
+  .topbar{padding-top:18px;}
+}
 .sidebar-link{min-height:44px; padding:0 12px; margin-bottom:4px; border-radius:11px; font-size:14px; font-weight:600; color:#E8E3DA;}
 .sidebar-link svg{stroke:#B9B1A6;}
 .sidebar-link:hover{background:rgba(255,255,255,.07);}
@@ -596,6 +603,9 @@ main.view.active{display:block;}
 .sidebar-user-info .role{color:#B9B1A6;}
 /* Encabezado de página: ruta en mayúsculas arriba, título grande abajo */
 .topbar{background:var(--bg); border-bottom:none; height:auto; min-height:0; padding:26px 32px 4px; align-items:flex-end;}
+/* En pantallas bajas (laptop con zoom) la columna no debe encoger el encabezado ni el contenido:
+   antes el título y los filtros quedaban cortados arriba. */
+.desktop-main > *{flex-shrink:0;}
 .topbar-heading{margin-top:0; display:flex; flex-direction:column-reverse;}
 .topbar-heading h1{font-family:'Public Sans',sans-serif; font-weight:800; font-size:26px; letter-spacing:-.3px; line-height:1.15;}
 .topbar-heading p{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#6F675F;}
@@ -4317,8 +4327,8 @@ function dbDonutSVG(data){
 }
 function dbTipInit(){
   const root = document.getElementById('view-dashboard'), tip = document.getElementById('db-tip');
-  if(!root || !tip || root.dataset.tip) return;
-  root.dataset.tip = '1';
+  if(!root || !tip || root.dataset.tipInit) return;
+  root.dataset.tipInit = '1'; // ojo: no usar data-tip aquí, el propio contenedor mostraría un globo "1"
   const mostrar = e => {
     const el = e.target.closest && e.target.closest('[data-tip]');
     if(!el || !root.contains(el)){ tip.hidden = true; return; }

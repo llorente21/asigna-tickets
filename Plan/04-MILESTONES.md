@@ -6,6 +6,19 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-10-30 — Fix: pantallas cortadas en laptops con zoom (rama `fix/pantallas-completas`, sin push)
+Jose reportó pantallas que no se veían completas (captura del Dashboard a ~1525×704 px
+CSS, laptop con zoom 125 %). Causas y arreglos:
+- **Título y filtros cortados arriba:** `.desktop-main` es una columna flex con altura de
+  pantalla y el encabezado (`min-height:0`) se encogía cuando el contenido era alto; su
+  contenido se salía por arriba. Ahora `.desktop-main > *{flex-shrink:0}`.
+- **Globo "1" flotando en el Dashboard:** la marca de inicialización del tooltip usaba
+  `data-tip` en el propio contenedor. Ahora es `data-tip-init`.
+- **Menú lateral cortado en pantallas bajas:** `.sidebar-nav` no podía desplazarse (faltaba
+  `min-height:0`). Ahora se desplaza y, con alto ≤ 760 px, el menú es más compacto.
+Verificado con Playwright a 1525×704, 1280×600 y 1440×900 en Dashboard, Tickets, SLA,
+Nuevo ticket, Usuarios, Empresas, Suplidores y Configuración (arriba y al final).
+
 ## 2026-10-30 — Carga en bloque (CSV) de Suplidores y Empresas — en producción (`02ec201`)
 Pedido de Jose: poder subir suplidores y empresas en bloque. Un solo motor para los dos
 (`IMPORT_TIPOS`, `importarCSV`, `planImport`, `ejecutarImport`):
