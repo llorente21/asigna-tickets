@@ -842,6 +842,18 @@ body.in-nuevo .header-back{display:flex;}
 /* Registro: tipo de cuenta */
 .reg-tipo{display:flex; flex-wrap:wrap; gap:8px;}
 .reg-tipo .chip-radio span{min-height:44px; font-size:14px;}
+
+/* Botones "volver" */
+.topbar-back{width:44px; height:44px; flex:0 0 44px; align-self:flex-end; margin:0 10px 2px -8px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border2); border-radius:11px; background:var(--surface); color:var(--text); cursor:pointer;}
+.topbar-back:hover{background:var(--surface2);}
+.topbar .topbar-heading{margin-right:auto;} /* título pegado a la flecha; acciones a la derecha */
+.topbar-back svg{width:20px; height:20px;}
+.topbar-back:focus-visible, .auth-back:focus-visible{outline:2px solid var(--accent2); outline-offset:2px;}
+.topbar-heading p a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
+.topbar-heading p a:hover{color:var(--text);}
+.auth-back{display:inline-flex; align-items:center; gap:4px; min-height:44px; margin:0 0 6px -10px; padding:0 10px; border:none; background:transparent; border-radius:11px; font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#4A4544; cursor:pointer;}
+.auth-back:hover{background:rgba(34,30,31,.05); color:var(--text);}
+.auth-back svg{width:18px; height:18px;}
 </style>
 </head>
 <body>
@@ -902,6 +914,7 @@ body.in-nuevo .header-back{display:flex;}
       <img src="logo-hero.jpg" alt="ASIGNA">
       <div class="t2">Plataforma de tickets</div>
     </div>
+    <button type="button" class="auth-back" onclick="volverAlLogin()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Volver</button>
     <div class="auth-eyebrow">Nueva cuenta</div>
     <h1 class="auth-title">Crear cuenta</h1>
     <p class="auth-desc">Administración la aprueba antes de que puedas usarla.</p>
@@ -937,7 +950,7 @@ body.in-nuevo .header-back{display:flex;}
       </div>
     </div>
     <button class="btn btn-primary" id="register-btn" style="width:100%;" onclick="handleRegister()">Crear cuenta →</button>
-    <p class="auth-hint">¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="showAuthScreen()">Inicia sesión</a>.</p>
+    <p class="auth-hint">¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="volverAlLogin()">Inicia sesión</a>.</p>
   </div>
 </div>
 
@@ -996,6 +1009,7 @@ body.in-nuevo .header-back{display:flex;}
     </aside>
     <div class="desktop-main">
       <div class="topbar">
+        <button type="button" class="topbar-back" id="topbar-back" onclick="volverAtras()" aria-label="Volver" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
         <div class="topbar-heading">
           <h1 id="topbar-title">Tickets</h1>
           <p id="topbar-sub"></p>
@@ -1773,16 +1787,92 @@ function hideLoading(){ document.getElementById('loading-overlay').style.display
 function openDrawer(name){
   document.getElementById('drawer-overlay').classList.add('open');
   document.getElementById('drawer-'+name).classList.add('open');
+  navPanelAbierto(name);
 }
-function closeDrawer(name){
+function closeDrawer(name, desdeHistorial){
   document.getElementById('drawer-'+name).classList.remove('open');
   const anyOpen = document.querySelectorAll('.drawer.open').length > 0;
   if(!anyOpen) document.getElementById('drawer-overlay').classList.remove('open');
+  if(!desdeHistorial) navPanelCerrado();
 }
-function closeAllDrawers(){
+function closeAllDrawers(desdeHistorial){
   document.querySelectorAll('.drawer.open').forEach(d=>d.classList.remove('open'));
   document.getElementById('drawer-overlay').classList.remove('open');
+  if(desdeHistorial !== true) navPanelCerrado();
 }
+
+/* ======================================================================
+   Botón "Atrás" (navegador, teléfono y flecha de la app) — 2026-11-03
+   ASIGNA es una sola página: sin esto, "Atrás" salía de la app en vez de
+   volver a la pantalla anterior o cerrar el panel abierto.
+   - Cada cambio de vista agrega una entrada al historial ({v}).
+   - Abrir un panel (detalle, formularios, filtros…) agrega una entrada
+     ({overlay}); "Atrás" lo cierra. Si un panel se cambia por otro en el mismo
+     momento (notificación → detalle, detalle → reabrir) se reemplaza la entrada.
+   - Salir de "Nuevo ticket" con datos escritos pide confirmación.
+   ====================================================================== */
+let _navIgnorarPop = false, _navTimerAtras = null, _navSalidaConfirmada = false;
+function navEstado(){ return (history.state && history.state.asigna) ? history.state : {}; }
+function navGuardar(estado, nuevo){ try{ nuevo ? history.pushState(estado, '') : history.replaceState(estado, ''); }catch(e){} }
+function hayPanelAbierto(){ return document.querySelectorAll('.drawer.open').length > 0; }
+function navPanelAbierto(name){
+  if(_navTimerAtras){ clearTimeout(_navTimerAtras); _navTimerAtras = null; navGuardar({ ...navEstado(), asigna:1, overlay:name }, false); return; }
+  const st = navEstado();
+  navGuardar({ ...st, asigna:1, overlay:name }, !st.overlay);
+}
+function navPanelCerrado(){
+  if(!navEstado().overlay) return;
+  clearTimeout(_navTimerAtras);
+  _navTimerAtras = setTimeout(() => {
+    _navTimerAtras = null;
+    if(navEstado().overlay && !hayPanelAbierto()){ _navIgnorarPop = true; history.back(); }
+  }, 0);
+}
+function nuevoTicketTieneDatos(){
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  return !!(v('f-descripcion') || v('f-ubicacion') || document.getElementById('f-titulo')?.dataset.editado);
+}
+function confirmarSalirDeNuevo(){
+  return !nuevoTicketTieneDatos() || confirm('¿Salir sin crear el ticket? Lo que escribiste se perderá.');
+}
+// Cancelar, flecha "volver" o después de crear el ticket
+function salirDeNuevo(sinPreguntar){
+  if(navEstado().v === 'nuevo'){
+    _navSalidaConfirmada = !!sinPreguntar;
+    history.back();
+    return;
+  }
+  if(!sinPreguntar && !confirmarSalirDeNuevo()) return;
+  switchView('tickets');
+}
+function volverAtras(){
+  if(currentView === 'nuevo') return salirDeNuevo(false);
+  history.back();
+}
+window.addEventListener('popstate', e => {
+  if(_navIgnorarPop){ _navIgnorarPop = false; return; }
+  const st = (e.state && e.state.asigna) ? e.state : {};
+  const enApp = currentUser && document.getElementById('app-screen').style.display === 'block';
+  if(!enApp){
+    // Pantallas de acceso: "Atrás" desde "Crear cuenta" vuelve al inicio de sesión.
+    if(document.getElementById('register-screen').classList.contains('show') && st.auth !== 'registro') showAuthScreen();
+    return;
+  }
+  if(hayPanelAbierto()) closeAllDrawers(true);
+  if(st.overlay) navGuardar({ ...st, overlay:undefined }, false); // "Adelante" hacia un panel ya cerrado
+  if(st.v && st.v !== currentView){
+    if(currentView === 'nuevo' && !_navSalidaConfirmada && !confirmarSalirDeNuevo()){
+      navGuardar({ asigna:1, v:'nuevo' }, true); // se queda en el formulario
+      return;
+    }
+    _navSalidaConfirmada = false;
+    switchView(st.v, { desdeHistorial:true });
+  }
+});
+// Escape cierra el panel abierto (escritorio)
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && hayPanelAbierto()){ e.preventDefault(); closeAllDrawers(); }
+});
 
 /* ======================================================================
    Auth
@@ -2092,6 +2182,7 @@ async function enterApp(){
 
   currentView = isStaff() ? 'dashboard' : 'tickets';
   applyLayoutMode();
+  navGuardar({ asigna:1, v:currentView }, false); // primera entrada del historial dentro de la app
   renderAll();
   retrySyncPendingTickets();
 }
@@ -2397,12 +2488,14 @@ let _resizeTimer;
 window.addEventListener('resize', ()=>{ clearTimeout(_resizeTimer); _resizeTimer = setTimeout(applyLayoutMode, 200); });
 
 function goHome(){ switchView(isStaff() ? 'dashboard' : 'tickets'); }
-function switchView(name){
+function switchView(name, opts){
+  opts = opts || {};
   if(ADMIN_ONLY_VIEWS.includes(name) && !isAdmin()) name = 'tickets';
   if(STAFF_VIEWS.includes(name) && !isStaff()) name = 'tickets';
   if(currentView !== name){ // cada vista abre desde arriba (en escritorio el que se desplaza es .desktop-main)
     window.scrollTo(0,0);
     const dm = document.querySelector('.desktop-main'); if(dm) dm.scrollTop = 0;
+    if(!opts.desdeHistorial) navGuardar({ asigna:1, v:name }, true); // "Atrás" vuelve aquí
   }
   currentView = name;
   document.body.classList.toggle('in-nuevo', name==='nuevo');
@@ -2423,7 +2516,12 @@ function switchView(name){
   const topExport = document.getElementById('topbar-export'); if(topExport) topExport.style.display = (name==='tickets' && isStaff()) ? 'inline-flex' : 'none';
   const dbTop = document.getElementById('db-filters-top'); if(dbTop) dbTop.style.display = (name==='dashboard' && isDesktopLayout()) ? 'flex' : 'none';
   const topTitle = document.getElementById('topbar-title'); if(topTitle) topTitle.textContent = VIEW_TITLES[name] || '';
-  const topSub = document.getElementById('topbar-sub'); if(topSub) topSub.textContent = VIEW_SUBS[name] || '';
+  const topSub = document.getElementById('topbar-sub');
+  if(topSub){
+    if(name === 'nuevo') topSub.innerHTML = '<a href="javascript:void(0)" onclick="volverAtras()">Tickets</a> / Nuevo ticket';
+    else topSub.textContent = VIEW_SUBS[name] || '';
+  }
+  const topBack = document.getElementById('topbar-back'); if(topBack) topBack.style.display = (name === 'nuevo') ? 'flex' : 'none';
   updateViewToggleBtn();
   if(isDesktopLayout()) document.title = `${VIEW_TITLES[name]||'ASIGNA'} · ASIGNA`;
 
@@ -2714,7 +2812,7 @@ function openTicketForm(){
   switchView('nuevo');
   window.scrollTo(0, 0);
 }
-function cancelarNuevoTicket(){ switchView('tickets'); }
+function cancelarNuevoTicket(){ salirDeNuevo(false); }
 
 // Área común: no lleva empresa y la ubicación pasa a ser obligatoria.
 function onTipoIncidenciaChange(){
@@ -2800,7 +2898,7 @@ async function saveTicket(){
 
   tickets.unshift(ticket);
   saveTicketsLocal();
-  switchView('tickets');
+  salirDeNuevo(true); // vuelve a Tickets sin dejar el formulario en el historial
   renderTicketsView();
   showToast('Ticket enviado ✓ '+ticket.numero);
 
@@ -4732,6 +4830,11 @@ function showRegisterScreen(){
   document.getElementById('reg-locacion').value = 'D1';
   document.getElementById('register-screen').style.display = 'flex';
   requestAnimationFrame(()=>document.getElementById('register-screen').classList.add('show'));
+  if(navEstado().auth !== 'registro') navGuardar({ asigna:1, auth:'registro' }, true);
+}
+function volverAlLogin(){
+  if(navEstado().auth === 'registro') history.back(); // el popstate muestra el inicio de sesión
+  else showAuthScreen();
 }
 
 function showPendingScreen(){

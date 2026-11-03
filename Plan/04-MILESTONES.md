@@ -6,6 +6,24 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-11-03 — Botón "Atrás" en toda la app (rama `fix/boton-atras`, sin push)
+Jose reportó que en Nuevo ticket no se podía ir hacia atrás para abandonar la página.
+ASIGNA es una sola página y no usaba el historial del navegador: "Atrás" (navegador,
+gesto o botón del teléfono) salía de la app. Ahora:
+- **Vistas:** cada cambio de vista agrega una entrada (`history.pushState({v})`);
+  "Atrás" vuelve a la vista anterior. La primera entrada se fija al entrar (`enterApp`).
+- **Paneles** (detalle del ticket, formularios de usuario/empresa/suplidor, filtros,
+  notificaciones, importar, reabrir…): "Atrás" los cierra. Cerrarlos con la X, el fondo
+  o **Escape** (nuevo) también limpia el historial; si un panel se cambia por otro en el
+  mismo momento (notificación → detalle) se reemplaza la entrada.
+- **Nuevo ticket:** flecha "volver" junto al título en escritorio y "Tickets" del
+  encabezado como enlace; en el teléfono ya existía la flecha. Si hay algo escrito,
+  pregunta "¿Salir sin crear el ticket?". Después de crear el ticket, "Atrás" no vuelve
+  al formulario.
+- **Crear cuenta:** botón "Volver" arriba y "Atrás" regresan al inicio de sesión.
+Probado con Playwright: vistas, confirmación (aceptar/cancelar), Cancelar, flecha,
+guardar, paneles (Atrás, X, Escape, cadena notificación→detalle) y registro.
+
 ## 2026-10-30 — Registro abierto a todos: locatarios y personal — en producción (`1f78785`)
 Decisión de Jose: la forma principal de crear cuentas es que cada persona se registre
 ("Crea tu cuenta aquí") y Administración la apruebe — para empleados y locatarios.
