@@ -6,6 +6,13 @@ para saber en qué punto está el proyecto.
 
 ---
 
+## 2026-11-03 — Título arriba, ruta debajo (rama `diseno/titulo-arriba`, sin push)
+Pedido de Jose: dar más relevancia al texto principal. En el encabezado de todas las
+pantallas de escritorio el título (Public Sans 800) va primero y la ruta en mayúsculas
+("OPERACIÓN / DASHBOARD") debajo. Mismo orden en el encabezado del detalle del ticket
+(título y debajo "TICKETS / OF-…"). La flecha "volver" de Nuevo ticket queda alineada
+con el título.
+
 ## 2026-11-03 — Botón "Atrás" en toda la app — en producción (`97dafc7`)
 Jose reportó que en Nuevo ticket no se podía ir hacia atrás para abandonar la página.
 ASIGNA es una sola página y no usaba el historial del navegador: "Atrás" (navegador,

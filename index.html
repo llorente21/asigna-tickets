@@ -606,9 +606,9 @@ main.view.active{display:block;}
 /* En pantallas bajas (laptop con zoom) la columna no debe encoger el encabezado ni el contenido:
    antes el título y los filtros quedaban cortados arriba. */
 .desktop-main > *{flex-shrink:0;}
-.topbar-heading{margin-top:0; display:flex; flex-direction:column-reverse;}
+.topbar-heading{margin-top:0; display:flex; flex-direction:column;} /* título arriba (principal), ruta debajo — pedido de Jose 2026-11-03 */
 .topbar-heading h1{font-family:'Public Sans',sans-serif; font-weight:800; font-size:26px; letter-spacing:-.3px; line-height:1.15;}
-.topbar-heading p{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#6F675F;}
+.topbar-heading p{margin:5px 0 0; font-size:10.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#6F675F;}
 .topbar-heading p:empty{display:none;}
 .topbar .btn{min-height:44px; padding:0 20px; font-size:14px; border-radius:11px;}
 .desktop-content{padding:18px 32px 40px;}
@@ -844,7 +844,7 @@ body.in-nuevo .header-back{display:flex;}
 .reg-tipo .chip-radio span{min-height:44px; font-size:14px;}
 
 /* Botones "volver" */
-.topbar-back{width:44px; height:44px; flex:0 0 44px; align-self:flex-end; margin:0 10px 2px -8px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border2); border-radius:11px; background:var(--surface); color:var(--text); cursor:pointer;}
+.topbar-back{width:44px; height:44px; flex:0 0 44px; align-self:flex-start; margin:-6px 10px 0 -8px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border2); border-radius:11px; background:var(--surface); color:var(--text); cursor:pointer;}
 .topbar-back:hover{background:var(--surface2);}
 .topbar .topbar-heading{margin-right:auto;} /* título pegado a la flecha; acciones a la derecha */
 .topbar-back svg{width:20px; height:20px;}
@@ -2929,7 +2929,7 @@ function openTicketDetail(id){
   currentDetailId = id;
   const t = tickets.find(x=>x.id===id);
   if(!t) return;
-  document.getElementById('detail-head').innerHTML = `<div class="dh-eyebrow">Tickets / <span class="mono">${esc(t.numero)}</span></div><h3>${esc(tituloTicket(t))}</h3>`;
+  document.getElementById('detail-head').innerHTML = `<h3>${esc(tituloTicket(t))}</h3><div class="dh-eyebrow">Tickets / <span class="mono">${esc(t.numero)}</span></div>`;
   document.getElementById('detail-head-status').innerHTML = `<span class="status-badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>`;
   document.getElementById('detail-body').innerHTML = renderDetailBody(t);
   openDrawer('detail');
