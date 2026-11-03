@@ -6,7 +6,7 @@ para saber en qué punto está el proyecto.
 
 ---
 
-## 2026-11-03 — Botón "Atrás" en toda la app (rama `fix/boton-atras`, sin push)
+## 2026-11-03 — Botón "Atrás" en toda la app — en producción (`97dafc7`)
 Jose reportó que en Nuevo ticket no se podía ir hacia atrás para abandonar la página.
 ASIGNA es una sola página y no usaba el historial del navegador: "Atrás" (navegador,
 gesto o botón del teléfono) salía de la app. Ahora:
